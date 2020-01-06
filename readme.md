@@ -44,7 +44,7 @@ var seg = new Segment(randomV3(), randomV3());
 var result = point.distanceSegment(seg);
 ```
 
--网页嵌入：直接使用 dist 下面的 cga.js
+- 网页嵌入：直接使用 dist 下面的 cga.js
 
 ```html
 <script src="./dist/cga.js" />
