@@ -1,5 +1,7 @@
 import { Vector3 } from "../../math/Vector3";
 import { Segment } from "./Segment";
+import { gPrecision, sign } from "../../math/Math";
+import { Rectangle } from "./Rectangle";
 
 export class Point extends Vector3 {
   constructor(x, y, z) {
@@ -189,13 +191,88 @@ export class Point extends Vector3 {
     return result;
   }
 
-
+  /**
+   * 点与圆圈的距离
+   * @param {*} circle 
+   * @param {*} disk 
+   * @returns {} result
+   */
   distanceCircle(circle) {
-    return this.distancePlane(circle)
+    var result = {
+      equidistant: false//是否等距
+    };
+
+    // Projection of P-C onto plane is Q-C = P-C - Dot(N,P-C)*N.
+    var PmC = this.sub(circle.center);
+    var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
+    var lengthQmC = QmC.length();
+    if (lengthQmC > gPrecision)
+    {
+      result.circleClosest = QmC.clone().multiplyScalar(circle.radius / lengthQmC).add(circle.center);
+      result.equidistant = false;
+    }
+    else
+    {
+      var offsetPoint = circle.clone().add(10, 10, 10);
+      var CP = offsetPoint.sub(circle.center);
+      var CQ = CP.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(CP))).normalize()
+      //在圆圈圆心的法线上，到圆圈上的没一点都相同 
+      result.circleClosest = CQ.clone().multiplyScalar(circle.radius).add(circle.center)
+      result.equidistant = true;
+    }
+
+    var diff = point.clone().sub(result.circleClosest);
+    result.sqrDistance = diff.dot(diff);
+    result.distance = Math.sqrt(result.sqrDistance);
+    return result;
   }
 
-  distanceCapsule(capsule) {
+  /**
+ * 点与圆盘的距离
+ * @param {*} circle 
+ * @param {*} disk 
+ * @returns {} result
+ */
+  distanceDisk(disk) {
+    var result = {
+      signed: 1,
+      sqrDistance: 0,
+      distance: 0,
+      diskClosest: null
+    };
 
+    var PmC = this.sub(disk.center);
+    var QmC = PmC.clone().sub(disk.normal.clone().multiplyScalar(disk.normal.dot(PmC)));
+    var lengthQmC = QmC.length();
+
+    result.signed = sign(this.clone().dot(disk.normal) - disk.w);
+
+    if (lengthQmC > disk.radius)
+    {
+      result.diskClosest = QmC.clone().multiplyScalar(disk.radius / lengthQmC).add(disk.center);
+    }
+    else
+    {
+      var signedDistance = this.clone().dot(disk.normal) - disk.w;
+      result.diskClosest = this.clone().sub(plane.normal.clone().multiplyScalar(signedDistance));
+    }
+
+    var diff = point.clone().sub(result.circleClosest);
+    result.sqrDistance = diff.dot(diff);
+    result.distance = Math.sqrt(result.sqrDistance);
+    return result;
+  }
+
+  /**
+   * 
+   * @param {Capsule} capsule 
+   */
+  distanceCapsule(capsule) {
+    var result = this.distanceSegment(capsule);
+    result.distance = result.distance - capsule.radius;
+    result.closest = this.clone().sub(result.segmentClosest).normalize().multiplyScalar(capsule.radius);
+    result.interior = result.distance < 0
+    return result;
   }
 
   distanceTriangle(triangle) {
@@ -393,7 +470,11 @@ export class Point extends Vector3 {
     return result;
 
   }
-  distanceRect(rectangle) {
+  /**
+   * 点到矩形的距离
+   * @param  {Rectangle} rectangle
+   */
+  distanceRectangle(rectangle) {
     var result = { rectangleParameter: [] };
 
     diff = rectangle.center - point;
@@ -434,7 +515,7 @@ export class Point extends Vector3 {
     result.rectangleClosestPoint = rectangle.center;
     for (var i = 0; i < 2; ++i)
     {
-      result.rectangleClosestPoint += result.rectangleParameter[i] * rectangle.axis[i];
+      result.rectangleClosestPoint.add(rectangle.axis[i].clone().multiplyScalar(result.rectangleParameter[i]));
     }
     return result
   }
@@ -446,7 +527,10 @@ export class Point extends Vector3 {
   }
 
   distanceSphere(sphere) {
-    return this.distanceTo(sphere.center) - sphere.radius;
+    const result = {}
+    result.distance = this.distanceTo(sphere.center) - sphere.radius;
+    result.closest = this.point.clone().sub(sphere.center).normalize().multiplyScalar(sphere.radius);
+    return result;
   }
 
   //---包含---------------------------------------------------------------

@@ -1,10 +1,11 @@
 import { v3 } from "../../math/Vector3";
 
-class Circle {
+export class Disk {
   constructor(center, normal, radius) {
     this.center = center || v3();
     this.normal = normal;
     this.radius = radius || 0;
+    this.w = this.normal.dot(center)
   }
 
   area() {
@@ -12,13 +13,12 @@ class Circle {
   }
 }
 
-function circle(center, radius) {
-  return new Circle(center, radius);
+export function disk(center, radius) {
+  return new Disk(center, radius);
 }
 
 //三点计算圆心
-function calcCircleFromThreePoint(point1, point2, point3) {
-  return circle();
+export function calcCircleFromThreePoint(point1, point2, point3) {
+  return disk();
 }
 
-export { Circle, circle, calcCircleFromThreePoint };
