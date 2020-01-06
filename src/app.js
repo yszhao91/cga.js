@@ -1,9 +1,8 @@
 import "./app.css"
 import * as ga from "./";
-import * as gl from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { Point } from "./struct/3d/Point";
-import { BufferGeometry, Geometry, LineDashedMaterial, Line } from "three";
+import { BufferGeometry, Geometry, Line, LineDashedMaterial, Float32BufferAttribute, PointsMaterial, Points, LineBasicMaterial, Mesh, WebGLRenderer, PerspectiveCamera, Scene, HemisphereLight, PolarGridHelper, Face3, DoubleSide } from "three";
 function toDisSeg(obj, opts) {
     var geometry = new Geometry()
     geometry.vertices.push(...obj)
@@ -23,50 +22,46 @@ function toDisSeg(obj, opts) {
 
 function toMesh(obj, opts) {
     var renderObj = null;
-    if (obj instanceof ga.Point || obj.isVector3)
-    {
+    if (obj instanceof ga.Point || obj.isVector3) {
         var geometry = new BufferGeometry()
-        geometry.setAttribute('position', new gl.Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
-        var material = new gl.PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
-        renderObj = new gl.Points(geometry, material);
+        geometry.setAttribute('position', new Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
+        var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
+        renderObj = new Points(geometry, material);
 
     } else if (obj instanceof ga.Line) {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         var v2 = obj.direction.clone().multiplyScalar(-10000).add(obj.origin);
         geometry.vertices.push(v1, v2);
-        var material = new gl.LineBasicMaterial({ color: 0xffff8f });
-        renderObj = new gl.Line(geometry, material);
+        var material = new LineBasicMaterial({ color: 0xffff8f });
+        renderObj = new Line(geometry, material);
 
     } else if (obj instanceof ga.Ray) {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         geometry.vertices.push(obj.origin, v1);
-        var material = new gl.LineBasicMaterial({ color: 0xff8fff });
-        renderObj = new gl.Line(geometry, material);
-    } else if (obj instanceof ga.Segment)
-    {
+        var material = new LineBasicMaterial({ color: 0xff8fff });
+        renderObj = new Line(geometry, material);
+    } else if (obj instanceof ga.Segment) {
         var geometry = new Geometry()
         geometry.vertices.push(obj.p0, obj.p1);
-        var material = new gl.LineBasicMaterial({ color: 0x8fffff });
-        renderObj = new gl.Line(geometry, material);
-    } else if (obj instanceof ga.Triangle)
-    {
+        var material = new LineBasicMaterial({ color: 0x8fffff });
+        renderObj = new Line(geometry, material);
+    } else if (obj instanceof ga.Triangle) {
         debugger
         var geometry = new Geometry()
         geometry.vertices = [...obj];
-        geometry.faces.push(new gl.Face3(0, 1, 2))
-        var material = new gl.MeshBasicMaterial({ color: 0x8f8fff, side: gl.DoubleSide });
-        renderObj = new gl.Mesh(geometry, material);
+        geometry.faces.push(new Face3(0, 1, 2))
+        var material = new MeshBasicMaterial({ color: 0x8f8fff, side: DoubleSide });
+        renderObj = new Mesh(geometry, material);
     }
 
     else if (obj instanceof ga.PolyLine) {
         var geometry = new Geometry()
         geometry.vertices.push(...obj);
-        var material = new gl.LineBasicMaterial({ color: 0xff8fff });
-        renderObj = new gl.Line(geometry, material);
-    } else if (obj instanceof ga.Polygon)
-    {
+        var material = new LineBasicMaterial({ color: 0xff8fff });
+        renderObj = new Line(geometry, material);
+    } else if (obj instanceof ga.Polygon) {
 
     }
 
@@ -86,10 +81,10 @@ var infoPanel = document.createElement("div");
 infoPanel.classList.add("info_panel");
 document.body.append(infoPanel)
 
-const renderer = new gl.WebGLRenderer({ antialias: true });
+const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x222222);
-const camera = new gl.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
+const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
 camera.position.set(0, 160, -120);
 const control = new OrbitControls(camera, renderer.domElement);
 container.append(renderer.domElement);
@@ -99,11 +94,11 @@ window.addEventListener("resize", () => {
     camera.updateProjectionMatrix();
     camera.updateMatrix();
 })
-var scene = new gl.Scene();
-scene.add(new gl.HemisphereLight(0xffffff, 0x555555));
+var scene = new Scene();
+scene.add(new HemisphereLight(0xffffff, 0x555555));
 // scene.add(new gl.Mesh(new gl.SphereBufferGeometry(1, 30, 30), new gl.MeshStandardMaterial()))
 // scene.add(toMesh(new Point(10, 0, 0)))
-scene.add(new gl.PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
+scene.add(new PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
 //---点与直线的距离测试----------------------------------------------------------------
 // var point = new ga.Point().copy(randomV3());
 // var line = new ga.Line(randomV3(), randomV3());

@@ -5,6 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "webpack-dev-server",
+    "build:dev": "webpack --mode development",
+    "build:prod": "webpack --mode production",
     "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -3144,8 +3144,9 @@
     }
 
     class Circle {
-      constructor(center, radius) {
+      constructor(center, normal, radius) {
         this.center = center || v3();
+        this.normal = normal;
         this.radius = radius || 0;
       }
 
@@ -3642,12 +3643,86 @@
         result.planeClosestPoint = this.clone().sub(plane.normal.clone().multiplyScalar(result.signedDistance));
         return result;
       }
+      /**
+       * 点与圆圈的距离
+       * @param {*} circle 
+       * @param {*} disk 
+       * @returns {} result
+       */
+
 
       distanceCircle(circle) {
-        return this.distancePlane(circle);
-      }
+        var result = {
+          equidistant: false //是否等距
 
-      distanceCapsule(capsule) {}
+        }; // Projection of P-C onto plane is Q-C = P-C - Dot(N,P-C)*N.
+
+        var PmC = this.sub(circle.center);
+        var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
+        var lengthQmC = QmC.length();
+
+        if (lengthQmC > gPrecision) {
+          result.circleClosest = QmC.clone().multiplyScalar(circle.radius / lengthQmC).add(circle.center);
+          result.equidistant = false;
+        } else {
+          var offsetPoint = circle.clone().add(10, 10, 10);
+          var CP = offsetPoint.sub(circle.center);
+          var CQ = CP.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(CP))).normalize(); //在圆圈圆心的法线上，到圆圈上的没一点都相同 
+
+          result.circleClosest = CQ.clone().multiplyScalar(circle.radius).add(circle.center);
+          result.equidistant = true;
+        }
+
+        var diff = point.clone().sub(result.circleClosest);
+        result.sqrDistance = diff.dot(diff);
+        result.distance = Math.sqrt(result.sqrDistance);
+        return result;
+      }
+      /**
+      * 点与圆盘的距离
+      * @param {*} circle 
+      * @param {*} disk 
+      * @returns {} result
+      */
+
+
+      distanceDisk(disk) {
+        var result = {
+          signed: 1,
+          sqrDistance: 0,
+          distance: 0,
+          diskClosest: null
+        };
+        var PmC = this.sub(disk.center);
+        var QmC = PmC.clone().sub(disk.normal.clone().multiplyScalar(disk.normal.dot(PmC)));
+        var lengthQmC = QmC.length();
+        result.signed = sign(this.clone().dot(disk.normal) - disk.w);
+
+        if (lengthQmC > disk.radius) {
+          result.diskClosest = QmC.clone().multiplyScalar(disk.radius / lengthQmC).add(disk.center);
+        } else {
+          var signedDistance = this.clone().dot(disk.normal) - disk.w;
+          result.diskClosest = this.clone().sub(plane.normal.clone().multiplyScalar(signedDistance));
+        }
+
+        var diff = point.clone().sub(result.circleClosest);
+        result.sqrDistance = diff.dot(diff);
+        result.distance = Math.sqrt(result.sqrDistance);
+        return result;
+      }
+      /**
+       * 
+       * @param {Capsule} capsule 
+       */
+
+
+      distanceCapsule(capsule) {
+        var result = this.distanceSegment(capsule);
+        result.distance = result.distance - capsule.radius;
+        result.closest = this.clone().sub(result.segmentClosest).normalize().multiplyScalar(capsule.radius);
+        result.interior = result.distance < 0;
+        return result;
+      }
 
       distanceTriangle(triangle) {
         function GetMinEdge02(a11, b1, p) {
@@ -3808,8 +3883,13 @@
         result.distance = Math.sqrt(result.sqrDistance);
         return result;
       }
+      /**
+       * 点到矩形的距离
+       * @param  {Rectangle} rectangle
+       */
 
-      distanceRect(rectangle) {
+
+      distanceRectangle(rectangle) {
         var result = {
           rectangleParameter: []
         };
@@ -3846,7 +3926,7 @@
         result.rectangleClosestPoint = rectangle.center;
 
         for (var i = 0; i < 2; ++i) {
-          result.rectangleClosestPoint += result.rectangleParameter[i] * rectangle.axis[i];
+          result.rectangleClosestPoint.add(rectangle.axis[i].clone().multiplyScalar(result.rectangleParameter[i]));
         }
 
         return result;
@@ -3855,7 +3935,10 @@
       distancePolygon(Triangle) {}
 
       distanceSphere(sphere) {
-        return this.distanceTo(sphere.center) - sphere.radius;
+        const result = {};
+        result.distance = this.distanceTo(sphere.center) - sphere.radius;
+        result.closest = this.point.clone().sub(sphere.center).normalize().multiplyScalar(sphere.radius);
+        return result;
       } //---包含---------------------------------------------------------------
 
 
@@ -3968,20 +4051,56 @@
         result.distance = Math.sqrt(result.sqrDistance);
         return result;
       }
+      /**
+       * 直线与线段的距离
+       * @param  {Segment} segment
+       */
+
 
       distanceSegment(segment) {
         var result = {
           parameter: [],
           closestPoint: []
         };
-        var diff = this.origin - segment.point1;
-        var a01 = -this.direction.dot(segment.direction);
-        var b0 = diff.dot(segment.direction);
-        var s0, s1;
-        result.parameter[0] = s0;
-        result.parameter[1] = s1;
-        result.closestPoint[0] = this.origin + s0 * this.direction;
-        result.closestPoint[1] = ray.origin + s1 * ray.direction;
+        u = line.origin.clone().sub(segment.p0);
+        a = line.direction.dot(line.direction);
+        b = line.direction.dot(segment.direction);
+        c = segment.direction.dot(segment.direction);
+        d = line.direction.dot(u);
+        e = segment.direction.dot(u);
+        det = a * c - b * b;
+        sDenom = det; // 检测是否平行
+
+        if (det < gPrecision) {
+          // 任意选一点
+          sNum = 0;
+          tNum = e;
+          tDenom = c;
+        } else {
+          sNum = b * e - c * d;
+          tNum = a * e - b * d;
+        } // Check t
+
+
+        if (tNum < 0) {
+          tNum = 0;
+          sNum = -d;
+          sDenom = a;
+        } else if (tNum > tDenom) {
+          tNum = tDenom;
+          sNum = -d + b;
+          sDenom = a;
+        } // Parameters of nearest points on restricted domain
+
+
+        s = sNum / sDenom;
+        t = tNum / tDenom; // Dot product of vector between points is squared distance
+        // between segments
+
+        result.parameter[0] = s;
+        result.parameter[1] = t;
+        result.closestPoint[0] = this.direction.clone().multiplyScalar(s).add(this.origin);
+        result.closestPoint[1] = segment.direction.clone().multiplyScalar(t).add(segment.p0);
         diff = result.closestPoint[0].clone().sub(result.closestPoint[1]);
         result.sqrDistance = diff.dot(diff);
         result.distance = Math.sqrt(result.sqrDistance);
@@ -4278,7 +4397,7 @@
       return new Ray(orgin, point.sub(orgin));
     }
 
-    function ray$1(orgin, direction) {
+    function ray(orgin, direction) {
       return new Ray(orgin, direction);
     }
 
@@ -4354,7 +4473,7 @@
     exports.radToDeg = radToDeg;
     exports.randFloat = randFloat;
     exports.randInt = randInt;
-    exports.ray = ray$1;
+    exports.ray = ray;
     exports.segment = segment;
     exports.sign = sign;
     exports.smootherstep = smootherstep;
