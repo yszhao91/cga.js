@@ -1,5 +1,7 @@
 # 3D 计算几何算法库(3D Compute Geometry Algorithm)
 
+inspire by Wild Magic
+
 ## 安装
 
 ```
@@ -48,6 +50,17 @@ var result = point.distanceSegment(seg);
 <script src="./dist/cga.js" />
 ```
 
+## 项目编译
+
+```
+npm install
+国内
+cnpm install
+
+npm run build //编译到dist
+npm run dev  //运行项目，自己更改源码测试
+```
+
 ## 对象的类名
 
 1. 点：**Point**
@@ -77,6 +90,10 @@ var result = point.distanceSegment(seg);
 |  平面  |  √  |  ?   |  ?   |  ?   |  ?   |   ?    |  ?   |
 | 三角形 |  √  |  ?   |  ?   |  ?   |  ?   |   ?    |  ?   |
 |  矩形  |  ?  |  ?   |  ?   |  ?   |  ?   |   ?    |  ?   |
+
+## 参考文章
+
+[计算机几何算法（CGA）专栏 https://zhuanlan.zhihu.com/c_1196384168014368768](https://zhuanlan.zhihu.com/c_1196384168014368768)
 
 ## 展望
 
