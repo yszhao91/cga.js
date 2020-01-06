@@ -2,6 +2,10 @@
 
 inspire by Wild Magic
 
+## 演示地址
+
+案例：[演示](http://dcgraph.gitee.io/xtorcga/)
+
 ## 安装
 
 ```

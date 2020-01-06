@@ -8,6 +8,8 @@
     "build:dev": "webpack --mode development",
     "build:prod": "webpack --mode production",
     "build": "rollup -c",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "private": false,
@@ -26,16 +28,11 @@
     "babel-register": "^6.26.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
+    "css-loader": "^3.4.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "html-loader": "^0.5.5",
-    "style-loader": "^1.1.2",
-    "css-loader": "^3.4.1",
     "html-webpack-plugin": "^3.2.0",
     "node-sass": "^4.12.0",
-    "sass-loader": "^7.1.0",
-    "webpack": "^4.41.3",
-    "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.7.2",
     "rollup": "^1.27.14",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -43,7 +40,13 @@
     "rollup-plugin-node-resolve": "^5.0.1",
     "rollup-plugin-uglify": "^6.0.4",
     "rollup-watch": "^4.3.1",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^1.1.2",
+    "three": "^0.112.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "three": "^0.112.1"
+    "vuepress": "^1.2.0",
+    "webpack": "^4.41.3",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2"
   }
 }
