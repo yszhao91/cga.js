@@ -105,6 +105,10 @@ npm run dev  //运行项目，自己更改源码测试
 
 [计算机几何算法（CGA）专栏 https://zhuanlan.zhihu.com/c_1196384168014368768](https://zhuanlan.zhihu.com/c_1196384168014368768)
 
+## 参考文章
+
+[计算机几何算法（CGA）专栏 https://zhuanlan.zhihu.com/c_1196384168014368768](https://zhuanlan.zhihu.com/c_1196384168014368768)
+
 ## 展望
 
 项目将会不断完善，如果你有好的想好可以提交你的想法。欢迎 star,让项目更进一步
