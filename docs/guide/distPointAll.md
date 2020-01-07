@@ -2,7 +2,7 @@
 
 3D 点是有 x,y,z 三个坐标组成，类名 Point，
 
-## 三维向量与与点
+## 三维向量点
 
 ```js
 import * as cga from "xtorcga";
@@ -20,7 +20,7 @@ function randomV3() {
 计算点到点的距离
 
 <div class="container" ref="p2p"> 
-   <div ref="p2pInfoPPanel" class="info_panel"></div>
+   <div ref="infoPanel" class="info_panel"></div>
 </div>
 
 ```javascript
@@ -35,7 +35,7 @@ var result = point0.distanceTo(point1);
 计算点到直线的距离
 
 <div class="container" ref="p2l"> 
-   <div ref="p2lInfoPPanel" class="info_panel"></div>
+   <div ref="infoPanel" class="info_panel"></div>
 </div>
 
 ```javascript
@@ -124,19 +124,19 @@ export default {
     initTestScene:function(){
         var point0 = new cga.Point().copy(this.randomV3());
         var point1 = new cga.Point().copy(this.randomV3());
-        var result = point0.distanceTo(point1);
-        this.$refs.p2pInfoPPanel.innerText = JSON.stringify(result);
+        var result = point0.distanceTo(point1); 
+        this.$refs.p2p.querySelector(".info_panel").innerText = JSON.stringify(result);
         this.scene.add(this.toMesh(point0));
         this.scene.add(this.toMesh(point1));
         this.scene.add(this.toDisSeg([point0, point1]));
-        //---点与直线的距离测试--------------------------------------------------------------
-var point = new  cga.Point().copy(this.randomV3());
-var line = new  cga.Line(this.randomV3(), this.randomV3());
-var result = point.distanceLine(line);
-this.$refs.p2lInfoPPanel.innerText = JSON.stringify(result);
-this.scene.add(this.toMesh(point));
-this.scene.add(this.toMesh(line));
-this.scene.add(this.toDisSeg([point, result.lineClosest]))
+//         //---点与直线的距离测试--------------------------------------------------------------
+// var point = new  cga.Point().copy(this.randomV3());
+// var line = new  cga.Line(this.randomV3(), this.randomV3());
+// var result = point.distanceLine(line);
+// this.$refs.p2lInfoPPanel.innerText = JSON.stringify(result);
+// this.scene.add(this.toMesh(point));
+// this.scene.add(this.toMesh(line));
+// this.scene.add(this.toDisSeg([point, result.lineClosest]))
     },
     randomV3:function() {
         return cga.v3(Math.random() * 100 - 50, Math.random() * 100, Math.random() * 100 - 50);
@@ -251,7 +251,7 @@ this.scene.add(this.toDisSeg([point, result.lineClosest]))
     animate: function() {
       requestAnimationFrame(this.animate);
       this.renderer.render(this.scene, this.camera);
-      this.renderer1.render(this.scene1, this.camera);
+      // this.renderer1.render(this.scene1, this.camera);
     }
   },
   mounted() {
