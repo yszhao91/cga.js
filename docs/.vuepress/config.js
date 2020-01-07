@@ -5,8 +5,8 @@ module.exports = {
     ['link', { rel: 'icon', href: './logo.png' }]
   ],
   host: 'localhost',
-  dest: './dist',
-  base: './', // 这是部署到github相关的配置 下面会讲
+  // dest: './dist',
+  base: '/xtorcga.github.io/', // 这是部署到github相关的配置 下面会讲
   port: 8800,
   locales: {
     '/': {
