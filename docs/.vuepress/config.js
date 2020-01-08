@@ -60,9 +60,12 @@ module.exports = {
             'distRayAll',
             'distSegmentAll',
           ],
-          '/dev/': ['']
+          '/demo/': [
+            '',
+            "distPointAll"]
         }
       },
+
       '/EN/': {
         selectText: 'Languages',
         label: 'English',
