@@ -168,10 +168,15 @@ export class Line {
   }
 
 
+  distancePlane(plane) {
+
+  }
+
+
 
   //---相交-------------
-  intersectLine(line) { 
-    
+  intersectLine(line) {
+
   }
 
   //---平行-------------

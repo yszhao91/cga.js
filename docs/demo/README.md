@@ -23,5 +23,12 @@ Danger zone, do not proceed
 :::
 
 <ClientOnly>
-    <demoPointAll/>
+    <a></a>
 </ClientOnly>
+
+<script>
+import { a } from "./a";
+export default {
+  components: { a }
+};
+</script>

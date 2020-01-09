@@ -19,6 +19,16 @@
     "url": "https://github.com/yszhao91/xtorcga"
   },
   "author": "Zhao YS",
+  "keywords": [
+    "cga",
+    "cga.js",
+    "计算几何库",
+    "webgl",
+    "threejs",
+    "compute geometry algorithm",
+    "MIT",
+    "开源"
+  ],
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.5.5",
