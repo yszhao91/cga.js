@@ -21,14 +21,29 @@ This is a dangerous warning
 ::: danger STOP
 Danger zone, do not proceed
 :::
-
+ 
+## 点与线
+<div></div>
 <ClientOnly>
-    <a></a>
+<distance geo0 = "Point" geo1 = "Line"></distance> 
 </ClientOnly>
 
-<script>
-import { a } from "./a";
-export default {
-  components: { a }
-};
-</script>
+## 线与线 
+<div></div>
+<ClientOnly>
+<distance geo0 = "Line" geo1 = "Line"></distance> 
+</ClientOnly>
+
+## 线与线 
+<div></div>
+<ClientOnly>
+<distance geo0 = "Line" geo1 = "Line"></distance> 
+</ClientOnly>
+
+
+## 线与射线 
+<div></div>
+<ClientOnly>
+<distance geo0 = "Line" geo1 = "Ray"></distance> 
+</ClientOnly>
+ 

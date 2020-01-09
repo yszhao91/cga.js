@@ -59,6 +59,10 @@
     "webpack": "^4.41.3",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.7.2",
-    "element-ui": "^2.13.0"
+    "element-ui": "^2.13.0",
+    "vue-loader": "^15.8.3",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.11",
+    "xtorcga": "0.0.5"
   }
 }
