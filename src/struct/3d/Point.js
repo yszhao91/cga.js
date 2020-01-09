@@ -564,3 +564,4 @@ export class Point extends Vector3 {
 
   }
 }
+

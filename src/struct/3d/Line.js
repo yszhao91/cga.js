@@ -170,7 +170,9 @@ export class Line {
 
 
   //---相交-------------
-  intersectLine(line) { }
+  intersectLine(line) { 
+    
+  }
 
   //---平行-------------
   parallelLine(line) { }

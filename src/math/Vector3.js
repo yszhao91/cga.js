@@ -43,7 +43,8 @@ export class Vector3 {
   }
 
   setComponent(index, value) {
-    switch (index) {
+    switch (index)
+    {
       case 0:
         this.x = value;
         break;
@@ -61,7 +62,8 @@ export class Vector3 {
   }
 
   getComponent(index) {
-    switch (index) {
+    switch (index)
+    {
       case 0:
         return this.x;
       case 1:
@@ -86,7 +88,8 @@ export class Vector3 {
   }
 
   add(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
         "THREE.Vector3: .add() now only accepts one argument. Use .addVectors( a, b ) instead."
       );
@@ -125,7 +128,8 @@ export class Vector3 {
   }
 
   sub(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
         "THREE.Vector3: .sub() now only accepts one argument. Use .subVectors( a, b ) instead."
       );
@@ -156,7 +160,8 @@ export class Vector3 {
   }
 
   multiply(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
         "THREE.Vector3: .multiply() now only accepts one argument. Use .multiplyVectors( a, b ) instead."
       );
@@ -187,7 +192,8 @@ export class Vector3 {
   }
 
   applyEuler(euler) {
-    if (!(euler && euler.isEuler)) {
+    if (!(euler && euler.isEuler))
+    {
       console.error(
         "THREE.Vector3: .applyEuler() now expects an Euler rotation rather than a Vector3 and order."
       );
@@ -416,7 +422,8 @@ export class Vector3 {
   }
 
   cross(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
         "THREE.Vector3: .cross() now only accepts one argument. Use .crossVectors( a, b ) instead."
       );
@@ -564,7 +571,8 @@ export class Vector3 {
   }
 
   fromBufferAttribute(attribute, index, offset) {
-    if (offset !== undefined) {
+    if (offset !== undefined)
+    {
       console.warn(
         "THREE.Vector3: offset has been removed from .fromBufferAttribute()."
       );

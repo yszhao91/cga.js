@@ -1,6 +1,11 @@
 import { v3 } from "../../math/Vector3";
 
 export class Segment extends Array {
+  /**
+   * 线段
+   * @param  {Point|Vector3} p0
+   * @param  {Point|Vector3} p1
+   */
   constructor(p0, p1) {
     super();
     this.push(p0 || v3(), p1 || v3());
