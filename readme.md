@@ -8,7 +8,7 @@ inspire by Wild Magic
 
 [完档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
 
-[完档与演示（github）](http://cglin.com)
+[完档与演示（github）](https://yszhao91.github.io/xtorcga/)
 
 ## 安装
 
