@@ -6,9 +6,9 @@ inspire by Wild Magic
 
 案例：
 
-[完档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
+[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
 
-[完档与演示（github）](https://yszhao91.github.io/xtorcga/)
+[文档与演示（github）](https://yszhao91.github.io/xtorcga/)
 
 ## 安装
 
