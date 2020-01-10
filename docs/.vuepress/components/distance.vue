@@ -2,13 +2,16 @@
   <div>
     <el-button @click="refresh" type="primary">更新测试案例</el-button>
     <div ref="p2other" class="container"></div>
-    <div ref="infoPanel" class="info_panel"></div>
+    <el-divider content-position="left">运行结果</el-divider>
+    <div ref="infoPanel" class="info_panel">
+      <pre><code class="json"> {{resultText}}</code></pre>
+    </div>
   </div>
 </template>
 
 <script>
 import * as cga from "../../../src/";
-import { initTestScene, randomV3, toDisSeg, toMesh } from "./utils";
+import { initTestScene, randomV3, toDisSeg, toMesh, formatJson } from "./utils";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
   BufferGeometry,
@@ -37,7 +40,8 @@ export default {
   props: { geo0: String, geo1: String },
   data() {
     return {
-      loadingTag: `avs`
+      loadingTag: `avs`,
+      resultText: ""
     };
   },
   methods: {
@@ -77,12 +81,12 @@ export default {
       //---点与直线的距离测试----------------------------------------------------------------
 
       var result = initTestScene(this.geo0, this.geo1, this.testScene);
-      this.$refs.infoPanel.innerText = JSON.stringify(result);
+      this.resultText = formatJson(JSON.stringify(result));
     },
     refresh: function() {
       this.testScene.children = [];
       var result = initTestScene(this.geo0, this.geo1, this.testScene);
-      this.$refs.infoPanel.innerText = JSON.stringify(result);
+      this.resultText = formatJson(JSON.stringify(result));
     },
     animate: function() {
       this.renderer.render(this.scene, this.camera);
