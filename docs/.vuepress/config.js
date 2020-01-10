@@ -32,13 +32,14 @@ module.exports = {
             link: '/guide/'
           },
           {
-            text: '支持',
-            link: '/support/'
-          },
-          {
             text: 'Demo',
             link: '/demo/'
           },
+          {
+            text: '支持赞助',
+            link: '/sponsor/'
+          },
+
           {
             text: 'GitHub',
             items: [
@@ -63,7 +64,8 @@ module.exports = {
           ],
           '/demo/': [
             '',
-            "distPointAll"]
+            // "distPointAll"
+          ]
         }
       },
 

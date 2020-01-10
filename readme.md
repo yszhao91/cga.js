@@ -4,7 +4,11 @@ inspire by Wild Magic
 
 ## 演示地址
 
-案例：[演示](http://dcgraph.gitee.io/xtorcga/)
+案例：
+
+[完档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
+
+[完档与演示（github）](http://cglin.com)
 
 ## 安装
 

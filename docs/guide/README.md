@@ -57,6 +57,7 @@ import { Point, Segment } from "xtorcga";
 <script src="./build/cga.js" />
 ```
 
+<!--
 <fold-box title="点击以展示/隐藏UMD版使用示例">
-<!-- <<< @/docs/guide/umdExample.html -->
-</fold-box>
+<<< @/docs/guide/umdExample.html
+</fold-box> -->

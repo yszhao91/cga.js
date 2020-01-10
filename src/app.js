@@ -22,13 +22,15 @@ function toDisSeg(obj, opts) {
 
 function toMesh(obj, opts) {
     var renderObj = null;
-    if (obj instanceof cga.Point || obj.isVector3) {
+    if (obj instanceof cga.Point || obj.isVector3)
+    {
         var geometry = new BufferGeometry()
         geometry.setAttribute('position', new Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
         var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
         renderObj = new Points(geometry, material);
 
-    } else if (obj instanceof cga.Line) {
+    } else if (obj instanceof cga.Line)
+    {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         var v2 = obj.direction.clone().multiplyScalar(-10000).add(obj.origin);
@@ -36,18 +38,21 @@ function toMesh(obj, opts) {
         var material = new LineBasicMaterial({ color: 0xffff8f });
         renderObj = new Line(geometry, material);
 
-    } else if (obj instanceof cga.Ray) {
+    } else if (obj instanceof cga.Ray)
+    {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         geometry.vertices.push(obj.origin, v1);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Segment) {
+    } else if (obj instanceof cga.Segment)
+    {
         var geometry = new Geometry()
         geometry.vertices.push(obj.p0, obj.p1);
         var material = new LineBasicMaterial({ color: 0x8fffff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Triangle) {
+    } else if (obj instanceof cga.Triangle)
+    {
         debugger
         var geometry = new Geometry()
         geometry.vertices = [...obj];
@@ -56,12 +61,14 @@ function toMesh(obj, opts) {
         renderObj = new Mesh(geometry, material);
     }
 
-    else if (obj instanceof cga.PolyLine) {
+    else if (obj instanceof cga.Polyline)
+    {
         var geometry = new Geometry()
         geometry.vertices.push(...obj);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Polygon) {
+    } else if (obj instanceof cga.Polygon)
+    {
 
     }
 
@@ -131,7 +138,7 @@ scene.add(new PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
 //     vs.push(randomV3());
 // }
 // var point = new cga.Point().copy(randomV3());
-// var polyline = new cga.PolyLine(vs);
+// var polyline = new cga.Polyline(vs);
 // console.time("测试法")
 // var result = point.distancePolyLine(polyline);
 // console.timeEnd("测试法")
@@ -215,7 +222,7 @@ scene.add(toDisSeg(result.closestPoint))
 // scene.add(toMesh(new cga.Line(new cga.Point(0, 10, 0), new cga.Point(3, 10, 20))))
 // scene.add(toMesh(new cga.Segment(new cga.Point(10, 10, 0), new cga.Point(3, 0, 20))))
 // scene.add(toMesh(new cga.Ray(new cga.Point(0, 10, 0), new cga.v3(1, 1, 1))))
-// scene.add(toMesh(new cga.PolyLine([new cga.Point(0, 0, 0),
+// scene.add(toMesh(new cga.Polyline([new cga.Point(0, 0, 0),
 // new cga.v3(1, 0, 1),
 // new cga.v3(2, 0, 1),
 // new cga.v3(2, 0, 2),

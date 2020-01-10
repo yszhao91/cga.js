@@ -10,7 +10,7 @@ export * from "./struct/3d/Circle";
 export * from "./struct/3d/Point"
 export * from "./struct/3d/Line";
 export * from "./struct/3d/Plane";
-export * from "./struct/3d/PolyLine";
+export * from "./struct/3d/Polyline";
 export * from "./struct/3d/Polygon";
 export * from "./struct/3d/Ray";
 export * from "./struct/3d/Segment";

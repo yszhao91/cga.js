@@ -1,4 +1,4 @@
-import * as cga from "xtorcga";
+import * as cga from "../../../src/";
 import {
     BufferGeometry,
     Geometry,
@@ -10,9 +10,12 @@ import {
     LineBasicMaterial,
     Mesh,
     Face3,
-    DoubleSide} from "three";
+    DoubleSide,
+    MeshBasicMaterial
+} from "three";
 function randomGeo(key) {
-    switch (key) {
+    switch (key)
+    {
         case "Point":
             return new cga.Point().copy(randomV3());
         case "Line":
@@ -23,12 +26,20 @@ function randomGeo(key) {
             return new cga.Segment(randomV3(), randomV3());
         case "Polyline":
             var vs = [];
-            for (let i = 0; i < Math.floor(Math.random() * 100 + 3); i++) {
+            for (let i = 0; i < Math.floor(Math.random() * 100 + 3); i++)
+            {
                 vs.push(randomV3());
             }
-            return new cga.PolyLine(vs);
+            return new cga.Polyline(vs);
         case "Triangle":
-            return new cga.Triangle(randomV3(), randomV3(), randomV3())
+            return new cga.Triangle(randomV3(), randomV3(), randomV3());
+
+        case "Circle":
+            return new cga.Circle(randomV3(), randomV3().normalize(), Math.random() * 25 + 2);
+
+        case "Capsule":
+            return new cga.Capsule(randomV3(), randomV3());
+
     }
 }
 
@@ -65,13 +76,15 @@ export function toDisSeg(obj, opts) {
 
 export function toMesh(obj) {
     var renderObj = null;
-    if (obj instanceof cga.Point || obj.isVector3) {
+    if (obj instanceof cga.Point || obj.isVector3)
+    {
         var geometry = new BufferGeometry()
         geometry.setAttribute('position', new Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
         var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
         renderObj = new Points(geometry, material);
 
-    } else if (obj instanceof cga.Line) {
+    } else if (obj instanceof cga.Line)
+    {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         var v2 = obj.direction.clone().multiplyScalar(-10000).add(obj.origin);
@@ -79,18 +92,21 @@ export function toMesh(obj) {
         var material = new LineBasicMaterial({ color: 0xffff8f });
         renderObj = new Line(geometry, material);
 
-    } else if (obj instanceof cga.Ray) {
+    } else if (obj instanceof cga.Ray)
+    {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         geometry.vertices.push(obj.origin, v1);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Segment) {
+    } else if (obj instanceof cga.Segment)
+    {
         var geometry = new Geometry()
         geometry.vertices.push(obj.p0, obj.p1);
         var material = new LineBasicMaterial({ color: 0x8fffff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Triangle) {
+    } else if (obj instanceof cga.Triangle)
+    {
         var geometry = new Geometry()
         geometry.vertices = [...obj];
         geometry.faces.push(new Face3(0, 1, 2))
@@ -98,12 +114,14 @@ export function toMesh(obj) {
         renderObj = new Mesh(geometry, material);
     }
 
-    else if (obj instanceof cga.PolyLine) {
+    else if (obj instanceof cga.Polyline)
+    {
         var geometry = new Geometry()
         geometry.vertices.push(...obj);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Polygon) {
+    } else if (obj instanceof cga.Polygon)
+    {
 
     }
 

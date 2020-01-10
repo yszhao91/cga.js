@@ -8,6 +8,17 @@ export class Point extends Vector3 {
     super(x, y, z);
   }
   //---距离 Distance-----------------------------------------------------------
+
+  /**
+  * 
+  * @param {Point} point
+  */
+  distancePoint(point) {
+    var result = {};
+    result.distanceSqr = this.clone().sub(point).lengthSq();
+    result.distance = Math.sqrt(result.distanceSqr);
+    return result;
+  }
   /**
    * Test success
    * 到直线的距离
@@ -85,21 +96,21 @@ export class Point extends Vector3 {
   distanceSegment(segment) {
     const result = {};
 
-    var diff = this.clone().sub(segment.point2);
+    var diff = this.clone().sub(segment.p1);
     var t = segment.lenDirection.dot(diff);
 
     if (t >= 0)
     {
       result.segmentParameter = 1;
-      result.segmentClosest = segment.point2;
+      result.segmentClosest = segment.p1;
     } else
     {
-      diff = this.clone().sub(segment.point1);
+      diff = this.clone().sub(segment.p0);
       t = segment.lenDirection.dot(diff);
       if (t <= 0)
       {
         result.segmentParameter = 0;
-        result.segmentClosest = segment.point1;
+        result.segmentClosest = segment.p0;
       }
       else
       {
@@ -112,7 +123,7 @@ export class Point extends Vector3 {
         result.segmentClosest = segment.lenDirection
           .clone()
           .multiplyScalar(t)
-          .add(segment.point1);
+          .add(segment.p0);
       }
     }
 
@@ -127,7 +138,7 @@ export class Point extends Vector3 {
    * 点与折线的距离 测试排除法，平均比线性检索(暴力法)要快两倍以上
    * @param {Polygon} polyline  折线
    */
-  distancePolyLine(polyline) {
+  distancePolyline(polyline) {
     var u = +Infinity;
     var ipos = -1;
     var tempResult = null;
@@ -156,7 +167,7 @@ export class Point extends Vector3 {
     return result;
   }
 
-  distancePolyLine1(polyline) {
+  distancePolyline1(polyline) {
     var u = +Infinity;
     var ipos = -1;
     var tempResult = null;
@@ -228,11 +239,11 @@ export class Point extends Vector3 {
   }
 
   /**
- * 点与圆盘的距离
- * @param {*} circle 
- * @param {*} disk 
- * @returns {} result
- */
+  * 点与圆盘的距离
+  * @param {*} circle 
+  * @param {*} disk 
+  * @returns {} result
+  */
   distanceDisk(disk) {
     var result = {
       signed: 1,

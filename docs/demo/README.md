@@ -4,46 +4,6 @@ title: 概要
 
 # 概要
 
-demo 中主要是一些实现了的案例
-
-::: tip
-This is a tip
+:::tip 提示
+测试的 demo 都在指南对应的条目下，这里以后可能会实现一些综合案例
 :::
-
-::: warning
-This is a warning
-:::
-
-::: danger
-This is a dangerous warning
-:::
-
-::: danger STOP
-Danger zone, do not proceed
-:::
- 
-## 点与线
-<div></div>
-<ClientOnly>
-<distance geo0 = "Point" geo1 = "Line"></distance> 
-</ClientOnly>
-
-## 线与线 
-<div></div>
-<ClientOnly>
-<distance geo0 = "Line" geo1 = "Line"></distance> 
-</ClientOnly>
-
-## 线与线 
-<div></div>
-<ClientOnly>
-<distance geo0 = "Line" geo1 = "Line"></distance> 
-</ClientOnly>
-
-
-## 线与射线 
-<div></div>
-<ClientOnly>
-<distance geo0 = "Line" geo1 = "Ray"></distance> 
-</ClientOnly>
- 

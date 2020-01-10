@@ -1,4 +1,4 @@
-import { PolyLine } from "./PolyLine";
+import { Polyline } from "./Polyline";
 
 class Triangle extends Array {
     constructor(v0, v1, v2) {
