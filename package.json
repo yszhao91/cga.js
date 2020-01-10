@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "src/index.js",
   "scripts": {
@@ -10,8 +10,7 @@
     "build": "rollup -c",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "deploy": "deploy.sh",
-    "publish": "deploy.sh"
+    "deploy": "deploy.sh"
   },
   "private": false,
   "repository": {
