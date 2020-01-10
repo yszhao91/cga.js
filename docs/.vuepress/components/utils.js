@@ -11,8 +11,12 @@ import {
     Mesh,
     Face3,
     DoubleSide,
-    MeshBasicMaterial
+    MeshBasicMaterial,
+    CircleGeometry,
+    Quaternion,
+    Matrix4
 } from "three";
+import { clamp } from "../../../src/";
 function randomGeo(key) {
     switch (key)
     {
@@ -32,10 +36,13 @@ function randomGeo(key) {
             }
             return new cga.Polyline(vs);
         case "Triangle":
-            return new cga.Triangle(randomV3(), randomV3(), randomV3());
+            return new cga.Triangle(randomV3(200), randomV3(200), randomV3(200));
 
         case "Circle":
-            return new cga.Circle(randomV3(), randomV3().normalize(), Math.random() * 25 + 2);
+            return new cga.Circle(randomV3(), randomV3().normalize(), Math.random() * 60 + 5);
+
+        case "Disk":
+            return new cga.Disk(randomV3(), randomV3().normalize(), Math.random() * 60 + 5);
 
         case "Capsule":
             return new cga.Capsule(randomV3(), randomV3());
@@ -44,17 +51,41 @@ function randomGeo(key) {
 }
 
 export function initTestScene(geoKey1, geoKey2, scene) {
-    debugger
     var geo0 = randomGeo(geoKey1);
     var geo1 = randomGeo(geoKey2);;
     var result = geo0["distance" + geoKey2](geo1);
     scene.add(toMesh(geo0));
     scene.add(toMesh(geo1));
+    if (result.closests && result.closests.length === 2)
+    {
+        scene.add(toDisSeg(result.closests))
+    }
+    // if (geo0 instanceof cga.Point && (geo1 instanceof cga.Circle || geo1 instanceof cga.Disk
+    // ))
+    // {
+    //     // scene.add(toDisSeg([geo0, geo1.center]))
+    // }
     return result;
 }
 
-export function randomV3() {
-    return cga.v3(Math.random() * 100 - 50, Math.random() * 100, Math.random() * 100 - 50);
+export function randomV3(range = 100) {
+    return cga.v3(Math.random() * range - range / 2, Math.random() * range, Math.random() * range - range / 3);
+}
+
+
+export function getQuaternionForm2V(v1, v2) {
+    var vc1 = v1.clone().normalize();
+    var vc2 = v2.clone().normalize();
+    var n = vc1
+        .clone()
+        .cross(vc2)
+        .normalize();
+    var rq = new Quaternion();
+    var angle = clamp(vc1.normalize().dot(vc2.normalize()), -1, 1);
+    angle = Math.acos(angle);
+    rq.setFromAxisAngle(n, angle);
+
+    return rq;
 }
 
 export function toDisSeg(obj, opts) {
@@ -74,7 +105,7 @@ export function toDisSeg(obj, opts) {
     return line;
 }
 
-export function toMesh(obj) {
+export function toMesh(obj, materialOption) {
     var renderObj = null;
     if (obj instanceof cga.Point || obj.isVector3)
     {
@@ -123,6 +154,39 @@ export function toMesh(obj) {
     } else if (obj instanceof cga.Polygon)
     {
 
+    } else if (obj instanceof cga.Circle)
+    {
+        var geometry = new Geometry()
+        var radius = obj.radius;
+        for (let i = 0; i <= 128; i++)
+        {
+            var p = new cga.Vector3();
+            p.x = radius * Math.cos(Math.PI / 64 * i);
+            p.y = radius * Math.sin(Math.PI / 64 * i);
+            geometry.vertices.push(p);
+        }
+        var quaternion = getQuaternionForm2V(new cga.Vector3(0, 0, 1), obj.normal);
+        var mat4 = new Matrix4();
+        mat4.makeRotationFromQuaternion(quaternion);
+        geometry.applyMatrix(mat4);
+        geometry.translate(obj.center.x, obj.center.y, obj.center.z);
+        var material = new LineBasicMaterial({ color: 0x8fffff });
+        renderObj = new Line(geometry, material);
+        renderObj.add(new toMesh(obj.center))
+        renderObj.add(new toMesh(new cga.Ray(obj.center, obj.normal)))
+    }
+    else if (obj instanceof cga.Disk)
+    {
+        var geometry = new CircleGeometry(obj.radius, 128)
+        var material = new MeshBasicMaterial({ color: 0x8f8fff, side: DoubleSide });
+        var quaternion = getQuaternionForm2V(new cga.Vector3(0, 0, 1), obj.normal);
+        var mat4 = new Matrix4();
+        mat4.makeRotationFromQuaternion(quaternion);
+        geometry.applyMatrix(mat4);
+        geometry.translate(obj.center.x, obj.center.y, obj.center.z);
+        renderObj = new Mesh(geometry, material);
+        renderObj.add(new toMesh(obj.center))
+        renderObj.add(new toMesh(new cga.Ray(obj.center, obj.normal)))
     }
 
     return renderObj;

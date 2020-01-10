@@ -99,6 +99,13 @@ console.timeEnd("测试法");
 //测试法大规模数据要比线性检索快两倍以上
 ```
 
+## 点到圆圈的距离
+
+<div></div>
+<ClientOnly>
+<distance geo0 = "Point" geo1 = "Circle"></distance> 
+</ClientOnly>
+
 ## 点与三角形的距离测试
 
 <div></div>
@@ -112,5 +119,12 @@ var triangle = new cga.Triangle(randomV3(), randomV3(), randomV3());
 var result = point.distanceTriangle(triangle);
 infoPanel.innerText = JSON.stringify(result);
 ```
+
+## 点到圆的距离
+
+<div></div>
+<ClientOnly>
+<distance geo0 = "Point" geo1 = "Disk"></distance> 
+</ClientOnly>
 
 <!-- <click-to-copy :info="loadingTag" /> -->

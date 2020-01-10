@@ -19,12 +19,13 @@ export class Line {
   //---距离-------------
   /**
    * 直线到直线的距离
+   * 参数与最近点顺序一致
    * @param  {Line} line
    */
   distanceLine(line) {
     var result = {
-      parameter: [],
-      closestPoint: []
+      parameters: [],
+      closests: []
     };
     var diff = this.origin.clone().sub(line.origin);
     var a01 = -this.direction.dot(line.direction);
@@ -41,17 +42,17 @@ export class Line {
       s0 = -b0;
       s1 = 0;
     }
-    result.parameter[0] = s0;
-    result.parameter[1] = s1;
-    result.closestPoint[0] = this.direction
+    result.parameters[0] = s0;
+    result.parameters[1] = s1;
+    result.closests[0] = this.direction
       .clone()
       .multiplyScalar(s0)
       .add(this.origin);
-    result.closestPoint[1] = line.direction
+    result.closests[1] = line.direction
       .clone()
       .multiplyScalar(s1)
       .add(line.origin);
-    diff = result.closestPoint[0].clone().sub(result.closestPoint[1]);
+    diff = result.closests[0].clone().sub(result.closests[1]);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
 
@@ -64,8 +65,8 @@ export class Line {
    */
   distanceRay(ray) {
     const result = {
-      parameter: [],
-      closestPoint: [],
+      parameters: [],
+      closests: [],
       sqrDistance: 0,
       distance: 0
     };
@@ -97,11 +98,11 @@ export class Line {
       s1 = 0;
     }
 
-    result.parameter[0] = s0;
-    result.parameter[1] = s1;
-    result.closestPoint[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-    result.closestPoint[1] = ray.direction.clone().multiplyScalar(s1).add(ray.origin);
-    diff = result.closestPoint[0].clone().sub(result.closestPoint[1]);
+    result.parameters[0] = s0;
+    result.parameters[1] = s1;
+    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+    result.closests[1] = ray.direction.clone().multiplyScalar(s1).add(ray.origin);
+    diff = result.closests[0].clone().sub(result.closests[1]);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
     return result;
@@ -113,18 +114,19 @@ export class Line {
    */
   distanceSegment(segment) {
     var result = {
-      parameter: [],
-      closestPoint: []
+      parameters: [],
+      closests: []
     };
 
-    u = line.origin.clone().sub(segment.p0);
-    a = line.direction.dot(line.direction);
-    b = line.direction.dot(segment.direction);
-    c = segment.direction.dot(segment.direction);
-    d = line.direction.dot(u);
-    e = segment.direction.dot(u);
-    det = a * c - b * b;
-    sDenom = det;
+    var u = this.origin.clone().sub(segment.p0);
+    var a = this.direction.dot(this.direction);
+    var b = this.direction.dot(segment.direction);
+    var c = segment.direction.dot(segment.direction);
+    var d = this.direction.dot(u);
+    var e = segment.direction.dot(u);
+    var det = a * c - b * b;
+    var sDenom = det
+    var sNum, tNum;
     // 检测是否平行
     if (det < gPrecision)
     {
@@ -143,24 +145,24 @@ export class Line {
       tNum = 0;
       sNum = -d;
       sDenom = a;
-    } else if (tNum > tDenom)
+    } else if (tNum > sDenom)
     {
-      tNum = tDenom;
+      tNum = sDenom;
       sNum = -d + b;
       sDenom = a;
     }
     // Parameters of nearest points on restricted domain
-    s = sNum / sDenom;
-    t = tNum / tDenom;
+    var s = sNum / sDenom;
+    var t = tNum / sDenom;
 
     // Dot product of vector between points is squared distance
     // between segments
-    result.parameter[0] = s;
-    result.parameter[1] = t;
+    result.parameters[0] = s;
+    result.parameters[1] = t;
 
-    result.closestPoint[0] = this.direction.clone().multiplyScalar(s).add(this.origin);
-    result.closestPoint[1] = segment.direction.clone().multiplyScalar(t).add(segment.p0);
-    diff = result.closestPoint[0].clone().sub(result.closestPoint[1]);
+    result.closests[0] = this.direction.clone().multiplyScalar(s).add(this.origin);
+    result.closests[1] = segment.direction.clone().multiplyScalar(t).add(segment.p0);
+    var diff = result.closests[0].clone().sub(result.closests[1]);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
 

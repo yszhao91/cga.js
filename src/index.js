@@ -7,6 +7,7 @@ export * from "./math/Matrix4";
 export * from "./math/Quaternion";
 export * from "./math/Euler";
 export * from "./struct/3d/Circle";
+export * from "./struct/3d/Disk";
 export * from "./struct/3d/Point"
 export * from "./struct/3d/Line";
 export * from "./struct/3d/Plane";

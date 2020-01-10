@@ -66,6 +66,14 @@ export default {
       this.scene.add(new AxesHelper(1000));
       this.testScene = new Object3D();
       this.scene.add(this.testScene);
+      var scope = this;
+      window.addEventListener("resize", () => {
+        let container = scope.$refs.p2other;
+        // debugger;
+        // scope.renderer.setSize(container.clientWidth, container.clientHeight);
+        // scope.camera.fov = container.clientWidth / container.clientHeight;
+        // scope.camera.updateProjectionMatrix();
+      });
       //---点与直线的距离测试----------------------------------------------------------------
 
       var result = initTestScene(this.geo0, this.geo1, this.testScene);

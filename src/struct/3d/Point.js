@@ -14,7 +14,7 @@ export class Point extends Vector3 {
   * @param {Point} point
   */
   distancePoint(point) {
-    var result = {};
+    var result = { closests: [this, point] };
     result.distanceSqr = this.clone().sub(point).lengthSq();
     result.distance = Math.sqrt(result.distanceSqr);
     return result;
@@ -32,15 +32,21 @@ export class Point extends Vector3 {
    * }
    */
   distanceLine(line) {
-    var result = {};
+    var result = {
+      parameters: [],
+      closests: []
+    };
     var diff = this.clone().sub(line.origin);
-    result.lineParameter = line.direction.dot(diff);
-    result.lineClosest = line.direction
+    var lineParameter = line.direction.dot(diff);
+    var lineClosest = line.direction
       .clone()
-      .multiplyScalar(result.lineParameter)
+      .multiplyScalar(lineParameter)
       .add(line.origin);
 
-    diff = this.clone().sub(result.lineClosest);
+    result.parameters.push(0, lineParameter);
+    result.closests.push(this, lineClosest);
+
+    diff = result.closests[0].clone().sub(result.closests[1]);
     result.distanceSqr = diff.dot(diff);
     result.distance = Math.sqrt(result.distanceSqr);
     return result;
@@ -58,7 +64,10 @@ export class Point extends Vector3 {
    * }
    */
   distanceRay(ray) {
-    var result = {};
+    var result = {
+      parameters: [],
+      closests: []
+    };
 
     var diff = this.clone().sub(ray.origin);
     result.rayParameter = ray.direction.dot(diff);
@@ -73,7 +82,8 @@ export class Point extends Vector3 {
     {
       result.rayClosest = ray.origin.clone();
     }
-
+    result.parameters.push(0, result.rayParameter);
+    result.closests.push(this, result.rayClosest);
     diff = this.clone().sub(result.rayClosest);
     result.distanceSqr = diff.dot(diff);
     result.distance = Math.sqrt(result.distanceSqr);
@@ -94,7 +104,10 @@ export class Point extends Vector3 {
    * }
    */
   distanceSegment(segment) {
-    const result = {};
+    const result = {
+      parameters: [],
+      closests: []
+    };
 
     var diff = this.clone().sub(segment.p1);
     var t = segment.lenDirection.dot(diff);
@@ -126,7 +139,8 @@ export class Point extends Vector3 {
           .add(segment.p0);
       }
     }
-
+    result.parameters.push(0, result.segmentParameter);
+    result.closests.push(this, result.segmentClosest);
     diff = this.clone().sub(result.segmentClosest);
     result.distanceSqr = diff.dot(diff);
     result.distance = Math.sqrt(result.distanceSqr);
@@ -192,6 +206,8 @@ export class Point extends Vector3 {
   distancePlane(plane) {
     // this.clone().sub(plane.origin).dot(plane.normal);
     const result = {
+      parameters: [],
+      closests: [],
       signedDistance: 0,
       distance: 0,
       planeClosestPoint: null
@@ -199,6 +215,7 @@ export class Point extends Vector3 {
     result.signedDistance = this.clone().dot(plane.normal) - plane.w;
     result.distance = Math.abs(result.signedDistance);
     result.planeClosestPoint = this.clone().sub(plane.normal.clone().multiplyScalar(result.signedDistance));
+    result.closests.push(this, result.planeClosestPoint);
     return result;
   }
 
@@ -210,11 +227,14 @@ export class Point extends Vector3 {
    */
   distanceCircle(circle) {
     var result = {
+      parameters: [],
+      closests: [],
       equidistant: false//是否等距
     };
 
     // Projection of P-C onto plane is Q-C = P-C - Dot(N,P-C)*N.
-    var PmC = this.sub(circle.center);
+
+    var PmC = this.clone().sub(circle.center);
     var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
     var lengthQmC = QmC.length();
     if (lengthQmC > gPrecision)
@@ -224,17 +244,18 @@ export class Point extends Vector3 {
     }
     else
     {
-      var offsetPoint = circle.clone().add(10, 10, 10);
+      var offsetPoint = circle.center.clone().add(10, 10, 10);
       var CP = offsetPoint.sub(circle.center);
       var CQ = CP.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(CP))).normalize()
       //在圆圈圆心的法线上，到圆圈上的没一点都相同 
       result.circleClosest = CQ.clone().multiplyScalar(circle.radius).add(circle.center)
       result.equidistant = true;
     }
-
-    var diff = point.clone().sub(result.circleClosest);
+    result.closests.push(this, result.circleClosest);
+    var diff = this.clone().sub(result.circleClosest);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
+
     return result;
   }
 
@@ -246,13 +267,15 @@ export class Point extends Vector3 {
   */
   distanceDisk(disk) {
     var result = {
+      parameters: [],
+      closests: [],
       signed: 1,
       sqrDistance: 0,
       distance: 0,
       diskClosest: null
     };
 
-    var PmC = this.sub(disk.center);
+    var PmC = this.clone().sub(disk.center);
     var QmC = PmC.clone().sub(disk.normal.clone().multiplyScalar(disk.normal.dot(PmC)));
     var lengthQmC = QmC.length();
 
@@ -265,10 +288,10 @@ export class Point extends Vector3 {
     else
     {
       var signedDistance = this.clone().dot(disk.normal) - disk.w;
-      result.diskClosest = this.clone().sub(plane.normal.clone().multiplyScalar(signedDistance));
+      result.diskClosest = this.clone().sub(disk.normal.clone().multiplyScalar(signedDistance));
     }
-
-    var diff = point.clone().sub(result.circleClosest);
+    result.closests.push(this, result.diskClosest);
+    var diff = this.clone().sub(result.diskClosest);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
     return result;
@@ -282,7 +305,9 @@ export class Point extends Vector3 {
     var result = this.distanceSegment(capsule);
     result.distance = result.distance - capsule.radius;
     result.closest = this.clone().sub(result.segmentClosest).normalize().multiplyScalar(capsule.radius);
-    result.interior = result.distance < 0
+    result.interior = result.distance < 0;
+
+    result.closests = [this, result.closest];
     return result;
   }
 
@@ -347,7 +372,7 @@ export class Point extends Vector3 {
     var p0 = [0, 0], p1 = [0, 0], p = [0, 0];
     var dt1, h0, h1;
 
-    debugger
+
     if (f00 >= 0)
     {
       if (f01 >= 0)
@@ -470,11 +495,16 @@ export class Point extends Vector3 {
       }
     }
 
-    var result = { parameter: [] };
+    var result = {
+      parameter: [],
+      parameters: [],
+      closests: [],
+    };
     result.parameter[0] = 1 - p[0] - p[1];
     result.parameter[1] = p[0];
     result.parameter[2] = p[1];
-    result.closest = triangle.v0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1]));
+    result.closest = triangle.v0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1])); result.parameters.push(0, result.rayParameter);
+    result.closests.push(this, result.closest);
     diff = this.clone().sub(result.closest);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
@@ -486,7 +516,11 @@ export class Point extends Vector3 {
    * @param  {Rectangle} rectangle
    */
   distanceRectangle(rectangle) {
-    var result = { rectangleParameter: [] };
+    var result = {
+      rectangleParameter: [],
+      parameters: [],
+      closests: [],
+    };
 
     diff = rectangle.center - point;
     var b0 = diff.dot(rectangle.axis[0]);
@@ -528,6 +562,7 @@ export class Point extends Vector3 {
     {
       result.rectangleClosestPoint.add(rectangle.axis[i].clone().multiplyScalar(result.rectangleParameter[i]));
     }
+    result.closests.push(this, result.rectangleClosestPoint);
     return result
   }
 
@@ -538,9 +573,15 @@ export class Point extends Vector3 {
   }
 
   distanceSphere(sphere) {
-    const result = {}
+    const result = {
+      parameters: [],
+      closests: [],
+    }
     result.distance = this.distanceTo(sphere.center) - sphere.radius;
     result.closest = this.point.clone().sub(sphere.center).normalize().multiplyScalar(sphere.radius);
+
+    result.closests.push(this, result.closest);
+
     return result;
   }
 

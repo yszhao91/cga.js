@@ -12,7 +12,7 @@ export class Circle {
    */
   constructor(center, normal, radius) {
     this.center = center || new Vector3();
-    this.normal = normal;
+    this.normal = normal.normalize();
     this.radius = radius || 0;
   }
 
