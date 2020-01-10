@@ -4,4 +4,16 @@ sidebarDepth: 2
 
 # 线段与其他几何体的距离
 
-3D 点是有 x,y,z 三个坐标组成，类名 Point
+## 线段到线段的距离
+
+<div></div>
+<ClientOnly>
+<distance geo0 = "Segment" geo1 = "Segment"></distance> 
+</ClientOnly>
+
+```javascript
+import * as cga from "xtorcga";
+var seg0 = new cga.Segment(randomV3(), randomV3());
+var seg1 = new cga.Segment(randomV3(), randomV3());
+var result = seg0.distanceSegment(seg);
+```

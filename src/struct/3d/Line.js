@@ -118,51 +118,61 @@ export class Line {
       closests: []
     };
 
-    var u = this.origin.clone().sub(segment.p0);
-    var a = this.direction.dot(this.direction);
-    var b = this.direction.dot(segment.direction);
-    var c = segment.direction.dot(segment.direction);
-    var d = this.direction.dot(u);
-    var e = segment.direction.dot(u);
-    var det = a * c - b * b;
-    var sDenom = det
-    var sNum, tNum;
-    // 检测是否平行
-    if (det < gPrecision)
-    {
-      // 任意选一点
-      sNum = 0;
-      tNum = e;
-      tDenom = c;
-    } else
-    {
-      sNum = b * e - c * d;
-      tNum = a * e - b * d;
-    }
-    // Check t
-    if (tNum < 0)
-    {
-      tNum = 0;
-      sNum = -d;
-      sDenom = a;
-    } else if (tNum > sDenom)
-    {
-      tNum = sDenom;
-      sNum = -d + b;
-      sDenom = a;
-    }
-    // Parameters of nearest points on restricted domain
-    var s = sNum / sDenom;
-    var t = tNum / sDenom;
+    var segCenter = segment.center;
+    var segDirection = segment.direction;
+    var segExtent = segment.len * 0.5;
 
-    // Dot product of vector between points is squared distance
-    // between segments
-    result.parameters[0] = s;
-    result.parameters[1] = t;
+    var diff = this.origin.clone().sub(segCenter);
+    var a01 = - this.direction.dot(segDirection);
+    var b0 = diff.dot(this.direction);
+    var s0, s1;
 
-    result.closests[0] = this.direction.clone().multiplyScalar(s).add(this.origin);
-    result.closests[1] = segment.direction.clone().multiplyScalar(t).add(segment.p0);
-    var diff = result.closests[0].clone().sub(result.closests[1]);
+    if (Math.abs(a01) < 1)
+    {
+      // 判断是否平行
+      var det = 1 - a01 * a01;
+      var extDet = segExtent * det;
+      var b1 = -diff.dot(segDirection);
+      s1 = a01 * b0 - b1;
+
+      if (s1 >= -extDet)
+      {
+        if (s1 <= extDet)
+        {
+          // Two interior points are closest, one on the this
+          // and one on the segment.
+          s0 = (a01 * b1 - b0) / det;
+          s1 /= det;
+        }
+        else
+        {
+          // The endpoint e1 of the segment and an interior
+          // point of the this are closest.
+          s1 = segExtent;
+          s0 = -(a01 * s1 + b0);
+        }
+      }
+      else
+      {
+        // The endpoint e0 of the segment and an interior point
+        // of the this are closest.
+        s1 = -segExtent;
+        s0 = -(a01 * s1 + b0);
+      }
+    }
+    else
+    {
+      // The this and segment are parallel.  Choose the closest pair
+      // so that one point is at segment origin.
+      s1 = 0;
+      s0 = -b0;
+    }
+
+    result.parameters[0] = s0;
+    result.parameters[1] = s1;
+    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+    result.closests[1] = segDirection.clone().multiplyScalar(s1).add(segCenter);
+    diff = result.closests[0].clone().sub(result.closests[1]);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
 

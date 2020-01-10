@@ -65,8 +65,8 @@ export class Segment extends Array {
    */
   distanceSegment(segment) {
     var result = {
-      parameter: [],
-      closest: []
+      parameters: [],
+      closests: []
     };
 
     function GetClampedRoot(slope, h0, h1) {
@@ -178,23 +178,23 @@ export class Segment extends Array {
       }
     }
 
-    function ComputeMinimumParameters(edge, end, parameter) {
+    function ComputeMinimumParameters(edge, end, parameters) {
       var delta = end[1][1] - end[0][1];
       var h0 = delta * (-mB * end[0][0] + mC * end[0][1] - mE);
       if (h0 >= 0)
       {
         if (edge[0] == 0)
         {
-          parameter[0] = 0;
-          parameter[1] = GetClampedRoot(mC, mG00, mG01);
+          parameters[0] = 0;
+          parameters[1] = GetClampedRoot(mC, mG00, mG01);
         } else if (edge[0] == 1)
         {
-          parameter[0] = 1;
-          parameter[1] = GetClampedRoot(mC, mG10, mG11);
+          parameters[0] = 1;
+          parameters[1] = GetClampedRoot(mC, mG10, mG11);
         } else
         {
-          parameter[0] = end[0][0];
-          parameter[1] = end[0][1];
+          parameters[0] = end[0][0];
+          parameters[1] = end[0][1];
         }
       } else
       {
@@ -203,23 +203,23 @@ export class Segment extends Array {
         {
           if (edge[1] == 0)
           {
-            parameter[0] = 0;
-            parameter[1] = GetClampedRoot(mC, mG00, mG01);
+            parameters[0] = 0;
+            parameters[1] = GetClampedRoot(mC, mG00, mG01);
           } else if (edge[1] == 1)
           {
-            parameter[0] = 1;
-            parameter[1] = GetClampedRoot(mC, mG10, mG11);
+            parameters[0] = 1;
+            parameters[1] = GetClampedRoot(mC, mG10, mG11);
           } else
           {
-            parameter[0] = end[1][0];
-            parameter[1] = end[1][1];
+            parameters[0] = end[1][0];
+            parameters[1] = end[1][1];
           }
         } else // h0 < 0 and h1 > 0
         {
           var z = Math.min(Math.max(h0 / (h0 - h1), 0), 1);
           var omz = 1 - z;
-          parameter[0] = omz * end[0][0] + z * end[1][0];
-          parameter[1] = omz * end[0][1] + z * end[1][1];
+          parameters[0] = omz * end[0][0] + z * end[1][0];
+          parameters[1] = omz * end[0][1] + z * end[1][1];
         }
       }
     }
@@ -267,13 +267,13 @@ export class Segment extends Array {
       if (classify[0] == -1 && classify[1] == -1)
       {
         // The minimum must occur on s = 0 for 0 <= t <= 1.
-        result.parameter[0] = 0;
-        result.parameter[1] = GetClampedRoot(mC, mG00, mG01);
+        result.parameters[0] = 0;
+        result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
       } else if (classify[0] == +1 && classify[1] == +1)
       {
         // The minimum must occur on s = 1 for 0 <= t <= 1.
-        result.parameter[0] = 1;
-        result.parameter[1] = GetClampedRoot(mC, mG10, mG11);
+        result.parameters[0] = 1;
+        result.parameters[1] = GetClampedRoot(mC, mG10, mG11);
       } else
       {
         // The line dR/ds = 0 varersects the domain [0,1]^2 in a
@@ -292,7 +292,7 @@ export class Segment extends Array {
         //   H(z) = (end[1][1]-end[1][0])*dR/dt((1-z)*end[0] + z*end[1])
         // for z in [0,1].  The formula uses the fact that dR/ds = 0 on
         // the segment.  Compute the minimum of H on [0,1].
-        ComputeMinimumParameters(edge, end, result.parameter);
+        ComputeMinimumParameters(edge, end, result.parameters);
       }
     } else
     {
@@ -300,32 +300,32 @@ export class Segment extends Array {
       {
         // The Q-segment is degenerate ( segment.point0 and  segment.p0 are the same point) and
         // the quadratic is R(s,0) = a*s^2 + 2*d*s + f and has (half)
-        // first derivative F(t) = a*s + d.  The closest P-point is
+        // first derivative F(t) = a*s + d.  The closests P-point is
         // varerior to the P-segment when F(0) < 0 and F(1) > 0.
-        result.parameter[0] = GetClampedRoot(mA, mF00, mF10);
-        result.parameter[1] = 0;
+        result.parameters[0] = GetClampedRoot(mA, mF00, mF10);
+        result.parameters[1] = 0;
       } else if (mC > 0)
       {
         // The P-segment is degenerate ( this.point0 and  this.p0 are the same point) and
         // the quadratic is R(0,t) = c*t^2 - 2*e*t + f and has (half)
-        // first derivative G(t) = c*t - e.  The closest Q-point is
+        // first derivative G(t) = c*t - e.  The closests Q-point is
         // varerior to the Q-segment when G(0) < 0 and G(1) > 0.
-        result.parameter[0] = 0;
-        result.parameter[1] = GetClampedRoot(mC, mG00, mG01);
+        result.parameters[0] = 0;
+        result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
       } else
       {
         // P-segment and Q-segment are degenerate.
-        result.parameter[0] = 0;
-        result.parameter[1] = 0;
+        result.parameters[0] = 0;
+        result.parameters[1] = 0;
       }
     }
 
 
-    result.closest[0] = this.p0.clone().multiplyScalar(1 - result.parameter[0]).add(
-      this.p1.clone().multiplyScalar(result.parameter[0]));
-    result.closest[1] = segment.p0.clone().multiplyScalar(1 - result.parameter[1]).add(
-      segment.p1.clone().multiplyScalar(result.parameter[1]));
-    var diff = result.closest[0].clone().sub(result.closest[1]);
+    result.closests[0] = this.p0.clone().multiplyScalar(1 - result.parameters[0]).add(
+      this.p1.clone().multiplyScalar(result.parameters[0]));
+    result.closests[1] = segment.p0.clone().multiplyScalar(1 - result.parameters[1]).add(
+      segment.p1.clone().multiplyScalar(result.parameters[1]));
+    var diff = result.closests[0].clone().sub(result.closests[1]);
     result.sqrDistance = diff.dot(diff);
     result.distance = Math.sqrt(result.sqrDistance);
     return result;
