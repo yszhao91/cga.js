@@ -10,6 +10,14 @@ inspire by Wild Magic
 
 [文档与演示（github）](https://yszhao91.github.io/xtorcga/)
 
+- [点与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html](http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html)
+
+- [线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html](http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html)
+
+- [射线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html](http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html)
+
+- [线段与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html](http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html)
+
 ## 安装
 
 ```
