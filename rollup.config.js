@@ -35,12 +35,12 @@ const plugins = [
 
 if (MIN)
 {
-    // plugins.push(uglify({
-    //     output: {
-    //         comments: /@license/
-    //     }
-    // }));
-    // plugins.push(gzip());
+    plugins.push(uglify({
+        output: {
+            comments: /@license/
+        }
+    }));
+    plugins.push(gzip());
 }
 
 export default {
@@ -49,8 +49,9 @@ export default {
     plugins: plugins,
     output: {
         file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
-        format: 'cjs',
-        name: 'Compute Graphic Algorithm',
+        format: 'iife',
+        // format: 'umd',
+        name: 'CGA',
         banner: banner,
         globals: {
             lodash: '_'

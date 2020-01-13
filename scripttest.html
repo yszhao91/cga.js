@@ -10,8 +10,13 @@
 
 <body>
     <script>
-        var x = new Vector3()
-        var point = new Point();
+        var point = new CGA.Point(1, 2, 3);
+        var line = new CGA.Line(
+            new CGA.Vector3(10, 10, 20),
+            new CGA.Vector3(20, 15, 10)
+        );
+        var result = point.distanceLine(line);
+        console.log(result);
     </script>
 </body>
 

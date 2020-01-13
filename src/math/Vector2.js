@@ -48,7 +48,8 @@ class Vector2 {
   }
 
   setComponent(index, value) {
-    switch (index) {
+    switch (index)
+    {
       case 0:
         this.x = value;
         break;
@@ -63,7 +64,8 @@ class Vector2 {
   }
 
   getComponent(index) {
-    switch (index) {
+    switch (index)
+    {
       case 0:
         return this.x;
       case 1:
@@ -85,9 +87,10 @@ class Vector2 {
   }
 
   add(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
-        "THREE.Vector2: .add() now only accepts one argument. Use .addVectors( a, b ) instead."
+        "Vector2: .add() now only accepts one argument. Use .addVectors( a, b ) instead."
       );
       return this.addVectors(v, w);
     }
@@ -120,9 +123,10 @@ class Vector2 {
   }
 
   sub(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
-        "THREE.Vector2: .sub() now only accepts one argument. Use .subVectors( a, b ) instead."
+        "Vector2: .sub() now only accepts one argument. Use .subVectors( a, b ) instead."
       );
       return this.subVectors(v, w);
     }
@@ -345,9 +349,10 @@ class Vector2 {
   }
 
   fromBufferAttribute(attribute, index, offset) {
-    if (offset !== undefined) {
+    if (offset !== undefined)
+    {
       console.warn(
-        "THREE.Vector2: offset has been removed from .fromBufferAttribute()."
+        "Vector2: offset has been removed from .fromBufferAttribute()."
       );
     }
 

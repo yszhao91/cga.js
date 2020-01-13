@@ -6,9 +6,9 @@ export class Line {
   constructor(origin, end) {
     this.origin = origin !== undefined ? origin : v3();
     this.end = end !== undefined ? end : v3();
-    this.direction = end
+    this.direction = this.end
       .clone()
-      .sub(origin)
+      .sub(this.origin)
       .normalize();
   }
 

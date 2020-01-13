@@ -118,7 +118,7 @@ class Vector4 {
   add(v, w) {
     if (w !== undefined) {
       console.warn(
-        "THREE.Vector4: .add() now only accepts one argument. Use .addVectors( a, b ) instead."
+        "Vector4: .add() now only accepts one argument. Use .addVectors( a, b ) instead."
       );
       return this.addVectors(v, w);
     }
@@ -161,7 +161,7 @@ class Vector4 {
   sub(v, w) {
     if (w !== undefined) {
       console.warn(
-        "THREE.Vector4: .sub() now only accepts one argument. Use .subVectors( a, b ) instead."
+        "Vector4: .sub() now only accepts one argument. Use .subVectors( a, b ) instead."
       );
       return this.subVectors(v, w);
     }
@@ -527,7 +527,7 @@ class Vector4 {
   fromBufferAttribute(attribute, index, offset) {
     if (offset !== undefined) {
       console.warn(
-        "THREE.Vector4: offset has been removed from .fromBufferAttribute()."
+        "Vector4: offset has been removed from .fromBufferAttribute()."
       );
     }
 

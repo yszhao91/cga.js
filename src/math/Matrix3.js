@@ -8,7 +8,7 @@ class Matrix3 {
 
     if (arguments.length > 0) {
       console.error(
-        "THREE.Matrix3: the constructor no longer reads arguments. use .set() instead."
+        "Matrix3: the constructor no longer reads arguments. use .set() instead."
       );
     }
     this.isMatrix3 = true;
@@ -164,7 +164,7 @@ class Matrix3 {
   getInverse(matrix, throwOnDegenerate) {
     if (matrix && matrix.isMatrix4) {
       console.error(
-        "THREE.Matrix3: .getInverse() no longer takes a Matrix4 argument."
+        "Matrix3: .getInverse() no longer takes a Matrix4 argument."
       );
     }
 
@@ -186,7 +186,7 @@ class Matrix3 {
 
     if (det === 0) {
       var msg =
-        "THREE.Matrix3: .getInverse() can't invert matrix, determinant is 0";
+        "Matrix3: .getInverse() can't invert matrix, determinant is 0";
 
       if (throwOnDegenerate === true) {
         throw new Error(msg);

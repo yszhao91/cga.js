@@ -64,10 +64,18 @@ var seg = new Segment(randomV3(), randomV3());
 var result = point.distanceSegment(seg);
 ```
 
-- 网页嵌入：直接使用 dist 下面的 cga.js
+- 网页嵌入：直接下载使用 dist 目录下面的 cga.js，包含到项目中
 
 ```html
-<script src="./dist/cga.js" />
+<script src="cga.js" />
+<script>
+  var point = new CGA.Point(1, 2, 3);
+  var line = new CGA.Line(
+    new CGA.Vector3(10, 10, 20),
+    new CGA.Vector3(20, 15, 10)
+  );
+  var result = point.distanceLine(line);
+</script>
 ```
 
 ## 项目编译

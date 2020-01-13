@@ -359,7 +359,7 @@ export class Segment extends Array {
    * @param {Number} distance 偏移距离
    */
   offset(normal, direction, distance) {
-    normal = normal || new THREE.Vector3(0, 1, 0);
+    normal = normal || new Vector3(0, 1, 0);
     var direction = p1.clone().sub(p0).normalize();
     var tandir = direction.clone().cross(normal).normalize();
     var result = {}
