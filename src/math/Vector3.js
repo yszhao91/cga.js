@@ -584,6 +584,16 @@ export class Vector3 {
 
     return this;
   }
+
+  toFixed(fractionDigits) {
+    if (fractionDigits !== undefined)
+    {
+      this.x = parseFloat(this.x.toFixed(fractionDigits))
+      this.y = parseFloat(this.y.toFixed(fractionDigits))
+      this.z = parseFloat(this.z.toFixed(fractionDigits))
+    }
+    return this;
+  }
 }
 
 const _vector = v3();

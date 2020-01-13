@@ -65,3 +65,26 @@ export function degToRad(degrees) {
 export function radToDeg(radians) {
     return radians * _Math.RAD2DEG;
 }
+
+/**
+ * 数字或者向量固定位数
+ * @param {Object} obj 数字或者向量
+ * @param {*} fractionDigits 
+ */
+export function toFixed(obj, fractionDigits) {
+    if (obj instanceof Number)
+        return parseFloat(obj.toFixed(fractionDigits))
+    else
+    {
+        if (obj.x !== undefined)
+            obj.x = parseFloat(obj.x.toFixed(fractionDigits))
+
+        if (obj.y !== undefined)
+            obj.y = parseFloat(obj.y.toFixed(fractionDigits))
+
+        if (obj.z !== undefined)
+            obj.z = parseFloat(obj.z.toFixed(fractionDigits))
+
+    }
+    return obj;
+}

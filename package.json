@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "src/index.js",
   "scripts": {
@@ -62,6 +62,6 @@
     "vue-loader": "^15.8.3",
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.6.11",
-    "xtorcga": "0.0.5"
+    "xtorcga": "0.0.7"
   }
 }

@@ -6,6 +6,8 @@ inspire by Wild Magic
 
 Computional Geometry Algorithm implement JavaScript,javascript 实现计算机几何算法库，实现比如像距离，相交，包含，偏移，平行垂直判断，正负位置等算法
 
+> **如果你需要计算几何类的算法还没实现，可以 issue 提出，获取 Q 群联系我，优先实现**
+
 ## 演示地址
 
 案例：
