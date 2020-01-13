@@ -44,6 +44,11 @@ export class Segment extends Array {
       .multiplyScalar(amount)
       .add(this.start);
   }
+
+  clone() {
+    return new Segment(this.p0.clone(), this.p1.clone());
+  }
+  //---Distance---------------------------------------------
   /**
    * 点是否在线段上
    * @param  {Vector3} point
@@ -344,6 +349,28 @@ export class Segment extends Array {
    * @param  {Ray} ray
    */
   distanceLine(line) { }
+
+
+  //---Offset------------------------------------------------------
+  /**
+   * 线段偏移
+   * @param {Vector3} normal  偏移平面法线
+   * @param {Vector3} direction 偏移方向
+   * @param {Number} distance 偏移距离
+   */
+  offset(normal, direction, distance) {
+    normal = normal || new THREE.Vector3(0, 1, 0);
+    var direction = p1.clone().sub(p0).normalize();
+    var tandir = direction.clone().cross(normal).normalize();
+    var result = {}
+    result.arr = [
+      tandir.clone().multiplyScalar(distance).add(p0),
+      tandir.clone().multiplyScalar(distance).add(p1)
+    ];
+    result.direction = direction
+    result.tandir = tandir
+    return result
+  }
 }
 
 export function segment(p0, p1) {

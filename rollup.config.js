@@ -49,7 +49,7 @@ export default {
     plugins: plugins,
     output: {
         file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
-        format: 'umd',
+        format: 'cjs',
         name: 'Compute Graphic Algorithm',
         banner: banner,
         globals: {

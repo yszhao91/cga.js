@@ -16,9 +16,3 @@ export class Disk {
 export function disk(center, radius) {
   return new Disk(center, radius);
 }
-
-//三点计算圆心
-export function calcCircleFromThreePoint(point1, point2, point3) {
-  return disk();
-}
-

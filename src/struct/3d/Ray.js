@@ -129,7 +129,10 @@ class Ray {
     return result;
   }
 
-
+  /**
+   * 射线与线段的距离
+   * @param {Segment} segment 
+   */
   distanceSegment(segment) {
     const result = {
       parameters: [],

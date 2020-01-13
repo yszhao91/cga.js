@@ -25,14 +25,16 @@ class Quaternion {
       z1 = src1[srcOffset1 + 2],
       w1 = src1[srcOffset1 + 3];
 
-    if (w0 !== w1 || x0 !== x1 || y0 !== y1 || z0 !== z1) {
+    if (w0 !== w1 || x0 !== x1 || y0 !== y1 || z0 !== z1)
+    {
       var s = 1 - t,
         cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
         dir = cos >= 0 ? 1 : -1,
         sqrSin = 1 - cos * cos;
 
       // Skip the Slerp for tiny steps to avoid numeric problems:
-      if (sqrSin > Number.EPSILON) {
+      if (sqrSin > Number.EPSILON)
+      {
         var sin = Math.sqrt(sqrSin),
           len = Math.atan2(sin, cos * dir);
 
@@ -48,7 +50,8 @@ class Quaternion {
       w0 = w0 * s + w1 * tDir;
 
       // Normalize in case we just did a lerp:
-      if (s === 1 - t) {
+      if (s === 1 - t)
+      {
         var f = 1 / Math.sqrt(x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0);
 
         x0 *= f;
@@ -127,7 +130,8 @@ class Quaternion {
   }
 
   setFromEuler(euler, update) {
-    if (!(euler && euler.isEuler)) {
+    if (!(euler && euler.isEuler))
+    {
       throw new Error(
         "THREE.Quaternion: .setFromEuler() now expects an Euler rotation rather than a Vector3 and order."
       );
@@ -153,32 +157,38 @@ class Quaternion {
     var s2 = sin(y / 2);
     var s3 = sin(z / 2);
 
-    if (order === "XYZ") {
+    if (order === "XYZ")
+    {
       this._x = s1 * c2 * c3 + c1 * s2 * s3;
       this._y = c1 * s2 * c3 - s1 * c2 * s3;
       this._z = c1 * c2 * s3 + s1 * s2 * c3;
       this._w = c1 * c2 * c3 - s1 * s2 * s3;
-    } else if (order === "YXZ") {
+    } else if (order === "YXZ")
+    {
       this._x = s1 * c2 * c3 + c1 * s2 * s3;
       this._y = c1 * s2 * c3 - s1 * c2 * s3;
       this._z = c1 * c2 * s3 - s1 * s2 * c3;
       this._w = c1 * c2 * c3 + s1 * s2 * s3;
-    } else if (order === "ZXY") {
+    } else if (order === "ZXY")
+    {
       this._x = s1 * c2 * c3 - c1 * s2 * s3;
       this._y = c1 * s2 * c3 + s1 * c2 * s3;
       this._z = c1 * c2 * s3 + s1 * s2 * c3;
       this._w = c1 * c2 * c3 - s1 * s2 * s3;
-    } else if (order === "ZYX") {
+    } else if (order === "ZYX")
+    {
       this._x = s1 * c2 * c3 - c1 * s2 * s3;
       this._y = c1 * s2 * c3 + s1 * c2 * s3;
       this._z = c1 * c2 * s3 - s1 * s2 * c3;
       this._w = c1 * c2 * c3 + s1 * s2 * s3;
-    } else if (order === "YZX") {
+    } else if (order === "YZX")
+    {
       this._x = s1 * c2 * c3 + c1 * s2 * s3;
       this._y = c1 * s2 * c3 + s1 * c2 * s3;
       this._z = c1 * c2 * s3 - s1 * s2 * c3;
       this._w = c1 * c2 * c3 - s1 * s2 * s3;
-    } else if (order === "XZY") {
+    } else if (order === "XZY")
+    {
       this._x = s1 * c2 * c3 - c1 * s2 * s3;
       this._y = c1 * s2 * c3 - s1 * c2 * s3;
       this._z = c1 * c2 * s3 + s1 * s2 * c3;
@@ -226,28 +236,32 @@ class Quaternion {
       trace = m11 + m22 + m33,
       s;
 
-    if (trace > 0) {
+    if (trace > 0)
+    {
       s = 0.5 / Math.sqrt(trace + 1.0);
 
       this._w = 0.25 / s;
       this._x = (m32 - m23) * s;
       this._y = (m13 - m31) * s;
       this._z = (m21 - m12) * s;
-    } else if (m11 > m22 && m11 > m33) {
+    } else if (m11 > m22 && m11 > m33)
+    {
       s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
       this._w = (m32 - m23) / s;
       this._x = 0.25 * s;
       this._y = (m12 + m21) / s;
       this._z = (m13 + m31) / s;
-    } else if (m22 > m33) {
+    } else if (m22 > m33)
+    {
       s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
       this._w = (m13 - m31) / s;
       this._x = (m12 + m21) / s;
       this._y = 0.25 * s;
       this._z = (m23 + m32) / s;
-    } else {
+    } else
+    {
       s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
 
       this._w = (m21 - m12) / s;
@@ -268,21 +282,25 @@ class Quaternion {
 
     var r = vFrom.dot(vTo) + 1;
 
-    if (r < EPS) {
+    if (r < EPS)
+    {
       r = 0;
 
-      if (Math.abs(vFrom.x) > Math.abs(vFrom.z)) {
+      if (Math.abs(vFrom.x) > Math.abs(vFrom.z))
+      {
         this._x = -vFrom.y;
         this._y = vFrom.x;
         this._z = 0;
         this._w = r;
-      } else {
+      } else
+      {
         this._x = 0;
         this._y = -vFrom.z;
         this._z = vFrom.y;
         this._w = r;
       }
-    } else {
+    } else
+    {
       // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency on Vector3
 
       this._x = vFrom.y * vTo.z - vFrom.z * vTo.y;
@@ -342,21 +360,23 @@ class Quaternion {
   length() {
     return Math.sqrt(
       this._x * this._x +
-        this._y * this._y +
-        this._z * this._z +
-        this._w * this._w
+      this._y * this._y +
+      this._z * this._z +
+      this._w * this._w
     );
   }
 
   normalize() {
     var l = this.length();
 
-    if (l === 0) {
+    if (l === 0)
+    {
       this._x = 0;
       this._y = 0;
       this._z = 0;
       this._w = 1;
-    } else {
+    } else
+    {
       l = 1 / l;
 
       this._x = this._x * l;
@@ -371,7 +391,8 @@ class Quaternion {
   }
 
   multiply(q, p) {
-    if (p !== undefined) {
+    if (p !== undefined)
+    {
       console.warn(
         "THREE.Quaternion: .multiply() now only accepts one argument. Use .multiplyQuaternions( a, b ) instead."
       );
@@ -420,18 +441,21 @@ class Quaternion {
 
     var cosHalfTheta = w * qb._w + x * qb._x + y * qb._y + z * qb._z;
 
-    if (cosHalfTheta < 0) {
+    if (cosHalfTheta < 0)
+    {
       this._w = -qb._w;
       this._x = -qb._x;
       this._y = -qb._y;
       this._z = -qb._z;
 
       cosHalfTheta = -cosHalfTheta;
-    } else {
+    } else
+    {
       this.copy(qb);
     }
 
-    if (cosHalfTheta >= 1.0) {
+    if (cosHalfTheta >= 1.0)
+    {
       this._w = w;
       this._x = x;
       this._y = y;
@@ -442,7 +466,8 @@ class Quaternion {
 
     var sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
 
-    if (sqrSinHalfTheta <= Number.EPSILON) {
+    if (sqrSinHalfTheta <= Number.EPSILON)
+    {
       var s = 1 - t;
       this._w = s * w + t * this._w;
       this._x = s * x + t * this._x;
@@ -510,7 +535,7 @@ class Quaternion {
     return this;
   }
 
-  _onChangeCallback() {}
+  _onChangeCallback() { }
 }
 
 function quat(x, y, z, w) {

@@ -3,6 +3,8 @@ import * as cga from "./";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { Point } from "./struct/3d/Point";
 import { BufferGeometry, Geometry, Line, LineDashedMaterial, Float32BufferAttribute, PointsMaterial, Points, LineBasicMaterial, Mesh, WebGLRenderer, PerspectiveCamera, Scene, HemisphereLight, PolarGridHelper, Face3, DoubleSide } from "three";
+import { Quaternion } from "./math/Quaternion";
+import { v3 } from "./math/Vector3";
 function toDisSeg(obj, opts) {
     var geometry = new Geometry()
     geometry.vertices.push(...obj)
@@ -233,6 +235,12 @@ scene.add(toDisSeg(result.closestPoint))
 //     new cga.v3(-1, 0, -4),
 //     new cga.v3(-4, 0, -1)
 // )))
+
+var q = new Quaternion();
+q.setFromUnitVectors(v3(0, 0, 1), v3(0, 1, 0))
+var v = new v3(0, 0, 1);
+debugger
+v.apply
 
 function render() {
     renderer.render(scene, camera)
