@@ -87,7 +87,7 @@ npm install
 国内
 cnpm install
 
-npm run build //编译到dist
+npm run build //编译到build目录下
 npm run dev  //运行项目，自己更改源码测试
 ```
 

@@ -53,6 +53,20 @@ var CGA = (function (exports) {
     function radToDeg(radians) {
       return radians * _Math.RAD2DEG;
     }
+    /**
+     * 数字或者向量固定位数
+     * @param {Object} obj 数字或者向量
+     * @param {*} fractionDigits 
+     */
+
+    function toFixed(obj, fractionDigits) {
+      if (obj instanceof Number) return parseFloat(obj.toFixed(fractionDigits));else {
+        if (obj.x !== undefined) obj.x = parseFloat(obj.x.toFixed(fractionDigits));
+        if (obj.y !== undefined) obj.y = parseFloat(obj.y.toFixed(fractionDigits));
+        if (obj.z !== undefined) obj.z = parseFloat(obj.z.toFixed(fractionDigits));
+      }
+      return obj;
+    }
 
     class Vector2 {
       constructor(x, y) {
@@ -1344,6 +1358,16 @@ var CGA = (function (exports) {
         this.x = attribute.getX(index);
         this.y = attribute.getY(index);
         this.z = attribute.getZ(index);
+        return this;
+      }
+
+      toFixed(fractionDigits) {
+        if (fractionDigits !== undefined) {
+          this.x = parseFloat(this.x.toFixed(fractionDigits));
+          this.y = parseFloat(this.y.toFixed(fractionDigits));
+          this.z = parseFloat(this.z.toFixed(fractionDigits));
+        }
+
         return this;
       }
 
@@ -4844,6 +4868,7 @@ var CGA = (function (exports) {
     exports.sign = sign;
     exports.smootherstep = smootherstep;
     exports.smoothstep = smoothstep;
+    exports.toFixed = toFixed;
     exports.v2 = v2;
     exports.v3 = v3;
 
