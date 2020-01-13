@@ -70,6 +70,8 @@ var result = point.distanceSegment(seg);
 
 ```html
 <script src="cga.js" />
+或者
+<script src="https://raw.githack.com/yszhao91/xtorcga/master/build/cga.js" />
 <script>
   var point = new CGA.Point(1, 2, 3);
   var line = new CGA.Line(
