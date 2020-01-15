@@ -350,6 +350,10 @@ export class Segment extends Array {
    */
   distanceLine(line) { }
 
+  //---Intersect---------------------------------------------------
+  intersectSegment(segment) {
+    
+  }
 
   //---Offset------------------------------------------------------
   /**

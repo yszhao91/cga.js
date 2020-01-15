@@ -2,11 +2,12 @@ import { v3 } from "./Vector3.js";
 
 var _vector = v3();
 
-class Matrix3 {
+export class Matrix3 {
   constructor() {
     this.elements = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
-    if (arguments.length > 0) {
+    if (arguments.length > 0)
+    {
       console.error(
         "Matrix3: the constructor no longer reads arguments. use .set() instead."
       );
@@ -66,7 +67,8 @@ class Matrix3 {
   }
 
   applyToBufferAttribute(attribute) {
-    for (var i = 0, l = attribute.count; i < l; i++) {
+    for (var i = 0, l = attribute.count; i < l; i++)
+    {
       _vector.x = attribute.getX(i);
       _vector.y = attribute.getY(i);
       _vector.z = attribute.getZ(i);
@@ -162,7 +164,8 @@ class Matrix3 {
   }
 
   getInverse(matrix, throwOnDegenerate) {
-    if (matrix && matrix.isMatrix4) {
+    if (matrix && matrix.isMatrix4)
+    {
       console.error(
         "Matrix3: .getInverse() no longer takes a Matrix4 argument."
       );
@@ -184,13 +187,16 @@ class Matrix3 {
       t13 = n23 * n12 - n22 * n13,
       det = n11 * t11 + n21 * t12 + n31 * t13;
 
-    if (det === 0) {
+    if (det === 0)
+    {
       var msg =
         "Matrix3: .getInverse() can't invert matrix, determinant is 0";
 
-      if (throwOnDegenerate === true) {
+      if (throwOnDegenerate === true)
+      {
         throw new Error(msg);
-      } else {
+      } else
+      {
         console.warn(msg);
       }
 
@@ -324,7 +330,8 @@ class Matrix3 {
     var te = this.elements;
     var me = matrix.elements;
 
-    for (var i = 0; i < 9; i++) {
+    for (var i = 0; i < 9; i++)
+    {
       if (te[i] !== me[i]) return false;
     }
 
@@ -334,7 +341,8 @@ class Matrix3 {
   fromArray(array, offset) {
     if (offset === undefined) offset = 0;
 
-    for (var i = 0; i < 9; i++) {
+    for (var i = 0; i < 9; i++)
+    {
       this.elements[i] = array[i + offset];
     }
 
@@ -363,8 +371,6 @@ class Matrix3 {
   }
 }
 
-function m3() {
+export function m3() {
   return new Matrix3();
-}
-
-export { Matrix3, m3 };
+} 

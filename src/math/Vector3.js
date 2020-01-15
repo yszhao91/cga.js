@@ -9,6 +9,24 @@ export class Vector3 {
     this.isVector3 = true;
   }
 
+  static get Up() {
+    return new Vector3(0, 1, 0);
+  }
+
+  static get Down() {
+    return new Vector3(0, 1, 0);
+  }
+
+  static get UnitX() {
+    return new Vector3(1, 0, 0);
+  }
+  static get UnitY() {
+    return new Vector3(0, 1, 0);
+  }
+  static get UnitZ() {
+    return new Vector3(0, 0, 1);
+  }
+
   set(x, y, z) {
     this.x = x;
     this.y = y;

@@ -1,6 +1,6 @@
 import { clamp } from "./Math.js";
 
-class Quaternion {
+export class Quaternion {
   constructor(x, y, z, w) {
     this._x = x || 0;
     this._y = y || 0;
@@ -538,8 +538,6 @@ class Quaternion {
   _onChangeCallback() { }
 }
 
-function quat(x, y, z, w) {
+export function quat(x, y, z, w) {
   return new Quaternion(x, y, z, w);
 }
-
-export { Quaternion, quat };

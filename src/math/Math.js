@@ -41,7 +41,11 @@ export function randInt(low, high) {
 }
 
 // Random float from <low, high> interval
-
+/**
+ * 生成一个low~high之间的浮点数
+ * @param {*} low 
+ * @param {*} high 
+ */
 export function randFloat(low, high) {
     return low + Math.random() * (high - low);
 }

@@ -1,4 +1,4 @@
-class Vector2 {
+export class Vector2 {
   constructor(x, y) {
     this.x = x || 0;
     this.y = y || 0;
@@ -19,6 +19,14 @@ class Vector2 {
 
   set height(value) {
     this.y = value;
+  }
+
+  static get UnitX() {
+    return new Vector2(1, 0);
+  }
+
+  static get UnitY() {
+    return new Vector2(0, 1);
   }
 
   set(x, y) {

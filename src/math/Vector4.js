@@ -1,4 +1,4 @@
-class Vector4 {
+export class Vector4 {
   constructor(x, y, z, w) {
     this.x = x || 0;
     this.y = y || 0;
@@ -67,7 +67,8 @@ class Vector4 {
   }
 
   setComponent(index, value) {
-    switch (index) {
+    switch (index)
+    {
       case 0:
         this.x = value;
         break;
@@ -88,7 +89,8 @@ class Vector4 {
   }
 
   getComponent(index) {
-    switch (index) {
+    switch (index)
+    {
       case 0:
         return this.x;
       case 1:
@@ -116,7 +118,8 @@ class Vector4 {
   }
 
   add(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
         "Vector4: .add() now only accepts one argument. Use .addVectors( a, b ) instead."
       );
@@ -159,7 +162,8 @@ class Vector4 {
   }
 
   sub(v, w) {
-    if (w !== undefined) {
+    if (w !== undefined)
+    {
       console.warn(
         "Vector4: .sub() now only accepts one argument. Use .subVectors( a, b ) instead."
       );
@@ -229,11 +233,13 @@ class Vector4 {
 
     var s = Math.sqrt(1 - q.w * q.w);
 
-    if (s < 0.0001) {
+    if (s < 0.0001)
+    {
       this.x = 1;
       this.y = 0;
       this.z = 0;
-    } else {
+    } else
+    {
       this.x = q.x / s;
       this.y = q.y / s;
       this.z = q.z / s;
@@ -268,7 +274,8 @@ class Vector4 {
       Math.abs(m12 - m21) < epsilon &&
       Math.abs(m13 - m31) < epsilon &&
       Math.abs(m23 - m32) < epsilon
-    ) {
+    )
+    {
       // singularity found
       // first check for identity matrix which must have +1 for all terms
       // in leading diagonal and zero in other terms
@@ -278,7 +285,8 @@ class Vector4 {
         Math.abs(m13 + m31) < epsilon2 &&
         Math.abs(m23 + m32) < epsilon2 &&
         Math.abs(m11 + m22 + m33 - 3) < epsilon2
-      ) {
+      )
+      {
         // this singularity is identity matrix so angle = 0
 
         this.set(1, 0, 0, 0);
@@ -297,38 +305,47 @@ class Vector4 {
       var xz = (m13 + m31) / 4;
       var yz = (m23 + m32) / 4;
 
-      if (xx > yy && xx > zz) {
+      if (xx > yy && xx > zz)
+      {
         // m11 is the largest diagonal term
 
-        if (xx < epsilon) {
+        if (xx < epsilon)
+        {
           x = 0;
           y = 0.707106781;
           z = 0.707106781;
-        } else {
+        } else
+        {
           x = Math.sqrt(xx);
           y = xy / x;
           z = xz / x;
         }
-      } else if (yy > zz) {
+      } else if (yy > zz)
+      {
         // m22 is the largest diagonal term
 
-        if (yy < epsilon) {
+        if (yy < epsilon)
+        {
           x = 0.707106781;
           y = 0;
           z = 0.707106781;
-        } else {
+        } else
+        {
           y = Math.sqrt(yy);
           x = xy / y;
           z = yz / y;
         }
-      } else {
+      } else
+      {
         // m33 is the largest diagonal term so base result on this
 
-        if (zz < epsilon) {
+        if (zz < epsilon)
+        {
           x = 0.707106781;
           y = 0.707106781;
           z = 0;
-        } else {
+        } else
+        {
           z = Math.sqrt(zz);
           x = xz / z;
           y = yz / z;
@@ -344,8 +361,8 @@ class Vector4 {
 
     var s = Math.sqrt(
       (m32 - m23) * (m32 - m23) +
-        (m13 - m31) * (m13 - m31) +
-        (m21 - m12) * (m21 - m12)
+      (m13 - m31) * (m13 - m31) +
+      (m21 - m12) * (m21 - m12)
     ); // used to normalize
 
     if (Math.abs(s) < 0.001) s = 1;
@@ -525,7 +542,8 @@ class Vector4 {
   }
 
   fromBufferAttribute(attribute, index, offset) {
-    if (offset !== undefined) {
+    if (offset !== undefined)
+    {
       console.warn(
         "Vector4: offset has been removed from .fromBufferAttribute()."
       );
@@ -540,8 +558,7 @@ class Vector4 {
   }
 }
 
-function v4(x, y, z, w) {
+export function v4(x, y, z, w) {
   return Vector4(x, y, z, w);
 }
 
-export { Vector4 };

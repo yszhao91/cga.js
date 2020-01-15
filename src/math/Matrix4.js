@@ -1,10 +1,11 @@
 import { v3 } from "./Vector3.js";
 
-class Matrix4 {
+export class Matrix4 {
   constructor() {
     this.elements = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
-    if (arguments.length > 0) {
+    if (arguments.length > 0)
+    {
       console.error(
         " Matrix4: the constructor no longer reads arguments. use .set() instead."
       );
@@ -51,6 +52,10 @@ class Matrix4 {
     te[15] = n44;
 
     return this;
+  }
+
+  static get Identity() {
+    return new Matrix4();
   }
 
   identity() {
@@ -163,7 +168,8 @@ class Matrix4 {
   }
 
   makeRotationFromEuler(euler) {
-    if (!(euler && euler.isEuler)) {
+    if (!(euler && euler.isEuler))
+    {
       console.error(
         " Matrix4: .makeRotationFromEuler() now expects a Euler rotation rather than a Vector3 and order."
       );
@@ -181,7 +187,8 @@ class Matrix4 {
     var e = Math.cos(z),
       f = Math.sin(z);
 
-    if (euler.order === "XYZ") {
+    if (euler.order === "XYZ")
+    {
       var ae = a * e,
         af = a * f,
         be = b * e,
@@ -198,7 +205,8 @@ class Matrix4 {
       te[2] = bf - ae * d;
       te[6] = be + af * d;
       te[10] = a * c;
-    } else if (euler.order === "YXZ") {
+    } else if (euler.order === "YXZ")
+    {
       var ce = c * e,
         cf = c * f,
         de = d * e,
@@ -215,7 +223,8 @@ class Matrix4 {
       te[2] = cf * b - de;
       te[6] = df + ce * b;
       te[10] = a * c;
-    } else if (euler.order === "ZXY") {
+    } else if (euler.order === "ZXY")
+    {
       var ce = c * e,
         cf = c * f,
         de = d * e,
@@ -232,7 +241,8 @@ class Matrix4 {
       te[2] = -a * d;
       te[6] = b;
       te[10] = a * c;
-    } else if (euler.order === "ZYX") {
+    } else if (euler.order === "ZYX")
+    {
       var ae = a * e,
         af = a * f,
         be = b * e,
@@ -249,7 +259,8 @@ class Matrix4 {
       te[2] = -d;
       te[6] = b * c;
       te[10] = a * c;
-    } else if (euler.order === "YZX") {
+    } else if (euler.order === "YZX")
+    {
       var ac = a * c,
         ad = a * d,
         bc = b * c,
@@ -266,7 +277,8 @@ class Matrix4 {
       te[2] = -d * e;
       te[6] = ad * f + bc;
       te[10] = ac - bd * f;
-    } else if (euler.order === "XZY") {
+    } else if (euler.order === "XZY")
+    {
       var ac = a * c,
         ad = a * d,
         bc = b * c,
@@ -308,7 +320,8 @@ class Matrix4 {
 
     _z.subVectors(eye, target);
 
-    if (_z.lengthSq() === 0) {
+    if (_z.lengthSq() === 0)
+    {
       // eye and target are in the same position
 
       _z.z = 1;
@@ -317,12 +330,15 @@ class Matrix4 {
     _z.normalize();
     _x.crossVectors(up, _z);
 
-    if (_x.lengthSq() === 0) {
+    if (_x.lengthSq() === 0)
+    {
       // up and z are parallel
 
-      if (Math.abs(up.z) === 1) {
+      if (Math.abs(up.z) === 1)
+      {
         _z.x += 0.0001;
-      } else {
+      } else
+      {
         _z.z += 0.0001;
       }
 
@@ -347,7 +363,8 @@ class Matrix4 {
   }
 
   multiply(m, n) {
-    if (n !== undefined) {
+    if (n !== undefined)
+    {
       console.warn(
         " Matrix4: .multiply() now only accepts one argument. Use .multiplyMatrices( a, b ) instead."
       );
@@ -447,7 +464,8 @@ class Matrix4 {
   }
 
   applyToBufferAttribute(attribute) {
-    for (var i = 0, l = attribute.count; i < l; i++) {
+    for (var i = 0, l = attribute.count; i < l; i++)
+    {
       _v1.x = attribute.getX(i);
       _v1.y = attribute.getY(i);
       _v1.z = attribute.getZ(i);
@@ -485,33 +503,33 @@ class Matrix4 {
 
     return (
       n41 *
-        (+n14 * n23 * n32 -
-          n13 * n24 * n32 -
-          n14 * n22 * n33 +
-          n12 * n24 * n33 +
-          n13 * n22 * n34 -
-          n12 * n23 * n34) +
+      (+n14 * n23 * n32 -
+        n13 * n24 * n32 -
+        n14 * n22 * n33 +
+        n12 * n24 * n33 +
+        n13 * n22 * n34 -
+        n12 * n23 * n34) +
       n42 *
-        (+n11 * n23 * n34 -
-          n11 * n24 * n33 +
-          n14 * n21 * n33 -
-          n13 * n21 * n34 +
-          n13 * n24 * n31 -
-          n14 * n23 * n31) +
+      (+n11 * n23 * n34 -
+        n11 * n24 * n33 +
+        n14 * n21 * n33 -
+        n13 * n21 * n34 +
+        n13 * n24 * n31 -
+        n14 * n23 * n31) +
       n43 *
-        (+n11 * n24 * n32 -
-          n11 * n22 * n34 -
-          n14 * n21 * n32 +
-          n12 * n21 * n34 +
-          n14 * n22 * n31 -
-          n12 * n24 * n31) +
+      (+n11 * n24 * n32 -
+        n11 * n22 * n34 -
+        n14 * n21 * n32 +
+        n12 * n21 * n34 +
+        n14 * n22 * n31 -
+        n12 * n24 * n31) +
       n44 *
-        (-n13 * n22 * n31 -
-          n11 * n23 * n32 +
-          n11 * n22 * n33 +
-          n13 * n21 * n32 -
-          n12 * n21 * n33 +
-          n12 * n23 * n31)
+      (-n13 * n22 * n31 -
+        n11 * n23 * n32 +
+        n11 * n22 * n33 +
+        n13 * n21 * n32 -
+        n12 * n21 * n33 +
+        n12 * n23 * n31)
     );
   }
 
@@ -545,11 +563,13 @@ class Matrix4 {
   setPosition(x, y, z) {
     var te = this.elements;
 
-    if (x.isVector3) {
+    if (x.isVector3)
+    {
       te[12] = x.x;
       te[13] = x.y;
       te[14] = x.z;
-    } else {
+    } else
+    {
       te[12] = x;
       te[13] = y;
       te[14] = z;
@@ -609,12 +629,15 @@ class Matrix4 {
 
     var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
 
-    if (det === 0) {
+    if (det === 0)
+    {
       var msg = " Matrix4: .getInverse() can't invert matrix, determinant is 0";
 
-      if (throwOnDegenerate === true) {
+      if (throwOnDegenerate === true)
+      {
         throw new Error(msg);
-      } else {
+      } else
+      {
         console.warn(msg);
       }
 
@@ -932,7 +955,8 @@ class Matrix4 {
   }
 
   makePerspective(left, right, top, bottom, near, far) {
-    if (far === undefined) {
+    if (far === undefined)
+    {
       console.warn(
         " Matrix4: .makePerspective() has been redefined and has a new signature. Please check the docs."
       );
@@ -1001,7 +1025,8 @@ class Matrix4 {
     var te = this.elements;
     var me = matrix.elements;
 
-    for (var i = 0; i < 16; i++) {
+    for (var i = 0; i < 16; i++)
+    {
       if (te[i] !== me[i]) return false;
     }
 
@@ -1011,7 +1036,8 @@ class Matrix4 {
   fromArray(array, offset) {
     if (offset === undefined) offset = 0;
 
-    for (var i = 0; i < 16; i++) {
+    for (var i = 0; i < 16; i++)
+    {
       this.elements[i] = array[i + offset];
     }
 
@@ -1055,8 +1081,7 @@ const _x = v3();
 const _y = v3();
 const _z = v3();
 
-function m4() {
+export function m4() {
   return new Matrix4();
 }
 
-export { Matrix4, m4 };

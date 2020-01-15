@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "src/index.js",
   "scripts": {
@@ -55,13 +55,13 @@
     "three": "^0.112.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "vuepress": "^1.2.0",
-    "webpack": "^4.41.3",
+    "webpack": "^4.38.0",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.7.2",
     "element-ui": "^2.13.0",
     "vue-loader": "^15.8.3",
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.6.11",
-    "xtorcga": "0.0.7"
+    "xtorcga": "0.0.8"
   }
 }
