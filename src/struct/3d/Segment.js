@@ -1,4 +1,5 @@
 import { v3 } from "../../math/Vector3";
+import { gPrecision, approximateEqual } from "../../math/Math";
 
 export class Segment extends Array {
   /**
@@ -352,7 +353,29 @@ export class Segment extends Array {
 
   //---Intersect---------------------------------------------------
   intersectSegment(segment) {
-    
+    const result = this.distanceSegment(segment);
+    const resultLine = this.distanceLine(segment);
+    result.interserct = false;
+    if (!approximateEqual(this.normal.dot(segment.normal), 1, gPrecision))
+    {
+      // 平行
+      if (resultLine.distance >= gPrecision)
+      {
+        //平行或共线不重叠
+
+      } else
+      {
+        //共线重叠
+        if (result.parameters.every(o => o === 0 || o === 1))
+        {
+          //只是端点相交
+        }
+      }
+    }
+    else  
+    {
+      result.interserct = true;
+    }
   }
 
   //---Offset------------------------------------------------------

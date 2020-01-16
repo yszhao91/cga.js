@@ -31,6 +31,10 @@ export function block(arg_segments) {
     }
 }
 
+export function testNode(params) {
+
+}
+
 /**
  * 清除不能形成多边形的线段
  * @param {Array} arg_segments 
