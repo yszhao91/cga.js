@@ -161,11 +161,11 @@ simplifyPointList(points, maxDistance, maxAngle);
   - Line
   - Ray
   - Segment
-  - Trinangle (2020 年 1 月 17 增加)
+  - Triangle (2020 年 1 月 17 增加)
 - Ray
   - Ray
   - Segment
-  - Trinangle (2020 年 1 月 17 增加)
+  - Triangle (2020 年 1 月 17 增加)
 - Segment
   - Segment
 
