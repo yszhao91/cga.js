@@ -10,4 +10,6 @@ export class Polyline extends Array {
     offset(distance) {
         return new Polyline(this);
     }
+
+
 }

@@ -1,7 +1,8 @@
-import { gPrecision, clamp } from "../math/Math";
-import { clone, toFixed } from "../utils/array";
+import { gPrecision, clamp, approximateEqual } from "../math/Math";
+import { clone, toFixed, forall } from "../utils/array";
 import { Quaternion } from "../math/Quaternion";
-import { Vector3 } from "../math/Vector3";
+import { Vector3, v3 } from "../math/Vector3";
+import { rotateByUnitVectors } from "./points";
 export function vectorCompare(a, b) {
     if (a.x === b.x)
     {
@@ -30,10 +31,22 @@ export function block(arg_segments) {
         const seg = segments[0];
     }
 }
-
-export function testNode(params) {
-
+/**
+ * 计算共面的线段的法线
+ * @param {*} segments 
+ */
+export function clacNormal(segments, precision = gPrecision) {
+    var seg0 = segments[0]
+    for (let i = 1; i < segments.length; i++)
+    {
+        let seg = segments[i];
+        if (seg0.dot(seg) >= precision)
+            return seg0.normal.clone().dot(seg.normal).normalize();
+    }
+    return null;
 }
+
+
 
 /**
  * 清除不能形成多边形的线段
@@ -47,7 +60,12 @@ export function clearRedundancy(arg_segments) {
     }
 }
 
-
+/**
+ * 线段与线段集合相切成新线段
+ * @param {*} segments 
+ * @param {*} seg 
+ * @param {*} precision 
+ */
 export function calcRelation(segments, seg, precision = gPrecision) {
     var intersectSegs = [];//别切割的直线
     var intersectSegs = [];//被切割成新的线段
@@ -98,13 +116,19 @@ export function sortAdjEdges(point, edges) {
  * 找出一块相交线段且在同一个平面的最外圈
  * @param {*} segs 
  */
-export function boundSegments(segments) {
+export function boundSegments(insegments) {
+    segments = clone(insegments);
     const points = segments.flat(2);
+    var segsPlaneNormal = clacNormal(segments)
+    if (approximateEqual(segsPlaneNormal.dot(Vector3.UnitZ), 1))
+    {
+        //旋转到XY平面
+        rotateByUnitVectors(segments, clacNormal(segments), v3(0, 0, 1))
+        forall(segments, p => { p.z = 0; })
+    }
+
     points.sort(vectorCompare)
 
-    //变换到XY平面
-    var quanternion = new Quaternion();
-    quanternion.setFromUnitVectors(v3(0, 0, 1), v3(0, 0, 1))
 
     //在平面上Y最大者一定是边界点，所相连的边一定有边界
     points.sort(vectorYCompare);

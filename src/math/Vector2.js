@@ -384,8 +384,7 @@ export class Vector2 {
   }
 }
 
-function v2() {
+export function v2() {
   return new Vector2();
 }
 
-export { Vector2, v2 };

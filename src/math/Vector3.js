@@ -417,8 +417,54 @@ export class Vector3 {
     return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
   }
 
-  normalize() {
+  normalize(robust = false) {
     return this.divideScalar(this.length() || 1);
+
+    // if (robust)
+    // {
+    //   var maxAbsComp = Math.abs(v[0]);
+    //   for (var i = 1; i < N; ++i)
+    //   {
+    //     var absComp = Math.abs(v[i]);
+    //     if (absComp > maxAbsComp)
+    //     {
+    //       maxAbsComp = absComp;
+    //     }
+    //   }
+
+    //   var length;
+    //   if (maxAbsComp > 0)
+    //   {
+    //     v /= maxAbsComp;
+    //     length = Math.sqrt(Dot(v, v));
+    //     v /= length;
+    //     length *= maxAbsComp;
+    //   }
+    //   else
+    //   {
+    //     length = 0;
+    //     for (var i = 0; i < N; ++i)
+    //     {
+    //       v[i] = 0;
+    //     }
+    //   }
+    //   return length;
+    // }
+    // else
+    // {
+    //   var length = this.length();
+    //   if (length > 0)
+    //   {
+    //     v /= length;
+    //   }
+    //   else
+    //   {
+    //     for (var i = 0; i < N; ++i)
+    //     {
+    //       v[i] = 0;
+    //     }
+    //   }
+    // }
   }
 
   setLength(length) {

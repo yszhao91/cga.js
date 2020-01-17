@@ -1,3 +1,6 @@
+import { Line } from "./Line";
+import { Point } from "./Point";
+
 class Ray {
   constructor(origin, direction) {
     this.origin = origin;
@@ -274,134 +277,40 @@ class Ray {
     const result = {
       parameters: [],
       closests: [],
+      triangleParameter: [],
       sqrDistance: 0,
       distance: 0
     };
 
-    // segment.GetCenteredForm(segCenter, segDirection, segExtent);
-    var segCenter = segment.center;
-    var segDirection = segment.direction;
-    var segExtent = segment.len * 0.5;
+    var line = new Line(this.origin, this.origin.clone().add(this.direction));
+    // DCPQuery < Real, Line3 < Real >, Triangle3 < Real >> ltQuery;
+    var ltResult = line.distanceTriangle(triangle);
 
-    var diff = this.origin.clone().sub(segCenter);
-    var a01 = - this.direction.dot(segDirection);
-    var b0 = diff.dot(this.direction);
-    var s0, s1;
-
-    if (Math.abs(a01) < 1)
+    if (ltResult.lineParameter >= 0)
     {
-      // The ray and segment are not parallel.
-      var det = 1 - a01 * a01;
-      var extDet = segExtent * det;
-      var b1 = - diff.dot(segDirection);
-      s0 = a01 * b1 - b0;
-      s1 = a01 * b0 - b1;
-
-      if (s0 >= 0)
-      {
-        if (s1 >= -extDet)
-        {
-          if (s1 <= extDet)  // region 0
-          {
-            // Minimum at interior points of ray and segment.
-            s0 /= det;
-            s1 /= det;
-          }
-          else  // region 1
-          {
-            s1 = segExtent;
-            s0 = Math.max(-(a01 * s1 + b0), 0);
-          }
-        }
-        else  // region 5
-        {
-          s1 = -segExtent;
-          s0 = Math.max(-(a01 * s1 + b0), 0);
-        }
-      }
-      else
-      {
-        if (s1 <= -extDet)  // region 4
-        {
-          s0 = -(-a01 * segExtent + b0);
-          if (s0 > 0)
-          {
-            s1 = -segExtent;
-          }
-          else
-          {
-            s0 = 0;
-            s1 = -b1;
-            if (s1 < -segExtent)
-            {
-              s1 = -segExtent;
-            }
-            else if (s1 > segExtent)
-            {
-              s1 = segExtent;
-            }
-          }
-        }
-        else if (s1 <= extDet)  // region 3
-        {
-          s0 = 0;
-          s1 = -b1;
-          if (s1 < -segExtent)
-          {
-            s1 = -segExtent;
-          }
-          else if (s1 > segExtent)
-          {
-            s1 = segExtent;
-          }
-        }
-        else  // region 2
-        {
-          s0 = -(a01 * segExtent + b0);
-          if (s0 > 0)
-          {
-            s1 = segExtent;
-          }
-          else
-          {
-            s0 = 0;
-            s1 = -b1;
-            if (s1 < -segExtent)
-            {
-              s1 = -segExtent;
-            }
-            else if (s1 > segExtent)
-            {
-              s1 = segExtent;
-            }
-          }
-        }
-      }
+      //最近点在直线前半部分部分，涉嫌方向
+      result.distance = ltResult.distance;
+      result.sqrDistance = ltResult.sqrDistance;
+      result.rayParameter = ltResult.lineParameter;
+      result.triangleParameter[0] = ltResult.triangleParameter[0];
+      result.triangleParameter[1] = ltResult.triangleParameter[1];
+      result.triangleParameter[2] = ltResult.triangleParameter[2];
+      result.closests[0] = ltResult.closests[0];
+      result.closests[1] = ltResult.closests[1];
     }
     else
     {
-      // Ray and segment are parallel.
-      if (a01 > 0)
-      {
-        // Opposite direction vectors.
-        s1 = -segExtent;
-      }
-      else
-      {
-        // Same direction vectors.
-        s1 = segExtent;
-      }
-
-      s0 = Math.max(-(a01 * s1 + b0), 0);
+      var ptResult = new Point().copy(this.origin).distanceTriangle(triangle);
+      result.distance = ptResult.distance;
+      result.sqrDistance = ptResult.sqrDistance;
+      result.rayParameter = 0;
+      result.triangleParameter[0] = ptResult.parameter[0];
+      result.triangleParameter[1] = ptResult.parameter[1];
+      result.triangleParameter[2] = ptResult.parameter[2];
+      result.closests[0] = this.origin;
+      result.closests[1] = ptResult.closest;
     }
 
-    result.parameters[0] = s0;
-    result.parameters[1] = s1;
-    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-    result.closests[1] = segDirection.clone().multiplyScalar(s1).add(segCenter);
-    diff = result.closests[0].clone().sub(result.closests[1]);
-    result.sqrDistance = diff.dot(diff);
-    result.distance = Math.sqrt(result.sqrDistance);
     return result;
   }
 

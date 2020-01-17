@@ -110,9 +110,40 @@ npm run dev  //运行项目，自己更改源码测试
 
 ## 已经实现算法
 
-一级目录与二级目录存在相应算法关系
+### 最近点对问题
+
+点集合中最近找出距离最近的一对点 算法时间 O(nlogn)
+
+> 进行中
+
+<!-- **分治法求解**
+
+- 分解
+  > 对所有的点按照 x 坐标（或者 y）从小到大排序（排序方法时间复杂度 O(nlogn)O(nlogn)O(nlogn)）。
+  > 根据下标进行分割，使得点集分为两个集合。
+- 解决
+  > 递归的寻找两个集合中的最近点对。
+  > 取两个集合最近点对中的最小值 min(disleft，disright) min(dis*{left}， dis*{right}) min(disleft ，disright)。
+- 合并
+  > 最近距离不一定存在于两个集合中，可能一个点在集合 A，一个点在集合 B，而这两点间距离小于 dis。 -->
+
+### 折线或者路径简化
+
+```js
+折线或者路径中过密或者过直的点去除;
+(2020 年 1 月 17 增加)
+/**
+ * 简化点集数组，折线，路径
+ * @param {*} points 点集数组，折线，路径 ,继承Array
+ * @param {*} maxDistance  简化最大距离 默认值0.1
+ * @param {*} maxAngle  简化最大角度 弧度 默认值 Math.PI / 180 * 5
+ */
+simplifyPointList(points, maxDistance, maxAngle);
+```
 
 ### 距离
+
+一级目录与二级目录存在相应算法关系
 
 - Point
   - Point
@@ -130,13 +161,17 @@ npm run dev  //运行项目，自己更改源码测试
   - Line
   - Ray
   - Segment
+  - Trinangle (2020 年 1 月 17 增加)
 - Ray
   - Ray
   - Segment
+  - Trinangle (2020 年 1 月 17 增加)
 - Segment
   - Segment
 
 ### 相交
+
+> 相交可以使用距离算法来实现，准确的说距离中的 closets 最近点在 distance 为 0(小于 1e-4，精度可以自定义)的时候也就是交点,parameters 表为 0 或 1 可以判断为端点相交
 
 ### 偏移
 

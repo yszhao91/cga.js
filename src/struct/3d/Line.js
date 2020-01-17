@@ -184,6 +184,146 @@ export class Line {
 
   }
 
+  distanceTriangle(triangle) {
+    function Orthonormalize(numInputs, v, robust = false) {
+      if (v && 1 <= numInputs && numInputs <= 3)
+      {
+        var minLength = v[0].length();
+        v[0].normalize();
+        for (var i = 1; i < numInputs; ++i)
+        {
+          for (var j = 0; j < i; ++j)
+          {
+            var dot = v[i].dot(v[j]);
+            v[i].sub(v[j].clone().multiplyScalar(dot));
+          }
+          var length = v[i].length();
+          v[i].normalize();
+          if (length < minLength)
+          {
+            minLength = length;
+          }
+        }
+        return minLength;
+      }
+
+      return 0;
+    }
+    function ComputeOrthogonalComplement(numInputs, v, robust = false) {
+      if (numInputs === 1)
+      {
+        if (Math.abs(v[0][0]) > Math.abs(v[0][1]))
+        {
+          v[1] = v3(- v[0].z, 0, +v[0].x)
+        }
+        else
+        {
+          v[1] = v3(0, + v[0].z, -v[0].y)
+        };
+        numInputs = 2;
+      }
+
+      if (numInputs == 2)
+      {
+        v[2] = v[0].clone().cross(v[1]);
+        return Orthonormalize(3, v, robust);
+      }
+
+      return 0;
+    }
+
+    const result = {
+      closests: [],
+      parameters: [],
+      triangleParameter: [],
+    };
+
+    // Test if line intersects triangle.  If so, the squared distance
+    // is zero. 
+    var edge0 = triangle.p1.clone().sub(triangle.p0);
+    var edge1 = triangle.p2.clone().sub(triangle.p0);
+    var normal = edge0.clone().cross(edge1).normalize();
+    var NdD = normal.dot(this.direction);
+
+    if (Math.abs(NdD) >= gPrecision)
+    {
+      // The line and triangle are not parallel, so the line
+      // intersects/ the plane of the triangle.
+      var diff = this.origin.clone().sub(triangle.p0);
+      var basis = new Array(3);  // {D, U, V}
+      basis[0] = this.direction;
+      ComputeOrthogonalComplement(1, basis);
+      var UdE0 = basis[1].dot(edge0);
+      var UdE1 = basis[1].dot(edge1);
+      var UdDiff = basis[1].dot(diff);
+      var VdE0 = basis[2].dot(edge0);
+      var VdE1 = basis[2].dot(edge1);
+      var VdDiff = basis[2].dot(diff);
+      var invDet = 1 / (UdE0 * VdE1 - UdE1 * VdE0);
+
+      // Barycentric coordinates for the point of intersection.
+      var b1 = (VdE1 * UdDiff - UdE1 * VdDiff) * invDet;
+      var b2 = (UdE0 * VdDiff - VdE0 * UdDiff) * invDet;
+      var b0 = 1 - b1 - b2;
+
+      if (b0 >= 0 && b1 >= 0 && b2 >= 0)
+      {
+        // Line parameter for the point of intersection.
+        var DdE0 = this.direction.dot(edge0);
+        var DdE1 = this.direction.dot(edge1);
+        var DdDiff = this.direction.dot(diff);
+        result.lineParameter = b1 * DdE0 + b2 * DdE1 - DdDiff;
+
+        // Barycentric coordinates for the point of intersection.
+        result.triangleParameter[0] = b0;
+        result.triangleParameter[1] = b1;
+        result.triangleParameter[2] = b2;
+
+        // The intersection point is inside or on the triangle.
+        result.closests[0] = this.direction.clone().multiplyScalar(result.lineParameter).add(this.origin);
+        result.closests[1] = edge0.multiplyScalar(b1).add(edge1.multiplyScalar(b2)).add(triangle.p0);
+
+        result.distance = 0;
+        result.sqrDistance = 0;
+        return result;
+      }
+    }
+
+    // Either (1) the line is not parallel to the triangle and the
+    // point of intersection of the line and the plane of the triangle
+    // is outside the triangle or (2) the line and triangle are
+    // parallel.  Regardless, the closest point on the triangle is on
+    // an edge of the triangle.  Compare the line to all three edges
+    // of the triangle.
+    result.distance = +Infinity;
+    result.sqrDistance = +Infinity;
+    for (var i0 = 2, i1 = 0; i1 < 3; i0 = i1++)
+    {
+      var segCenter = triangle[i0].clone().add(triangle[i1]).multiplyScalar(0.5);
+      var segDirection = triangle[i1].clone().sub(triangle[i0]);
+      var segExtent = 0.5 * segDirection.length();
+      segDirection.normalize();
+      var segment = new Segment(triangle[i0], triangle[i1]);
+
+      var lsResult = this.distanceSegment(segment);
+      if (lsResult.sqrDistance < result.sqrDistance)
+      {
+        result.sqrDistance = lsResult.sqrDistance;
+        result.distance = lsResult.distance;
+        result.lineParameter = lsResult.parameters[0];
+        result.triangleParameter[i0] = 0.5 * (1 -
+          lsResult.parameters[0] / segExtent);
+        result.triangleParameter[i1] = 1 -
+          result.triangleParameter[i0];
+        result.triangleParameter[3 - i0 - i1] = 0;
+        result.closests[0] = lsResult.closests[0];
+        result.closests[1] = lsResult.closests[1];
+      }
+    }
+
+    return result;
+  }
+
 
 
   //---相交-------------

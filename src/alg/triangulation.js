@@ -3,5 +3,5 @@
  * @param {*} polygon 
  */
 export function trianglation(polygon) {
-
+    
 }

@@ -6,15 +6,15 @@ class Triangle extends Array {
         this.push(v0, v1, v2);
     }
 
-    get v0() {
+    get p0() {
         return this[0];
     }
 
-    get v1() {
+    get p1() {
         return this[1];
     }
 
-    get v2() {
+    get p2() {
         return this[2];
     }
 

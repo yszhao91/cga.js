@@ -10,15 +10,14 @@ export function clone(array) {
         var ele = array[i];
         if (ele instanceof Number || ele instanceof String)
             result[i] = ele;
-        else if (ele instanceof Object)
+        else if (ele.clone)
         {
-            if (ele.clone)
-                result[i] = ele.clone();
-
-            else throw ("对象元素不存在clone方法");
+            result[i] = ele.clone();
         }
         else if (ele instanceof Array)
             result[i] = clone(ele);
+        else
+            throw ("数组有元素不能clone")
     }
     return result;
 }
@@ -45,4 +44,19 @@ export function toFixed(array, precision) {
  */
 export function classify(array) {
     // 
+}
+
+/**
+ * 遍历多级数组中所有对象
+ * @param {*} array 
+ * @param {*} method 
+ */
+export function forall(array, method) {
+    for (let i = 0; i < array.length; i++)
+    {
+        const ele = array[i];
+        method(ele);
+        if (Array.isArray(ele))
+            forall(ele, method)
+    }
 }

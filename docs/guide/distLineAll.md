@@ -52,6 +52,22 @@ var segment = new cga.Segment(randomV3(), randomV3());
 var result = line.distanceSegment(segment);
 ```
 
+## 直线到三角形的距离
+
+计算直线到三角形的距离
+
+<div></div>
+<ClientOnly>
+<distance geo0 = "Line" geo1 = "Triangle"></distance> 
+</ClientOnly>
+
+```javascript
+import * as cga from "xtorcga";
+var line1 = new cga.Line(randomV3(), randomV3());
+var triangle = new cga.Triangle(randomV3(), randomV3()，randomV3());
+var result = line.distanceTriangle(triangle);
+```
+
 <!-- ## 直线到圆圈的距离
 
 计算直线到线段的距离

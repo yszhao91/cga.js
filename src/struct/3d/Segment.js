@@ -46,6 +46,10 @@ export class Segment extends Array {
       .add(this.start);
   }
 
+  equals(segment) {
+    return (this.p0.equals(segment.p0) && this.p1.equals(segment.p1)) || (this.p1.equals(segment.p0) && this.p1.equals(segment.p0))
+  }
+
   clone() {
     return new Segment(this.p0.clone(), this.p1.clone());
   }
@@ -361,21 +365,57 @@ export class Segment extends Array {
       // 平行
       if (resultLine.distance >= gPrecision)
       {
-        //平行或共线不重叠
-
+        //平行或共线不重叠 
       } else
       {
         //共线重叠
-        if (result.parameters.every(o => o === 0 || o === 1))
+        if (this.equals(segment))
+        {
+          //# 相等
+          result.equals = true;
+        }
+        else if (result.parameters.every(o => o === 0 || o === 1))
         {
           //只是端点相交
+
+        } else
+        {
+          //# 包含 被包含不用切割  包含被切割三段
+          
+
+          //# 部分重叠  
+
         }
+
       }
     }
     else  
     {
-      result.interserct = true;
+      if (result.distance > gPrecision)
+        return result;
+
+      result.interserct = true
+      //相交
+      if (result.parameters.every(o => o === 0 || o === 1))
+      {
+        //都是端点碰触 
+      }
+      else if (result.parameters[0] === 0 || result.parameters[0] === 1)
+      {
+        // this线段 在端点上
+        result.splitSegs = [[this], [new Segment(segment.p0, result.closests[1]), new Segment(result.closests[1], segment.p1)]]
+      } else if (result.parameters[1] === 0 || result.parameters[1] === 1)
+      {
+        //segment线段在端点上
+        result.splitSegs = [[new Segment(this.p0, result.closests[0]), new Segment(result.closests[0], this.p1)], segment];
+      } else
+      {
+        // 两个都不在端点上
+        result.splitSegs = [[new Segment(this.p0, result.closests[0]), new Segment(result.closests[0], this.p1)], [new Segment(segment.p0, result.closests[1]), new Segment(result.closests[1], segment.p1)]];
+      }
     }
+
+    return result;
   }
 
   //---Offset------------------------------------------------------

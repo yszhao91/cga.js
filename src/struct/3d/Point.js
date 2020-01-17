@@ -356,9 +356,9 @@ export class Point extends Vector3 {
       p[1] = (1 - z) * p0[1] + z * p1[1];
     }
 
-    var diff = this.clone().sub(triangle.v0);
-    var edge0 = triangle.v1.clone().sub(triangle.v0);
-    var edge1 = triangle.v2.clone().sub(triangle.v0);
+    var diff = this.clone().sub(triangle.p0);
+    var edge0 = triangle.p1.clone().sub(triangle.p0);
+    var edge1 = triangle.p2.clone().sub(triangle.p0);
     var a00 = edge0.dot(edge0);
     var a01 = edge0.dot(edge1);
     var a11 = edge1.dot(edge1);
@@ -503,7 +503,7 @@ export class Point extends Vector3 {
     result.parameter[0] = 1 - p[0] - p[1];
     result.parameter[1] = p[0];
     result.parameter[2] = p[1];
-    result.closest = triangle.v0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1])); result.parameters.push(0, result.rayParameter);
+    result.closest = triangle.p0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1])); result.parameters.push(0, result.rayParameter);
     result.closests.push(this, result.closest);
     diff = this.clone().sub(result.closest);
     result.sqrDistance = diff.dot(diff);

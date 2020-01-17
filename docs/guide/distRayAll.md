@@ -36,6 +36,22 @@ var segment = new cga.Segment(randomV3(), randomV3());
 var result = ray.distanceSegment(segment);
 ```
 
+## 射线到三角形的距离
+
+计算射线到三角形的距离
+
+<div></div>
+<ClientOnly>
+<distance geo0 = "Ray" geo1 = "Triangle"></distance> 
+</ClientOnly>
+
+```javascript
+import * as cga from "xtorcga";
+var ray = new cga.Ray(randomV3(), randomV3().normalize());
+var triangle = new cga.Triangle(randomV3(), randomV3()，randomV3());
+var result = ray.distanceTriangle(segment);
+```
+
 <!-- ## 射线到三角形的距离
 
 计算射线到三角形的距离
