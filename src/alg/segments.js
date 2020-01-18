@@ -3,17 +3,7 @@ import { clone, toFixed, forall } from "../utils/array";
 import { Quaternion } from "../math/Quaternion";
 import { Vector3, v3 } from "../math/Vector3";
 import { rotateByUnitVectors } from "./points";
-export function vectorCompare(a, b) {
-    if (a.x === b.x)
-    {
-        if (a.y === b.y)
-            return a.z - b.z
-        else
-            return a.y - b.y;
-    }
-    else
-        return a.x - b.x;
-}
+
 export function vectorYCompare(a, b) {
     return a.y - b.y;
 }
@@ -26,8 +16,7 @@ export function vectorXCompare(a, b) {
  */
 export function block(arg_segments) {
     const segments = clone(arg_segments);
-    for (let i = 0; i < segments.length; i++)
-    {
+    for (let i = 0; i < segments.length; i++) {
         const seg = segments[0];
     }
 }
@@ -37,8 +26,7 @@ export function block(arg_segments) {
  */
 export function clacNormal(segments, precision = gPrecision) {
     var seg0 = segments[0]
-    for (let i = 1; i < segments.length; i++)
-    {
+    for (let i = 1; i < segments.length; i++) {
         let seg = segments[i];
         if (seg0.dot(seg) >= precision)
             return seg0.normal.clone().dot(seg.normal).normalize();
@@ -54,8 +42,7 @@ export function clacNormal(segments, precision = gPrecision) {
  */
 export function clearRedundancy(arg_segments) {
     const segments = clone(arg_segments);
-    for (let i = 0; i < segments.length; i++)
-    {
+    for (let i = 0; i < segments.length; i++) {
         const seg = segments[0];
     }
 }
@@ -71,12 +58,10 @@ export function calcRelation(segments, seg, precision = gPrecision) {
     var intersectSegs = [];//被切割成新的线段
     var splitSegs = []; //seg被已有的线段切割
 
-    for (let i = 0; i < segments.length; i++)
-    {
+    for (let i = 0; i < segments.length; i++) {
         const element = segments[i];
         let res = element.distanceSegment(seg)
-        if (res.distance < precision)
-        {
+        if (res.distance < precision) {
             //相交
 
         }
@@ -120,8 +105,7 @@ export function boundSegments(insegments) {
     segments = clone(insegments);
     const points = segments.flat(2);
     var segsPlaneNormal = clacNormal(segments)
-    if (approximateEqual(segsPlaneNormal.dot(Vector3.UnitZ), 1))
-    {
+    if (approximateEqual(segsPlaneNormal.dot(Vector3.UnitZ), 1)) {
         //旋转到XY平面
         rotateByUnitVectors(segments, clacNormal(segments), v3(0, 0, 1))
         forall(segments, p => { p.z = 0; })
@@ -164,10 +148,8 @@ export class segmentGroup {
     }
     remove(args) {
         args = Array.isArray(args) ? args : [args]
-        if (args[0] instanceof Segment)
-        {
-            for (let i = 0; i < args.length; i++)
-            {
+        if (args[0] instanceof Segment) {
+            for (let i = 0; i < args.length; i++) {
                 let segment = args[i];
                 var index = this.edges.findIndex(e => e === segment);
                 if (index === -1)
@@ -189,10 +171,8 @@ export class segmentGroup {
             for (let i = 0; i < this.edges.length; i++)
                 this.edges[i].index = i
         }
-        else if (args[0] instanceof Vector3)
-        {
-            for (let i = 0; i < args.length; i++)
-            {
+        else if (args[0] instanceof Vector3) {
+            for (let i = 0; i < args.length; i++) {
                 let vertex = args[i];
                 var index = this.edges.findIndex(e => e === vertex);
                 if (index === -1)
@@ -217,15 +197,13 @@ export class segmentGroup {
         let p1 = this.vertices.find(v => {
             v.equals(segment.p1)
         })
-        if (!p0)
-        {
+        if (!p0) {
             p0 = segment.p0;
             p0.index = this.vIndex;
             this.vertices.push(p0);
             segment[0] = p0;
         }
-        if (!p1)
-        {
+        if (!p1) {
             p1 = segment.p1;
             p1.index = this.vIndex;
             this.vertices.push(p1);
@@ -237,8 +215,7 @@ export class segmentGroup {
         })
         if (testsegment)
             segment = testsegment
-        else
-        {
+        else {
             segment.index = this.vIndex;
             this.segments.push(segment);
         }
