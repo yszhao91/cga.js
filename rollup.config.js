@@ -51,7 +51,7 @@ export default {
         file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
         format: 'iife',
         // format: 'umd',
-        name: 'CGA',
+        name: 'cga',
         banner: banner,
         globals: {
             lodash: '_'
