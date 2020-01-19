@@ -5,11 +5,13 @@ import { toFixed as toFixedOne } from "../math/Math"
  */
 export function clone(array) {
     var result = new Array()
-    for (let i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++)
+    {
         var ele = array[i];
         if (ele instanceof Number || ele instanceof String)
             result[i] = ele;
-        else if (ele.clone) {
+        else if (ele.clone)
+        {
             result[i] = ele.clone();
         }
         else if (ele instanceof Array)
@@ -26,7 +28,8 @@ export function clone(array) {
  * @param {Number} precision 
  */
 export function toFixed(array, precision) {
-    for (let i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++)
+    {
         const e = array[i];
         if (e instanceof Array)
             toFixed(e);
@@ -41,7 +44,8 @@ export function toFixed(array, precision) {
  * @param {Function} method 
  */
 export function forall(array, method) {
-    for (let i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++)
+    {
         const ele = array[i];
         method(ele);
         if (Array.isArray(ele))
@@ -61,11 +65,15 @@ export function forall(array, method) {
  */
 export function classify(array, classifyMethod) {
     var result = [];
-    for (let i = 0; i < array.length; i++) {
-        for (let j = 0; j < result.length; j++) {
-            if (classifyMethod(array[i], result[j][0]), result[j]) {
+    for (let i = 0; i < array.length; i++)
+    {
+        for (let j = 0; j < result.length; j++)
+        {
+            if (classifyMethod(array[i], result[j][0], result[j]))
+            {
                 result[j].push(array[i]);
-            } else {
+            } else
+            {
                 result.push([array[i]]);
             }
         }
@@ -81,11 +89,15 @@ export function classify(array, classifyMethod) {
  * @param {Function} sortMethod 排序
  */
 export function unique(array, uniqueMethod, sortMethod) {
-    if (sortMethod) {
+    if (sortMethod)
+    {
         array.sort(sortMethod);
-        for (let i = 0; i < array.length; i++) {
-            for (let j = i + 1; j < array.length; j++) {
-                if (uniqueMethod(array[i], array[j]) === true) {
+        for (let i = 0; i < array.length; i++)
+        {
+            for (let j = i + 1; j < array.length; j++)
+            {
+                if (uniqueMethod(array[i], array[j]) === true)
+                {
                     array.splice(j, 1);
                     j--
                 } else
@@ -96,9 +108,12 @@ export function unique(array, uniqueMethod, sortMethod) {
         return array;
     }
 
-    for (let i = 0; i < array.length; i++) {
-        for (let j = i + 1; j < array.length; j++) {
-            if (uniqueMethod(array[i], array[j]) === true) {
+    for (let i = 0; i < array.length; i++)
+    {
+        for (let j = i + 1; j < array.length; j++)
+        {
+            if (uniqueMethod(array[i], array[j]) === true)
+            {
                 array.splice(j, 1);
                 j--
             }
@@ -107,5 +122,4 @@ export function unique(array, uniqueMethod, sortMethod) {
     }
     return array;
 }
-
 

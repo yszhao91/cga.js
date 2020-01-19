@@ -4662,10 +4662,116 @@ var CGA = (function (exports) {
 
     }
 
+    class ArrayEx extends Array {
+      constructor(...args) {
+        super(...args);
+      }
+
+      get lastElement() {
+        return this.get(-1);
+      }
+
+      get(index) {
+        if (index < 0) index = this.length + index;
+        return this[index];
+      }
+      /**
+       * 深度优先遍历
+       * @param {*} method 
+       */
+
+
+      forall(method) {
+        for (let i = 0; i < this.length; i++) {
+          method(this[i]);
+          if (this[i] instanceof Array) this[i].forall(method);
+        }
+      }
+      /**
+      
+      clone() {
+          var result = new ArrayEx()
+          for (let i = 0; i < this.length; i++)
+          {
+              var ele = this[i];
+              if (ele instanceof Number || ele instanceof String)
+                  result[i] = ele;
+              else if (ele.clone)
+              {
+                  result[i] = ele.clone();
+              }
+              else
+                  throw ("数组有元素不能clone")
+          }
+          return result;
+      }
+      /**
+       * 分类
+       * example:
+       *      var arry = [1,2,3,4,5,6]
+       *      var result = classify(this,(a)={return a%2===0}) 
+       * 
+       * @param {Function} classifyMethod  分类方法
+       */
+
+
+      classify(classifyMethod) {
+        var result = [];
+
+        for (let i = 0; i < this.length; i++) {
+          for (let j = 0; j < result.length; j++) {
+            if (classifyMethod(this[i], result[j][0], result[j])) {
+              result[j].push(this[i]);
+            } else {
+              result.push([this[i]]);
+            }
+          }
+        }
+
+        return result;
+      }
+      /**
+       * 去掉重复元素 
+       * @param {Function} uniqueMethod  去重复
+       * @param {Function} sortMethod 排序
+       */
+
+
+      unique(uniqueMethod, sortMethod) {
+        if (sortMethod) {
+          this.sort(sortMethod);
+
+          for (let i = 0; i < this.length; i++) {
+            for (let j = i + 1; j < this.length; j++) {
+              if (uniqueMethod(this[i], this[j]) === true) {
+                this.splice(j, 1);
+                j--;
+              } else break;
+            }
+          }
+
+          return this;
+        }
+
+        for (let i = 0; i < this.length; i++) {
+          for (let j = i + 1; j < this.length; j++) {
+            if (uniqueMethod(this[i], this[j]) === true) {
+              this.splice(j, 1);
+              j--;
+            }
+          }
+        }
+
+        return this;
+      }
+
+    }
+
     /**
      *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
      */
-    class Polyline extends Array {
+
+    class Polyline extends ArrayEx {
       constructor(vs) {
         super();
         this.push(...vs);
@@ -4677,7 +4783,7 @@ var CGA = (function (exports) {
 
     }
 
-    class Polygon extends Polyline {
+    class Polygon$1 extends Polyline {
       constructor() {
         super();
       }
@@ -4969,7 +5075,7 @@ var CGA = (function (exports) {
 
     }
 
-    class Triangle extends Array {
+    class Triangle extends ArrayEx {
       constructor(v0, v1, v2) {
         super();
         this.push(v0, v1, v2);
@@ -4997,15 +5103,629 @@ var CGA = (function (exports) {
 
     }
 
+    class Path extends Polyline {
+      constructor(vs) {
+        super(vs);
+        this.init();
+      }
+
+      init() {
+        this[0].len = 0;
+        this[0].tlen = 0;
+        this[0].direction = this[1].clone().sub(this[0]).normalize();
+
+        for (let i = 1; i < this.length; i++) {
+          const e = this[i];
+          e.len = this[i].distanceTo(this[i - 1]);
+          e.tlen = this[i - 1].tlen + e.len;
+          this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
+        }
+      }
+      /**
+       * 从起点出发到距离等于distance位置  的坐标
+       * @param {Number} distance 
+       */
+
+
+      getPointByDistance(arg_distance) {
+        distance = clamp(arg_distance, 0, this.lastElement.tlen);
+        if (distance !== arg_distance) console.warn("当前距离不在线上");
+
+        for (var i = 0; i < this.length - 1; i++) {
+          if (distance >= this[i].tlen && distance < this[i + 1].tlen) {
+            return {
+              range: [i, i + 1],
+              point: new THREE.Vector3().lerpVectors(this.data[i], this.data[i + 1], (len - this.data[i].tlen) / this.data[i + 1].len),
+              direction: this.data[i].direction
+            };
+          }
+        }
+      }
+      /**
+       * 平均切割为 splitCount 段
+       * @param {Number} splitCount 
+       * @returns {Path} 新的path
+       */
+
+
+      splitAverage(splitCount) {
+        var tlen = this.lastElement.tlen;
+        var perlen = tlen / splitCount;
+        var res = [];
+
+        for (var i = 0; i <= splitCount; i++) {
+          var p = this.findByLen(i * perlen);
+          res.push(p.point);
+        }
+
+        return Path(res);
+      }
+
+    }
+
+    /**
+     * 数组深度复制
+     * @param {Array} array 
+     */
+
+    function clone(array) {
+      var result = new Array();
+
+      for (let i = 0; i < array.length; i++) {
+        var ele = array[i];
+        if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
+          result[i] = ele.clone();
+        } else if (ele instanceof Array) result[i] = clone(ele);else throw "数组有元素不能clone";
+      }
+
+      return result;
+    }
+    /**
+     * 遍历多级数组中所有对象
+     * @param {Array} array 
+     * @param {Function} method 
+     */
+
+    function forall(array, method) {
+      for (let i = 0; i < array.length; i++) {
+        const ele = array[i];
+        method(ele);
+        if (Array.isArray(ele)) forall(ele, method);
+      }
+    }
+    /**
+     * 分类
+     * example:
+     *      var arry = [1,2,3,4,5,6]
+     *      var result = classify(array,(a)={return a%2===0})
+     * 
+     * @param {Array} array 
+     * @param {Function} classifyMethod  分类方法
+     */
+
+    function classify(array, classifyMethod) {
+      var result = [];
+
+      for (let i = 0; i < array.length; i++) {
+        for (let j = 0; j < result.length; j++) {
+          if (classifyMethod(array[i], result[j][0], result[j])) {
+            result[j].push(array[i]);
+          } else {
+            result.push([array[i]]);
+          }
+        }
+      }
+
+      return result;
+    }
+    /**
+     * 去掉重复元素
+     * @param {Array} array 
+     * @param {Function} uniqueMethod  去重复
+     * @param {Function} sortMethod 排序
+     */
+
+    function unique(array, uniqueMethod, sortMethod) {
+      if (sortMethod) {
+        array.sort(sortMethod);
+
+        for (let i = 0; i < array.length; i++) {
+          for (let j = i + 1; j < array.length; j++) {
+            if (uniqueMethod(array[i], array[j]) === true) {
+              array.splice(j, 1);
+              j--;
+            } else break;
+          }
+        }
+
+        return array;
+      }
+
+      for (let i = 0; i < array.length; i++) {
+        for (let j = i + 1; j < array.length; j++) {
+          if (uniqueMethod(array[i], array[j]) === true) {
+            array.splice(j, 1);
+            j--;
+          }
+        }
+      }
+
+      return array;
+    }
+
+    /**
+     * 点排序函数
+     * @param {Vector*} a 
+     * @param {Vector*} b
+     */
+
+
+    function vectorCompare(a, b) {
+      if (a.x === b.x) {
+        if (a.z !== undefined && a.y === b.y) return a.z - b.z;else return a.y - b.y;
+      } else return a.x - b.x;
+    }
+    /**
+     * 
+     * @param {*} points 
+     * @param {*} quaternion 
+     * @param {Boolean} ref 是否是引用
+     */
+
+    function applyQuaternion(points, quaternion, ref = true) {
+      if (ref) {
+        points.flat(Infinity).forEach(point => {
+          point.applyQuaternion(quaternion);
+        });
+        return points;
+      }
+
+      return applyQuaternion(clone(points));
+    }
+    /**
+     * 平移
+     * @param {*} points 
+     * @param {*} distance 
+     * @param {*} ref 
+     */
+
+    function translate(points, distance, ref = true) {
+      if (ref) {
+        points.flat(Infinity).forEach(point => {
+          point.add(distance);
+        });
+        return points;
+      }
+
+      return translate(clone(points));
+    }
+    /**
+     * 旋转
+     * @param {*} points 
+     * @param {*} axis 
+     * @param {*} angle 
+     * @param {*} ref 
+     */
+
+    function rotate(points, axis, angle, ref = true) {
+      return applyQuaternion(points, new Quaternion().setFromAxisAngle(axis, angle), ref);
+    }
+    /**
+     * 旋转
+     * @param {*} points 
+     * @param {*} axis 
+     * @param {*} angle 
+     * @param {*} ref 
+     */
+
+    function rotateByUnitVectors(points, vFrom, vTo, ref = true) {
+      return applyQuaternion(points, new Quaternion().setFromUnitVectors(vFrom, vTo), ref);
+    }
+    /**
+     * 缩放
+     * @param {*} points 
+     * @param {*} axis 
+     * @param {*} angle 
+     * @param {*} ref 
+     */
+
+    function scale(points, scale, ref = true) {
+      if (ref) {
+        points.flat(Infinity).forEach(point => {
+          point.scale.multiply(scale);
+        });
+        return points;
+      }
+
+      return scale(clone(points));
+    }
+    /**
+     * 响应矩阵
+     * @param {*} points 
+     * @param {*} axis 
+     * @param {*} angle 
+     * @param {*} ref 
+     */
+
+    function applyMatrix4(points, matrix, ref = true) {
+      if (ref) {
+        points.flat(Infinity).forEach(point => {
+          point.applyMatrix4(matrix);
+        });
+        return points;
+      }
+
+      return applyMatrix4(clone(points));
+    }
+    /**
+     * 简化点集数组，折线，路径
+     * @param {*} points 点集数组，折线，路径 ,继承Array
+     * @param {*} maxDistance  简化最大距离
+     * @param {*} maxAngle  简化最大角度
+     */
+
+    function simplifyPointList(points, maxDistance = 0.1, maxAngle = Math.PI / 180 * 5) {
+      for (let i = 0; i < points.length; i++) {
+        // 删除小距离
+        const P = points[i];
+        const nextP = points[i + 1];
+
+        if (P.distanceTo(nextP) < maxDistance) {
+          if (i === 0) points.remove(i + 1, 1);else if (i === points.length - 2) points.splice(i, 1);else {
+            points.splice(i, 2, P.clone().add(nextP).multiplyScalar(0.5));
+          }
+          i--;
+        }
+      }
+
+      for (let i = 1; i < points.length - 1; i++) {
+        // 删除小小角度
+        const preP = points[i - 1];
+        const P = points[i];
+        const nextP = points[i + 1];
+
+        if (Math.acos(P.clone().sub(preP).normalize().dot(nextP.clone().sub(P).normalize())) < maxAngle) {
+          points.splice(i, 1);
+          i--;
+        }
+      }
+
+      return points;
+    }
+    /**
+     * 以某个平面生成对称镜像
+     * @param {*} points  点集
+     * @param {*} plane 对称镜像平面
+     */
+
+    function reverseOnPlane(points, plane) {}
+    /**
+     * 投影到平面
+     * @param {*} points 点集
+     * @param {*} plane  投影平面
+     * @param {*} projectDirect  默认是法线的方向
+     */
+
+    function projectOnPlane(points, plane, projectDirect) {
+      return points;
+    }
+    /** 
+     * 最优凸包 quick-hull 2D 3D 都行
+     * @param {*} points 点集 
+     * @param {*} select 如果是3d的，并且在同一平面，可以使用此项选抽取两个轴，来生成平面凸包
+     */
+
+    function convexHull(points, select = "XYZ") {
+      return new Polygon();
+    } // export function
+
+    function indexable(obj, refIndexInfo = {
+      index: 0
+    }, force = false) {
+      if (obj instanceof Array) {
+        for (var i = 0; i < obj.length; i++) indexable(obj[i], refIndexInfo);
+      } else if (obj instanceof Object) {
+        if (obj.index === undefined) obj.index = refIndexInfo.index++;else if (force) obj.index = refIndexInfo.index++;
+      }
+    }
+    function triangListToBuffer(vertices, triangleList) {
+      indexable(triangleList);
+      var indices = [];
+      triangleList.forall(v => {
+        indices.push(v.index);
+      });
+      return toBuffer(vertices, indices);
+    }
+    /**
+     * 
+     * @param {Array<Verctor3|Number>} vertices 
+     * @param {Array<Number>} indices
+     * @param {Array<Verctor2|Number>} uvs
+     */
+
+    function toBuffer(inVertices, indices, inUvs = []) {
+      var vertices = [];
+
+      if (inVertices[0] instanceof Vector3$1) {
+        for (let i = 0; i < inVertices.length; i++) {
+          const v = inVertices[i];
+          vertices.push(v.x, v.y, v.z);
+        }
+      } else {
+        vertices = inVertices;
+      }
+
+      var uvs = [];
+
+      if (inUvs.length > 0 && inUvs[0] instanceof Vector2) {
+        for (let i = 0; i < inUvs.length; i++) {
+          const uv = inVertices[i];
+          uvs.push(uv.x, uv.y);
+        }
+      } else {
+        uvs = inUvs;
+      }
+
+      var verticesBuffer = new Float32Array(vertices);
+      var uvsBuffer = new Float32Array(uvs.length === 0 ? vertices.length / 3 * 2 : uvs);
+      var indicesBuffer = new (verticesBuffer.length / 3 > 65535 ? Uint32Array : Uint16Array)(indices);
+      return {
+        verticesBuffer,
+        uvsBuffer,
+        indicesBuffer
+      };
+    }
+
+    /**
+     *  常用shape几何操作
+     */
+
+    /**
+     * 缝合两个边
+     * @param {Array} side0 
+     * @param {Array} side1 
+     * @param {Boolean} isClosed 
+     * @returns {Array<Vector3>} 三角形数组，每三个为一个三角形 
+     */
+
+    function linkSide(side0, side1, isClosed = false) {
+      if (side0.length !== side1.length) throw "拉伸两边的点数量不一致  linkSide";
+      if (side0.length < 2 || side1.length < 2) return [];
+      var sidelength = side0.length;
+      var orgLen = side0.length;
+      var length = isClosed ? side0.length : side0.length - 1;
+      var triangles = new ArrayEx();
+
+      if (side0[0] instanceof Number) {
+        //索引三角形
+        for (var i = 0; i < length; i++) {
+          var v00 = side0[i];
+          var v01 = side0[(i + 1) % orgLen];
+          var v10 = side1[i];
+          var v11 = side1[(i + 1) % orgLen];
+          triangles.push(v00);
+          triangles.push(v10);
+          triangles.push(v11);
+          triangles.push(v00);
+          triangles.push(v11);
+          triangles.push(v01);
+        }
+      } else {
+        if (side0[0].index !== undefined) {
+          //含索引的顶点
+          for (var i = 0; i < length; i++) {
+            var v00 = side0[i];
+            var v01 = side0[(i + 1) % orgLen];
+            var v10 = side1[i];
+            var v11 = side1[(i + 1) % orgLen];
+            triangles.push(v00.index);
+            triangles.push(v10.index);
+            triangles.push(v11.index);
+            triangles.push(v00.index);
+            triangles.push(v11.index);
+            triangles.push(v01.index);
+          }
+        } else {
+          //三角形顶点
+          for (var i = 0; i < length; i++) {
+            var v00 = side0[i];
+            var v01 = side0[(i + 1) % orgLen];
+            var v10 = side1[i];
+            var v11 = side1[(i + 1) % orgLen];
+            triangles.push(v00);
+            triangles.push(v10);
+            triangles.push(v11);
+            triangles.push(v00);
+            triangles.push(v01);
+            triangles.push(v11);
+          }
+        }
+      }
+
+      return triangles;
+    }
+    /**
+     * 缝合shape集合
+     * @param {Array} shapes  路基 点集的集合， 每个shape的点数量一致
+     * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+     */
+
+    function linkSides(shapes, isClosed = false, isClosed2 = false) {
+      var length = isClosed2 ? shapes.length : shapes.length - 1;
+      var triangles = new ArrayEx();
+
+      for (var i = 0; i < length; i++) {
+        triangles.push(...linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
+      }
+
+      return triangles;
+    }
+    /**
+     * 缝合shape 折线集合
+     * @param {Array} polylines  路基 点集的集合， 
+     */
+
+    function linkPolyline(polylines) {
+      return linkSides(polylines, false);
+    }
+    /**
+     * 缝合shape 多边形集合
+     * @param {Array} polygon
+     */
+
+    function linkPloygon(polygon) {
+      return linkSides(polygon, false);
+    }
+    /**
+     * 挤压
+     * @param {Polygon }    Polygon
+     * @param {Path|Array} path 
+     */
+
+    function extrude(shape, normal, arg_path, options = {
+      isClosed: false,
+      isClosed2: false,
+      textureEnable: true,
+      textureScale: new Vector2(1, 1)
+    }) {
+      options = {
+        isClosed: false,
+        isClosed2: false,
+        textureEnable: true,
+        textureScale: new Vector2(1, 1),
+        smoothAngle: Math.PI / 180 * 30,
+        ...options
+      };
+      var shapepath = new Path(shape);
+      var insertNum = 0;
+
+      for (let i = 1; i < shapepath.length - 1; i++) {
+        if (Math.acos(shapepath[i].direction.dot(shapepath[i + 1].direction)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath[i].clone());
+      }
+
+      if (options.isClosed) {
+        var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
+        var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
+        if (Math.acos(dir1.dot(dir2)) > options.smoothAngle) shape.push(shape.get(-1).clone());
+      }
+
+      if (options.isClosed) shape.unshift(shape[0].clone());
+      var path = arg_path;
+      if (!(path instanceof Path) && path instanceof Array) path = new Path(arg_path);
+      const shapeArray = [];
+
+      for (let i = 0; i < path.length; i++) {
+        const node = path[i];
+        var dir = node.direction;
+        var newShape = clone(shape);
+        rotateByUnitVectors(newShape, normal, dir);
+        translate(newShape, node);
+        shapeArray.push(newShape);
+      }
+
+      var vertices = shapeArray.flat(2);
+      indexable(vertices);
+      var triangles = linkSides(shapeArray, options.isClosed, options.isClosed2);
+      shapepath = new Path(shape);
+      var uvs = [];
+
+      for (let i = 0; i < path.length; i++) {
+        for (let j = 0; j < shapepath.length; j++) {
+          uvs.push(shapepath[j].tlen * options.textureScale.x, path[i].tlen * options.textureScale.y);
+        }
+      }
+
+      return {
+        vertices,
+        triangles,
+        uvs
+      };
+    }
+
+    if (!Array.prototype.get) Array.prototype.get = function (index) {
+      if (index < 0) index = this.length + index;
+      return this[index];
+    };
+    /**
+     * 深度优先遍历
+     * @param {*} method 
+     */
+
+    if (!Array.prototype.forall) Array.prototype.forall = function (method) {
+      for (let i = 0; i < this.length; i++) {
+        method(this[i]);
+        if (this[i] instanceof Array) this[i].forall(method);
+      }
+    };
+    /**
+     * 分类
+     * example:
+     *      var arry = [1,2,3,4,5,6]
+     *      var result = classify(this,(a)={return a%2===0}) 
+     * 
+     * @param {Function} classifyMethod  分类方法
+     */
+
+    if (!Array.prototype.forall) Array.prototype.classify = function (classifyMethod) {
+      var result = [];
+
+      for (let i = 0; i < this.length; i++) {
+        for (let j = 0; j < result.length; j++) {
+          if (classifyMethod(this[i], result[j][0], result[j])) {
+            result[j].push(this[i]);
+          } else {
+            result.push([this[i]]);
+          }
+        }
+      }
+
+      return result;
+    };
+    /**
+     * 去掉重复元素 
+     * @param {Function} uniqueMethod  去重复
+     * @param {Function} sortMethod 排序
+     */
+
+    if (!Array.prototype.unique) Array.prototype.unique = function (uniqueMethod, sortMethod) {
+      if (sortMethod) {
+        this.sort(sortMethod);
+
+        for (let i = 0; i < this.length; i++) {
+          for (let j = i + 1; j < this.length; j++) {
+            if (uniqueMethod(this[i], this[j]) === true) {
+              this.splice(j, 1);
+              j--;
+            } else break;
+          }
+        }
+
+        return this;
+      }
+
+      for (let i = 0; i < this.length; i++) {
+        for (let j = i + 1; j < this.length; j++) {
+          if (uniqueMethod(this[i], this[j]) === true) {
+            this.splice(j, 1);
+            j--;
+          }
+        }
+      }
+
+      return this;
+    };
+
+    exports.ArrayEx = ArrayEx;
     exports.Circle = Circle;
     exports.Disk = Disk;
     exports.Euler = Euler;
     exports.Line = Line;
     exports.Matrix3 = Matrix3;
     exports.Matrix4 = Matrix4;
+    exports.Path = Path;
     exports.Plane = Plane;
     exports.Point = Point;
-    exports.Polygon = Polygon;
+    exports.Polygon = Polygon$1;
     exports.Polyline = Polyline;
     exports.Quaternion = Quaternion;
     exports.Ray = Ray;
@@ -5015,35 +5735,58 @@ var CGA = (function (exports) {
     exports.Vector2 = Vector2;
     exports.Vector3 = Vector3$1;
     exports.Vector4 = Vector4;
+    exports.applyMatrix4 = applyMatrix4;
+    exports.applyQuaternion = applyQuaternion;
     exports.approximateEqual = approximateEqual;
     exports.calcCircleFromThreePoint = calcCircleFromThreePoint;
     exports.ceilPowerOfTwo = ceilPowerOfTwo;
     exports.circle = circle;
     exports.clamp = clamp;
+    exports.classify = classify;
+    exports.clone = clone;
+    exports.convexHull = convexHull;
     exports.degToRad = degToRad;
     exports.disk = disk;
     exports.euler = euler;
+    exports.extrude = extrude;
     exports.floorPowerOfTwo = floorPowerOfTwo;
+    exports.forall = forall;
     exports.fromTwoPoint = fromTwoPoint;
     exports.gPrecision = gPrecision;
+    exports.indexable = indexable;
     exports.isPowerOfTwo = isPowerOfTwo;
     exports.lerp = lerp;
     exports.line = line;
+    exports.linkPloygon = linkPloygon;
+    exports.linkPolyline = linkPolyline;
+    exports.linkSide = linkSide;
+    exports.linkSides = linkSides;
     exports.m3 = m3;
     exports.m4 = m4;
+    exports.projectOnPlane = projectOnPlane;
     exports.quat = quat;
     exports.radToDeg = radToDeg;
     exports.randFloat = randFloat;
     exports.randInt = randInt;
     exports.ray = ray;
+    exports.reverseOnPlane = reverseOnPlane;
+    exports.rotate = rotate;
+    exports.rotateByUnitVectors = rotateByUnitVectors;
+    exports.scale = scale;
     exports.segment = segment$1;
     exports.sign = sign;
+    exports.simplifyPointList = simplifyPointList;
     exports.smootherstep = smootherstep;
     exports.smoothstep = smoothstep;
+    exports.toBuffer = toBuffer;
     exports.toFixed = toFixed;
+    exports.translate = translate;
+    exports.triangListToBuffer = triangListToBuffer;
+    exports.unique = unique;
     exports.v2 = v2;
     exports.v3 = v3;
     exports.v4 = v4;
+    exports.vectorCompare = vectorCompare;
 
     return exports;
 

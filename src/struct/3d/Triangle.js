@@ -1,6 +1,6 @@
-import { Polyline } from "./Polyline";
+import { ArrayEx } from "../data/ArrayEx";
 
-class Triangle extends Array {
+class Triangle extends ArrayEx {
     constructor(v0, v1, v2) {
         super();
         this.push(v0, v1, v2);
