@@ -80,8 +80,9 @@ export class Path extends Polyline {
         var res = [];
         for (var i = 0; i <= splitCount; i++)
         {
-            var p = this.findByLen(i * perlen);
-            res.push(p.point)
+            // 需要重写
+            //     var p = this.findByLen(i * perlen);
+            //     res.push(p.point)
         }
         return Path(res);
     }
