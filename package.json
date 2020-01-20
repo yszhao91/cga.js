@@ -29,6 +29,9 @@
     "开源"
   ],
   "license": "MIT",
+  "dependencies": {
+    "earcut": "^2.2.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "babel-core": "^6.26.3",
@@ -39,7 +42,6 @@
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.1",
-    "earcut": "^2.2.1",
     "element-ui": "^2.13.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "html-loader": "^0.5.5",
