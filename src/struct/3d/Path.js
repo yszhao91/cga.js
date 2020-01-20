@@ -21,26 +21,51 @@ export class Path extends Polyline {
     }
 
     /**
-     * 从起点出发到距离等于distance位置  的坐标
-     * @param {Number} distance 
+     * 从起点出发到距离等于distance位置  的坐标 二分查找
+     * @param {Number} distance
      */
     getPointByDistance(arg_distance) {
-        distance = clamp(arg_distance, 0, this.lastElement.tlen)
-
+        const distance = clamp(arg_distance, 0, this.get(-1).tlen);
         if (distance !== arg_distance)
-            console.warn("当前距离不在线上");
+            return null;
 
-        for (var i = 0; i < this.length - 1; i++)
+        if (right - left === 1)
         {
-            if (distance >= this[i].tlen && distance < this[i + 1].tlen)
-            {
-                return {
-                    range: [i, i + 1],
-                    point: new THREE.Vector3().lerpVectors(this.data[i], this.data[i + 1], (len - this.data[i].tlen) / this.data[i + 1].len),
-                    direction: this.data[i].direction
-                }
+            return {
+                position: left,
+                isNode: false,//是否在节点上
+                point: new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
             }
         }
+        var mid = (left + right) >> 1;
+        if (this[mid].tlen > distance)
+            return this.getPointByDistanceEx(distance, left, mid);
+        else if (this[mid].tlen < distance)
+            return this.getPointByDistanceEx(distance, mid, right);
+        else return {
+            position: mid,
+            isNode: true,//是否在节点上
+            point: new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+        }
+    }
+    /**
+     * 从起点出发到距离等于distance位置  的坐标 二分查找
+     * @param {Number} distance 
+     */
+    getPointByDistancePure(arg_distance) {
+        const distance = clamp(arg_distance, 0, this.get(-1).tlen);
+        if (distance !== arg_distance)
+            return null;
+
+        if (right - left === 1)
+            return new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+
+        var mid = (left + right) >> 1;
+        if (this[mid].tlen > distance)
+            return this.getPointByDistanceEx(distance, left, mid);
+        else if (this[mid].tlen < distance)
+            return this.getPointByDistanceEx(distance, mid, right);
+        else return this[mid].clone();
     }
 
     /**
@@ -59,5 +84,21 @@ export class Path extends Polyline {
             res.push(p.point)
         }
         return Path(res);
+    }
+
+    /**
+     * 
+     * @param  {...any} ps 
+     */
+    add(...ps) {
+        for (let i = 0; i < ps.length; i++)
+        {
+            const pt = ps[i];
+            this.push(pt);
+            pt.len = pt.distanceTo(this.get(-1));
+            pt.tlen = this.get(-1).tlen + pt.len;
+            pt.direction = pt.clone().sub(this.get(-1).normalize());
+            this.get(-1).direction.copy(pt.direction);
+        }
     }
 }
