@@ -21,6 +21,12 @@ export function vectorCompare(a, b) {
         return a.x - b.x;
 }
 
+/**
+ * 将向量拆解为数字
+ * @param {Array} points 
+ * @param {String} feature 
+ * @returns {Array<Number>} 数字数组
+ */
 export function verctorToNumbers(points, feature = "xyz") {
     if (!(points instanceof Array))
     {
@@ -56,6 +62,22 @@ export function verctorToNumbers(points, feature = "xyz") {
     }
 
     return numbers;
+}
+
+/**
+ * 计算包围盒
+ * @param {*} points  点集
+ * @returns {Array[min,max]} 返回最小最大值
+ */
+export function boundingBox(points) {
+    this.min = new Vector3(+Infinity, +Infinity, +Infinity);
+    this.max = new Vector3(-Infinity, -Infinity, -Infinity);
+    for (let i = 0; i < points.length; i++)
+    {
+        this.min.min(points[i]);
+        this.max.max(points[i]);
+    }
+    return [min, max];
 }
 
 /**
@@ -105,7 +127,7 @@ export function rotate(points, axis, angle, ref = true) {
 }
 
 /**
- * 旋转
+ * 两个向量之间存在的旋转量来旋转点集
  * @param {*} points 
  * @param {*} axis 
  * @param {*} angle 

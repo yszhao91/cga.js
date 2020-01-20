@@ -23,13 +23,7 @@ export class Point extends Vector3 {
    * Test success
    * 到直线的距离
    * @param  {Line} line
-   * @returns
-   * {
-   *    lineParameter 最近点的参数
-   *    lineClosest 最近点
-   *    distanceSqr //到最近点距离的平方
-   *    distance//到最近点距离
-   * }
+   * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
    */
   distanceLine(line) {
     var result = {
@@ -51,17 +45,41 @@ export class Point extends Vector3 {
     result.distance = Math.sqrt(result.distanceSqr);
     return result;
   }
+
+  /**
+   * 返回一个纯粹的距离值
+   * @param {Line} line 
+   */
+  distanceLinePureSq(line) {
+    var diff = this.clone().sub(line.origin);
+    var lineParameter = line.direction.dot(diff);
+    var lineClosest = line.direction
+      .clone()
+      .multiplyScalar(lineParameter)
+      .add(line.origin);
+
+    return this.distanceToSquared(lineClosest);
+  }
+
+  /**
+  * 返回一个纯粹的距离值
+  * @param {Line} line 
+  */
+  distanceLinePure(line) {
+    var diff = this.clone().sub(line.origin);
+    var lineParameter = line.direction.dot(diff);
+    var lineClosest = line.direction
+      .clone()
+      .multiplyScalar(lineParameter)
+      .add(line.origin);
+
+    return this.distanceTo(lineClosest);
+  }
   /**
    * Test success
    * 到射线的距离
    * @param  {Line} line
-   * @returns
-   * {
-   *    lineParameter 最近点的参数
-   *    lineClosest 最近点
-   *    distanceSqr //到最近点距离的平方
-   *    distance//到最近点距离
-   * }
+   * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
    */
   distanceRay(ray) {
     var result = {
@@ -95,13 +113,7 @@ export class Point extends Vector3 {
    * Test success
    * 到线段的距离
    * @param  {Line} line
-   * @returns
-   * {
-   *    lineParameter 最近点的参数
-   *    lineClosest 最近点
-   *    distanceSqr //到最近点距离的平方
-   *    distance//到最近点距离
-   * }
+   * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
    */
   distanceSegment(segment) {
     const result = {

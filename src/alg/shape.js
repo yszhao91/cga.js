@@ -6,6 +6,8 @@ import { ArrayEx } from "../struct/data/ArrayEx";
 import { indexable } from "./mesh";
 import { Vector2 } from "../math/Vector2";
 import { trianglation } from "./triangulation";
+import { recognitionPolygonNormal } from "../struct/3d/Polygon";
+import { Point } from "../struct/3d/Point";
 
 /**
  *  常用shape几何操作
@@ -96,8 +98,9 @@ export function linkSide(side0, side1, isClosed = false) {
 
 /**
  * 缝合shape集合
- * @param {Array} shapes  路基 点集的集合， 每个shape的点数量一致
+ * @param {Array<Array<Point|Vector3>} shapes  路基 点集的集合， 每个shape的点数量一致
  * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+ * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
 export function linkSides(shapes, isClosed = false, isClosed2 = false) {
     var length = isClosed2 ? shapes.length : shapes.length - 1;
@@ -113,6 +116,7 @@ export function linkSides(shapes, isClosed = false, isClosed2 = false) {
 /**
  * 缝合shape 折线集合
  * @param {Array} polylines  路基 点集的集合， 
+ * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
 export function linkPolyline(polylines) {
     return linkSides(polylines, false);
@@ -121,6 +125,7 @@ export function linkPolyline(polylines) {
 /**
  * 缝合shape 多边形集合
  * @param {Array} polygon
+ * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
 export function linkPloygon(polygon) {
     return linkSides(polygon, false);
@@ -128,10 +133,18 @@ export function linkPloygon(polygon) {
 
 /**
  * 挤压
- * @param {Polygon }    Polygon
- * @param {Path|Array} path 
+ * @param {Polygon|Array<Point|Vector3> }  shape   多边形或顶点数组
+ * @param {Path|Array<Point|Vector3> } path  路径或者或顶点数组
+ * @param {Object} options {  
+ *      isClosed: false,闭合为多边形
+ *      isClosed2: false, 闭合为圈
+ *      textureEnable: true, 计算纹理坐标
+ *      textureScale: new Vector2(1, 1),纹理坐标缩放
+ *      smoothAngle: Math.PI / 180 * 30,大于这个角度则不平滑
+ *      sealStart: true, 是否密封开始面
+ *      sealEnd: true,是否密封结束面}
  */
-export function extrude(shape, normal, arg_path, options = {}) {
+export function extrude(shape, arg_path, options = {}) {
     options = {
         isClosed: false,
         isClosed2: false,
@@ -142,31 +155,33 @@ export function extrude(shape, normal, arg_path, options = {}) {
         sealEnd: true,
         ...options
     }
+    var normal = options.normal || recognitionPolygonNormal(shape);
 
-    var startSeal = clone(shape)
+    var startSeal = clone(shape);
 
-    var shapepath = new Path(shape)
+    var shapepath = new Path(shape);
     var insertNum = 0;
     for (let i = 1; i < shapepath.length - 1; i++)
-    {
+    { //大角度插入点
         if (Math.acos(shapepath[i].direction.dot(shapepath[i + 1].direction)) > options.smoothAngle)
             shape.splice(i + insertNum++, 0, shapepath[i].clone());
     }
 
     if (options.isClosed)
-    {
-        var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize()
-        var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize()
-        if (Math.acos(dir1.dot(dir2)) > options.smoothAngle)
-            shape.push(shape.get(-1).clone());
+    {   //大角度插入点
+        var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
+        var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
+        if (Math.acos(dir1.dot(dir2)) > options.smoothAngle);
+        shape.push(shape.get(-1).clone());
+
+        //新加起始点纹理拉伸
+        shape.unshift(shape[0].clone());
     }
 
-    if (options.isClosed)
-        shape.unshift(shape[0].clone());
 
-    var path = arg_path;
+    let path = arg_path;
     if (!(path instanceof Path) && path instanceof Array)
-        path = new Path(arg_path)
+        path = new Path(arg_path);
 
     const shapeArray = [];
 
@@ -181,7 +196,7 @@ export function extrude(shape, normal, arg_path, options = {}) {
         shapeArray.push(newShape);
     }
 
-    var index = { index: 0 };
+    const index = { index: 0 };
     var vertices = shapeArray.flat(2);
     indexable(vertices, index);
     var triangles = linkSides(shapeArray, options.isClosed, options.isClosed2);
@@ -207,7 +222,7 @@ export function extrude(shape, normal, arg_path, options = {}) {
     rotateByUnitVectors(endSeal, normal, path.get(-1).direction);
     translate(endSeal, path.get(-1));
 
-    var sealStartTris = trianglation(sealUv)
+    var sealStartTris = trianglation(sealUv, [], { normal })
     if (options.sealStart)
         indexable(startSeal, index);
     if (options.sealEnd)
@@ -227,16 +242,9 @@ export function extrude(shape, normal, arg_path, options = {}) {
     if (options.sealEnd && options.sealStart)
         for (let i = 0; i < sealStartTris.length; i++)
         {
-            sealEndTris[i] = sealStartTris[i] + sealStart.length;
+            sealEndTris[i] = sealStartTris[i] + startSeal.length;
         }
 
-    if (options.sealEnd)
-    {
-        vertices.push(...endSeal);
-        triangles.push(...sealEndTris);
-        for (let i = 0; i < sealUv.length; i++)
-            uvs.push(sealUv[i].x, sealUv[i].y);
-    }
     if (options.sealStart)
     {
         vertices.push(...startSeal);
@@ -245,6 +253,13 @@ export function extrude(shape, normal, arg_path, options = {}) {
             uvs.push(sealUv[i].x, sealUv[i].y);
     }
 
+    if (options.sealEnd)
+    {
+        vertices.push(...endSeal);
+        triangles.push(...sealEndTris);
+        for (let i = 0; i < sealUv.length; i++)
+            uvs.push(sealUv[i].x, sealUv[i].y);
+    }
 
     return {
         vertices,

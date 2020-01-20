@@ -6,8 +6,9 @@ export class Vector3 {
     this.x = x || 0;
     this.y = y || 0;
     this.z = z || 0;
-    this.isVector3 = true;
   }
+
+  get isVector3() { return true; }
 
   static get Up() {
     return new Vector3(0, 1, 0);

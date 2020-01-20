@@ -61,6 +61,7 @@ module.exports = {
             'distLineAll',
             'distRayAll',
             'distSegmentAll',
+            '常用'
           ],
           '/demo/': [
             '',

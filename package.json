@@ -44,6 +44,7 @@
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
+    "jsdoc": "^3.6.3",
     "node-sass": "^4.12.0",
     "rollup": "^1.27.14",
     "rollup-plugin-babel": "^4.3.3",

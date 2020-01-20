@@ -3,6 +3,8 @@ node_modules/
 dist/
 root/
 /root/
+/out
+/out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

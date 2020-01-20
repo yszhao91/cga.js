@@ -7,7 +7,8 @@ export class ConvexHull {
     constructor(points) {
         this.min = new Vector2(+Infinity, +Infinity, +Infinity);
         this.max = new Vector2(-Infinity, -Infinity, -Infinity);
-        for (let i = 0; i < points.length; i++) {
+        for (let i = 0; i < points.length; i++)
+        {
             this.min.min(points[i]);
             this.max.max(points[i]);
         }
