@@ -23,6 +23,7 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 - [射线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html](http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html)
 
 - [线段与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html](http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html)
+- [常用 https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html)
 
 ## 安装
 
