@@ -5,6 +5,7 @@ import { Point } from "./struct/3d/Point";
 import { BufferGeometry, Geometry, Line, LineDashedMaterial, Float32BufferAttribute, PointsMaterial, Points, LineBasicMaterial, Mesh, WebGLRenderer, PerspectiveCamera, Scene, HemisphereLight, PolarGridHelper, Face3, DoubleSide } from "three";
 import { Quaternion } from "./math/Quaternion";
 import { v3 } from "./math/Vector3";
+import { Polyline } from "./struct/3d/Polyline";
 function toDisSeg(obj, opts) {
     var geometry = new Geometry()
     geometry.vertices.push(...obj)
@@ -24,15 +25,13 @@ function toDisSeg(obj, opts) {
 
 function toMesh(obj, opts) {
     var renderObj = null;
-    if (obj instanceof cga.Point || obj.isVector3)
-    {
+    if (obj instanceof cga.Point || obj.isVector3) {
         var geometry = new BufferGeometry()
         geometry.setAttribute('position', new Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
         var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
         renderObj = new Points(geometry, material);
 
-    } else if (obj instanceof cga.Line)
-    {
+    } else if (obj instanceof cga.Line) {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         var v2 = obj.direction.clone().multiplyScalar(-10000).add(obj.origin);
@@ -40,21 +39,18 @@ function toMesh(obj, opts) {
         var material = new LineBasicMaterial({ color: 0xffff8f });
         renderObj = new Line(geometry, material);
 
-    } else if (obj instanceof cga.Ray)
-    {
+    } else if (obj instanceof cga.Ray) {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         geometry.vertices.push(obj.origin, v1);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Segment)
-    {
+    } else if (obj instanceof cga.Segment) {
         var geometry = new Geometry()
         geometry.vertices.push(obj.p0, obj.p1);
         var material = new LineBasicMaterial({ color: 0x8fffff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Triangle)
-    {
+    } else if (obj instanceof cga.Triangle) {
         debugger
         var geometry = new Geometry()
         geometry.vertices = [...obj];
@@ -63,14 +59,12 @@ function toMesh(obj, opts) {
         renderObj = new Mesh(geometry, material);
     }
 
-    else if (obj instanceof cga.Polyline)
-    {
+    else if (obj instanceof cga.Polyline) {
         var geometry = new Geometry()
         geometry.vertices.push(...obj);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Polygon)
-    {
+    } else if (obj instanceof cga.Polygon) {
 
     }
 
@@ -196,16 +190,16 @@ scene.add(new PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
 // scene.add(toDisSeg(result.closestPoint))
 
 //---直线与射线的距离测试----------------------------------------------------------------
-var ray = new cga.Ray(randomV3(), randomV3().normalize());
-var segment = new cga.Segment(randomV3(), randomV3());
-var result = ray.distanceSegment(segment);
-infoPanel.innerText = JSON.stringify(result);
-scene.add(toMesh(ray));
-scene.add(toMesh(segment));
-debugger
-scene.add(toMesh(result.closestPoint[0]));
-scene.add(toMesh(result.closestPoint[1]));
-scene.add(toDisSeg(result.closestPoint))
+// var ray = new cga.Ray(randomV3(), randomV3().normalize());
+// var segment = new cga.Segment(randomV3(), randomV3());
+// var result = ray.distanceSegment(segment);
+// infoPanel.innerText = JSON.stringify(result);
+// scene.add(toMesh(ray));
+// scene.add(toMesh(segment));
+// debugger
+// scene.add(toMesh(result.closests[0]));
+// scene.add(toMesh(result.closests[1]));
+// scene.add(toDisSeg(result.closests))
 //---线段与线段的距离测试----------------------------------------------------------------
 // var seg0 = new cga.Segment(randomV3(), randomV3());
 // var seg1 = new cga.Segment(randomV3(), randomV3());
@@ -217,6 +211,18 @@ scene.add(toDisSeg(result.closestPoint))
 // scene.add(toMesh(result.closest[1]));
 // scene.add(toDisSeg(result.closest))
 
+//---折线偏移测试----------------------------------------------------------------
+var polyline = new Polyline([v3(0, 0, 0), v3(0, 0, 10), v3(2, 0, 20), v3(5, 0, 30), v3(10, 0, 40), v3(17, 0, 50)])
+scene.add(toMesh(polyline));
+debugger
+polyline.offset(2);
+// var result = seg0.distanceSegment(seg1);
+// infoPanel.innerText = JSON.stringify(result);
+// scene.add(toMesh(seg0));
+// scene.add(toMesh(seg1));
+// scene.add(toMesh(result.closest[0]));
+// scene.add(toMesh(result.closest[1]));
+// scene.add(toDisSeg(result.closest))
 
 // scene.add(new gl.GridHelper(60, 30))
 // scene.add(new gl.AxesHelper(1000))

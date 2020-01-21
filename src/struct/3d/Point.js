@@ -90,14 +90,12 @@ export class Point extends Vector3 {
     var diff = this.clone().sub(ray.origin);
     result.rayParameter = ray.direction.dot(diff);
 
-    if (result.rayParameter > 0)
-    {
+    if (result.rayParameter > 0) {
       result.rayClosest = ray.direction
         .clone()
         .multiplyScalar(result.rayParameter)
         .add(ray.origin);
-    } else
-    {
+    } else {
       result.rayClosest = ray.origin.clone();
     }
     result.parameters.push(0, result.rayParameter);
@@ -124,21 +122,17 @@ export class Point extends Vector3 {
     var diff = this.clone().sub(segment.p1);
     var t = segment.lenDirection.dot(diff);
 
-    if (t >= 0)
-    {
+    if (t >= 0) {
       result.segmentParameter = 1;
       result.segmentClosest = segment.p1;
-    } else
-    {
+    } else {
       diff = this.clone().sub(segment.p0);
       t = segment.lenDirection.dot(diff);
-      if (t <= 0)
-      {
+      if (t <= 0) {
         result.segmentParameter = 0;
         result.segmentClosest = segment.p0;
       }
-      else
-      {
+      else {
         var sqrLength = segment.lenSq;
         if (sqrLength <= 0)
           sqrLength = 0;
@@ -170,8 +164,7 @@ export class Point extends Vector3 {
     var tempResult = null;
     var result = null;
 
-    for (let i = 0; i < polyline.length - 1; i++)
-    {
+    for (let i = 0; i < polyline.length - 1; i++) {
       const pti = polyline[i];
       const ptj = polyline[i + 1];
       if (Math.abs(pti.x - this.x) > u && Math.abs(ptj.x - this.x) > u && (pti.x - this.x) * (ptj.x - this.x) > 0)
@@ -181,8 +174,7 @@ export class Point extends Vector3 {
       if (Math.abs(pti.z - this.z) > u && Math.abs(ptj.z - this.z) > u && (pti.z - this.z) * (ptj.z - this.z) > 0)
         continue;
       tempResult = this.distanceSegment(new Segment(pti, ptj));
-      if (tempResult.distance < u)
-      {
+      if (tempResult.distance < u) {
         u = tempResult.distance;
         result = tempResult;
         ipos = i;
@@ -199,13 +191,11 @@ export class Point extends Vector3 {
     var tempResult = null;
     var result = null;
 
-    for (let i = 0; i < polyline.length - 1; i++)
-    {
+    for (let i = 0; i < polyline.length - 1; i++) {
       const pti = polyline[i];
       const ptj = polyline[i + 1];
       tempResult = this.distanceSegment(new Segment(pti, ptj));
-      if (u > tempResult.distance)
-      {
+      if (u > tempResult.distance) {
         u = tempResult.distance;
         result = tempResult;
         ipos = i
@@ -249,13 +239,11 @@ export class Point extends Vector3 {
     var PmC = this.clone().sub(circle.center);
     var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
     var lengthQmC = QmC.length();
-    if (lengthQmC > gPrecision)
-    {
+    if (lengthQmC > gPrecision) {
       result.circleClosest = QmC.clone().multiplyScalar(circle.radius / lengthQmC).add(circle.center);
       result.equidistant = false;
     }
-    else
-    {
+    else {
       var offsetPoint = circle.center.clone().add(10, 10, 10);
       var CP = offsetPoint.sub(circle.center);
       var CQ = CP.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(CP))).normalize()
@@ -293,12 +281,10 @@ export class Point extends Vector3 {
 
     result.signed = sign(this.clone().dot(disk.normal) - disk.w);
 
-    if (lengthQmC > disk.radius)
-    {
+    if (lengthQmC > disk.radius) {
       result.diskClosest = QmC.clone().multiplyScalar(disk.radius / lengthQmC).add(disk.center);
     }
-    else
-    {
+    else {
       var signedDistance = this.clone().dot(disk.normal) - disk.w;
       result.diskClosest = this.clone().sub(disk.normal.clone().multiplyScalar(signedDistance));
     }
@@ -327,35 +313,28 @@ export class Point extends Vector3 {
 
     function GetMinEdge02(a11, b1, p) {
       p[0] = 0;
-      if (b1 >= 0)
-      {
+      if (b1 >= 0) {
         p[1] = 0;
       }
-      else if (a11 + b1 <= 0)
-      {
+      else if (a11 + b1 <= 0) {
         p[1] = 1;
       }
-      else
-      {
+      else {
         p[1] = -b1 / a11;
       }
     }
 
     function GetMinEdge12(a01, a11, b1, f10, f01, p) {
       var h0 = a01 + b1 - f10;
-      if (h0 >= 0)
-      {
+      if (h0 >= 0) {
         p[1] = 0;
       }
-      else
-      {
+      else {
         var h1 = a11 + b1 - f01;
-        if (h1 <= 0)
-        {
+        if (h1 <= 0) {
           p[1] = 1;
         }
-        else
-        {
+        else {
           p[1] = h0 / (h0 - h1);
         }
       }
@@ -385,15 +364,12 @@ export class Point extends Vector3 {
     var dt1, h0, h1;
 
 
-    if (f00 >= 0)
-    {
-      if (f01 >= 0)
-      {
+    if (f00 >= 0) {
+      if (f01 >= 0) {
         // (1) p0 = (0,0), p1 = (0,1), H(z) = G(L(z))
         GetMinEdge02(a11, b1, p);
       }
-      else
-      {
+      else {
         // (2) p0 = (0,t10), p1 = (t01,1-t01),
         // H(z) = (t11 - t10)*G(L(z))
         p0[0] = 0;
@@ -402,60 +378,48 @@ export class Point extends Vector3 {
         p1[1] = 1 - p1[0];
         dt1 = p1[1] - p0[1];
         h0 = dt1 * (a11 * p0[1] + b1);
-        if (h0 >= 0)
-        {
+        if (h0 >= 0) {
           GetMinEdge02(a11, b1, p);
         }
-        else
-        {
+        else {
           h1 = dt1 * (a01 * p1[0] + a11 * p1[1] + b1);
-          if (h1 <= 0)
-          {
+          if (h1 <= 0) {
             GetMinEdge12(a01, a11, b1, f10, f01, p);
           }
-          else
-          {
+          else {
             GetMinInterior(p0, h0, p1, h1, p);
           }
         }
       }
     }
-    else if (f01 <= 0)
-    {
-      if (f10 <= 0)
-      {
+    else if (f01 <= 0) {
+      if (f10 <= 0) {
         // (3) p0 = (1,0), p1 = (0,1),
         // H(z) = G(L(z)) - F(L(z))
         GetMinEdge12(a01, a11, b1, f10, f01, p);
       }
-      else
-      {
+      else {
         // (4) p0 = (t00,0), p1 = (t01,1-t01), H(z) = t11*G(L(z))
         p0[0] = f00 / (f00 - f10);
         p0[1] = 0;
         p1[0] = f01 / (f01 - f10);
         p1[1] = 1 - p1[0];
         h0 = p1[1] * (a01 * p0[0] + b1);
-        if (h0 >= 0)
-        {
+        if (h0 >= 0) {
           p = p0;  // GetMinEdge01
         }
-        else
-        {
+        else {
           h1 = p1[1] * (a01 * p1[0] + a11 * p1[1] + b1);
-          if (h1 <= 0)
-          {
+          if (h1 <= 0) {
             GetMinEdge12(a01, a11, b1, f10, f01, p);
           }
-          else
-          {
+          else {
             GetMinInterior(p0, h0, p1, h1, p);
           }
         }
       }
     }
-    else if (f10 <= 0)
-    {
+    else if (f10 <= 0) {
       // (5) p0 = (0,t10), p1 = (t01,1-t01),
       // H(z) = (t11 - t10)*G(L(z))
       p0[0] = 0;
@@ -464,44 +428,35 @@ export class Point extends Vector3 {
       p1[1] = 1 - p1[0];
       dt1 = p1[1] - p0[1];
       h0 = dt1 * (a11 * p0[1] + b1);
-      if (h0 >= 0)
-      {
+      if (h0 >= 0) {
         GetMinEdge02(a11, b1, p);
       }
-      else
-      {
+      else {
         h1 = dt1 * (a01 * p1[0] + a11 * p1[1] + b1);
-        if (h1 <= 0)
-        {
+        if (h1 <= 0) {
           GetMinEdge12(a01, a11, b1, f10, f01, p);
         }
-        else
-        {
+        else {
           GetMinInterior(p0, h0, p1, h1, p);
         }
       }
     }
-    else
-    {
+    else {
       // (6) p0 = (t00,0), p1 = (0,t11), H(z) = t11*G(L(z))
       p0[0] = f00 / (f00 - f10);
       p0[1] = 0;
       p1[0] = 0;
       p1[1] = f00 / (f00 - f01);
       h0 = p1[1] * (a01 * p0[0] + b1);
-      if (h0 >= 0)
-      {
+      if (h0 >= 0) {
         p = p0;  // GetMinEdge01
       }
-      else
-      {
+      else {
         h1 = p1[1] * (a11 * p1[1] + b1);
-        if (h1 <= 0)
-        {
+        if (h1 <= 0) {
           GetMinEdge02(a11, b1, p);
         }
-        else
-        {
+        else {
           GetMinInterior(p0, h0, p1, h1, p);
         }
       }
@@ -540,29 +495,24 @@ export class Point extends Vector3 {
     var s0 = -b0, s1 = -b1;
     result.sqrDistance = diff.dot(diff);
 
-    if (s0 < -rectangle.extent[0])
-    {
+    if (s0 < -rectangle.extent[0]) {
       s0 = -rectangle.extent[0];
     }
-    else if (s0 > rectangle.extent[0])
-    {
+    else if (s0 > rectangle.extent[0]) {
       s0 = rectangle.extent[0];
     }
     result.sqrDistance += s0 * (s0 + 2 * b0);
 
-    if (s1 < -rectangle.extent[1])
-    {
+    if (s1 < -rectangle.extent[1]) {
       s1 = -rectangle.extent[1];
     }
-    else if (s1 > rectangle.extent[1])
-    {
+    else if (s1 > rectangle.extent[1]) {
       s1 = rectangle.extent[1];
     }
     result.sqrDistance += s1 * (s1 + 2 * b1);
 
     // Account for numerical round-off error.
-    if (result.sqrDistance < 0)
-    {
+    if (result.sqrDistance < 0) {
       result.sqrDistance = 0;
     }
 
@@ -570,8 +520,7 @@ export class Point extends Vector3 {
     result.rectangleParameter[0] = s0;
     result.rectangleParameter[1] = s1;
     result.rectangleClosestPoint = rectangle.center;
-    for (var i = 0; i < 2; ++i)
-    {
+    for (var i = 0; i < 2; ++i) {
       result.rectangleClosestPoint.add(rectangle.axis[i].clone().multiplyScalar(result.rectangleParameter[i]));
     }
     result.closests.push(this, result.rectangleClosestPoint);
@@ -616,8 +565,7 @@ export class Point extends Vector3 {
 
 
   //方位
-  orientationLine() {
-
+  orientationLine(lineormal = Vector3.UnitY) { 
   }
 
   orientationPlane() {
