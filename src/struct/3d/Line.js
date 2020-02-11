@@ -1,4 +1,4 @@
-import { v3 } from "../../math/Vector3";
+import { v3, Vector3 } from "../../math/Vector3";
 import { gPrecision } from "../../math/Math";
 import { Segment } from "./Segment";
 import { Orientation } from "./type";
@@ -314,14 +314,14 @@ export class Line {
   //---方位---------------------
   orientationPoint(point, normal = Vector3.UnitY) {
     var binormal = this.direction.clone().cross(normal);
-    if (this.distanceLine(point).distance < gPrecision)
-      return Orientation.Common;
+    if (this.distancePoint(point).distance < gPrecision)
+      return Orientation.Common; 
     return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
   }
-  
+
   orientationSegment(segment, normal = Vector3.UnitY) {
-    var or0 = this.orientationPoint(segment.p0,normal);
-    var or1 = this.orientationPoint(segment.p1,normal);
+    var or0 = this.orientationPoint(segment.p0, normal);
+    var or1 = this.orientationPoint(segment.p1, normal);
     return or0 | or1;
   }
 }

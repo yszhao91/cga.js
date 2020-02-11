@@ -1,11 +1,22 @@
 import { sign, approximateEqual, gPrecision } from "../../math/Math";
 import { Orientation } from "../3d/type"
+import { Vector3 } from "../../math/Vector3";
 class Plane {
-    constructor(normal, w) {
+    constructor(normal = Vector3.UnitZ, w = 0) {
         this.normal = normal;
         this.w = w;
         this.origin = this.normal.clone().multiplyScalar(w)
         // this.w = this.normal.dot(this.origin)
+    }
+
+    setFromThreePoint(p0, p1, p2) {
+        this.normal = p1.clone().sub(p0).cross(p2.clone().sub(p0)).normalize();
+        this.w = p0.dot(this.normal);
+    }
+
+    negate() {
+        this.normal.negate();
+        this.w = -this.w;
     }
 
     /**
@@ -52,8 +63,7 @@ class Plane {
 
         let orientation = orientation0 | orientation1;
         result.orientation = orientation;
-        switch (orientation)
-        {
+        switch (orientation) {
             case Orientation.Negative:
                 result.splits.push(null, segment.clone());
                 break;
@@ -77,8 +87,7 @@ class Plane {
 
         let orientation = orientation0 | orientation1;
         result.orientation = orientation;
-        switch (orientation)
-        {
+        switch (orientation) {
             case Orientation.Negative:
                 result.splits.push(null, segment.clone());
                 break;

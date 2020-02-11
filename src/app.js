@@ -2,10 +2,12 @@ import "./app.css"
 import * as cga from "./";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { Point } from "./struct/3d/Point";
-import { BufferGeometry, Geometry, Line, LineDashedMaterial, Float32BufferAttribute, PointsMaterial, Points, LineBasicMaterial, Mesh, WebGLRenderer, PerspectiveCamera, Scene, HemisphereLight, PolarGridHelper, Face3, DoubleSide } from "three";
+import { BufferGeometry, Geometry, Line, LineDashedMaterial, Float32BufferAttribute, PointsMaterial, Points, LineBasicMaterial, Mesh, WebGLRenderer, PerspectiveCamera, Scene, HemisphereLight, PolarGridHelper, Face3, DoubleSide, CylinderBufferGeometry, MeshStandardMaterial, MeshBasicMaterial, AxesHelper, SphereBufferGeometry } from "three";
 import { Quaternion } from "./math/Quaternion";
 import { v3 } from "./math/Vector3";
 import { Polyline } from "./struct/3d/Polyline";
+import { ConvexHull } from "./alg/convexHull";
+import { verctorToNumbers } from "./alg/points";
 function toDisSeg(obj, opts) {
     var geometry = new Geometry()
     geometry.vertices.push(...obj)
@@ -21,6 +23,22 @@ function toDisSeg(obj, opts) {
     var line = new Line(geometry, material);
     line.computeLineDistances();
     return line;
+}
+
+function toPoints(points) {
+    var geometry = new BufferGeometry()
+    var v3ary = verctorToNumbers(points);
+    geometry.setAttribute('position', new Float32BufferAttribute(v3ary, 3));
+    var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
+    return new Points(geometry, material);
+}
+
+function toPolygon(points) {
+    var geometry = new Geometry()
+    geometry.vertices.push(...points);
+    geometry.vertices.push(points[0]);
+    var material = new LineBasicMaterial({ color: 0xff8fff });
+    return new Line(geometry, material);
 }
 
 function toMesh(obj, opts) {
@@ -76,6 +94,9 @@ function toMesh(obj, opts) {
 function randomV3() {
     return cga.v3(Math.random() * 100 - 50, Math.random() * 100, Math.random() * 100 - 50);
 }
+function randomP() {
+    return cga.Point(Math.random() * 100 - 50, Math.random() * 100, Math.random() * 100 - 50);
+}
 
 
 const container = document.body;
@@ -86,7 +107,7 @@ document.body.append(infoPanel)
 
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x222222);
+renderer.setClearColor(0xffffff);
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
 camera.position.set(0, 160, -120);
 const control = new OrbitControls(camera, renderer.domElement);
@@ -101,7 +122,8 @@ var scene = new Scene();
 scene.add(new HemisphereLight(0xffffff, 0x555555));
 // scene.add(new gl.Mesh(new gl.SphereBufferGeometry(1, 30, 30), new gl.MeshStandardMaterial()))
 // scene.add(toMesh(new Point(10, 0, 0)))
-scene.add(new PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
+// scene.add(new PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
+scene.add(new AxesHelper(10000))
 //---点与直线的距离测试----------------------------------------------------------------
 // var point = new cga.Point().copy(randomV3());
 // var line = new cga.Line(randomV3(), randomV3());
@@ -212,10 +234,10 @@ scene.add(new PolarGridHelper(100, 8, 10, 64, 0x0a9ff0, 0x0af09f))
 // scene.add(toDisSeg(result.closest))
 
 //---折线偏移测试----------------------------------------------------------------
-var polyline = new Polyline([v3(0, 0, 0), v3(0, 0, 10), v3(2, 0, 20), v3(5, 0, 30), v3(10, 0, 40), v3(17, 0, 50)])
-scene.add(toMesh(polyline));
-debugger
-polyline.offset(2);
+// var polyline = new Polyline([v3(0, 0, 0), v3(0, 0, 10), v3(2, 0, 20), v3(5, 0, 30), v3(10, 0, 40), v3(17, 0, 50)])
+// scene.add(toMesh(polyline));
+// debugger
+// polyline.offset(2);
 // var result = seg0.distanceSegment(seg1);
 // infoPanel.innerText = JSON.stringify(result);
 // scene.add(toMesh(seg0));
@@ -241,12 +263,29 @@ polyline.offset(2);
 //     new cga.v3(-1, 0, -4),
 //     new cga.v3(-4, 0, -1)
 // )))
+// var mesh = new Mesh(new SphereBufferGeometry(10,3,3), new MeshBasicMaterial({color:0xff8880, wireframe: true }));
+// mesh.position.y = 10;
+// mesh.position.x = -25;
+// scene.add(mesh);
 
-var q = new Quaternion();
-q.setFromUnitVectors(v3(0, 0, 1), v3(0, 1, 0))
-var v = new v3(0, 0, 1);
-debugger
-v.apply
+// var mesh = new Mesh(new SphereBufferGeometry(10,10,10), new MeshBasicMaterial({color:0xff8888, wireframe: true }));
+// mesh.position.y = 10; 
+// scene.add(mesh);
+
+// var mesh = new Mesh(new SphereBufferGeometry(10,20,20), new MeshBasicMaterial({color:0xff8088, wireframe: true }));
+// mesh.position.y = 10;
+// mesh.position.x = 25;
+// scene.add(mesh);
+
+var points = [];
+for (let i = 0; i < 100; i++) {
+    const point = new Point(Math.random() * 100 - 50, Math.random() * 100 - 50, 0);
+    points.push(point);
+} 
+var convexHull = new ConvexHull(points);
+var hull = convexHull.hull; 
+scene.add(toPoints(points));
+scene.add(toPolygon(hull));
 
 function render() {
     renderer.render(scene, camera)

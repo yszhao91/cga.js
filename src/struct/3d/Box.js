@@ -3,11 +3,14 @@ import { v3, Vector3 } from "../../math/Vector3";
 /**
  * 
  */
-export class Box {
-    constructor() {
+export class BoundingBox {
+    constructor(points) {
         this.min = v3(Infinity, Infinity, Infinity);
         this.max = v3(-Infinity, -Infinity, -Infinity);
         this._center = v3();
+        if (points) {
+            this.setFromPoints(points);
+        }
     }
 
     get center() {
