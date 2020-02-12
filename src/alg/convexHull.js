@@ -12,9 +12,9 @@ export class ConvexHull {
     /**
      * 
      * @param {Array<Points>} points  点集
-     * @param {} opt  {planeNormal,method}
+     * @param {} options  {planeNormal,method}
      */
-    constructor(points, opt = { planeNormal: null, method: 'quick' }) {
+    constructor(points, options = { planeNormal: null, method: 'quick' }) {
         if (points.length < 3) {
             throw Error('cannot build a simplex out of <3 points')
         }
@@ -22,10 +22,11 @@ export class ConvexHull {
         this.originPoints = points;
         var newpoints = clone(points);
         indexable(newpoints);
-        var planeNormal = opt.planeNormal
+        var planeNormal = options.planeNormal
         if (!planeNormal) {
             var plane = isInOnePlane(newpoints);
-            planeNormal = plane.normal;
+            if (plane)
+                planeNormal = plane.normal;
         }
         this.normal = Vector3.UnitZ;
         if (planeNormal) {
