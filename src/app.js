@@ -281,9 +281,9 @@ var points = [];
 for (let i = 0; i < 100; i++) {
     const point = new Point(Math.random() * 100 - 50, Math.random() * 100 - 50, 0);
     points.push(point);
-} 
-var convexHull = new ConvexHull(points);
-var hull = convexHull.hull; 
+}
+var convexHull = new ConvexHull(points, { planeNormal: cga.Vector3.UnitZ });
+var hull = convexHull.hull;
 scene.add(toPoints(points));
 scene.add(toPolygon(hull));
 

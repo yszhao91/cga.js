@@ -9,18 +9,30 @@ import { Orientation } from "../struct/3d/type";
 import { gPrecision } from "../math/Math";
 
 export class ConvexHull {
-    constructor(points, opt = 'quick') {
+    /**
+     * 
+     * @param {Array<Points>} points  点集
+     * @param {} opt  {planeNormal,method}
+     */
+    constructor(points, opt = { planeNormal: null, method: 'quick' }) {
+        if (points.length < 3) {
+            throw Error('cannot build a simplex out of <3 points')
+        }
         this._hull = [];
         this.originPoints = points;
         var newpoints = clone(points);
         indexable(newpoints);
-        var plane = isInOnePlane(newpoints);
+        var planeNormal = opt.planeNormal
+        if (!planeNormal) {
+            var plane = isInOnePlane(newpoints);
+            planeNormal = plane.normal;
+        }
         this.normal = Vector3.UnitZ;
-        if (plane) {
+        if (planeNormal) {
             //在一个平面  2D ConvexHull 
-            if (this.normal.dot(plane.normal) < 0)
-                plane.negate();
-            rotateByUnitVectors(newpoints, plane.normal, this.normal);
+            if (this.normal.dot(planeNormal) < 0)
+                planeNormal.negate();
+            rotateByUnitVectors(newpoints, planeNormal, this.normal);
             newpoints.forEach(pt => pt.z = 0)
             //找出一段在某个轴距离最远点
             var [minPt, maxPt] = this.getMinMax(newpoints);
