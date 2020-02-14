@@ -1,5 +1,6 @@
 import { boundingBox, isInOnePlane } from "./points";
 import { v3 } from "../math/Vector3";
+import { calcCircleFromThreePoint } from "../struct/3d/Circle";
 
 export class Delaunay {
     constructor(points, options = { planeNormal: null }) {
@@ -25,8 +26,30 @@ export class Delaunay {
                 planeNormal.negate();
             rotateByUnitVectors(newpoints, planeNormal, this.normal);
             var superTriangle = this.boundTriangle(newpoints);
-            
-            
+
+            this._triangles.push(superTriangle);
+
+            // 按X轴排序
+            newpoints.sort((p0, p1) => {
+                if (p0.x === p1.x)
+                    return p0.x - p1.x;
+                return p0.y - p1.y;
+            });
+
+            var nlen = newpoints.length;
+
+            var open = [calcCircleFromThreePoint(newpoints[n], newpoints[n + 1], newpoints[n + 2])];
+            var close = [];
+            var edges = [];
+
+            for (let i = 0; i < nlen; i++) {
+                const np = newpoints[i];
+                for (let j = 0; j < open.length; j++) {
+                    closed.push(open[j]);
+                    open.splice(j, 1);
+                    continue;
+                }
+            }
         }
     }
 
