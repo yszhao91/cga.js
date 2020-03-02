@@ -3246,6 +3246,13 @@ var cga = (function (exports) {
       return Euler(x, y, z);
     }
 
+    const Orientation = {
+      Common: 0,
+      Positive: 1,
+      Negative: 2,
+      Intersect: 3
+    };
+
     class Segment extends Array {
       /**
        * 线段
@@ -3602,21 +3609,34 @@ var cga = (function (exports) {
 
       /**
        * 线段偏移
-       * @param {Vector3} normal  偏移平面法线
+       * @param {Vector3} binormal  偏移平面法线
        * @param {Vector3} direction 偏移方向
        * @param {Number} distance 偏移距离
        */
 
 
-      offset(normal, direction, distance) {
-        normal = normal || new Vector3(0, 1, 0);
+      offset(binormal, direction, distance) {
+        binormal = binormal || new Vector3(0, 1, 0);
         var direction = p1.clone().sub(p0).normalize();
-        var tandir = direction.clone().cross(normal).normalize();
+        var tandir = direction.clone().cross(binormal).normalize();
         var result = {};
         result.arr = [tandir.clone().multiplyScalar(distance).add(p0), tandir.clone().multiplyScalar(distance).add(p1)];
         result.direction = direction;
         result.tandir = tandir;
         return result;
+      } //---方位---------------------
+
+
+      orientationPoint(point, normal = Vector3.UnitY) {
+        var binormal = this.direction.clone().cross(normal);
+        if (this.distanceLine(point).distance < gPrecision) return Orientation.Common;
+        return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
+      }
+
+      orientationSegment(segment, normal = Vector3.UnitY) {
+        var or0 = this.orientationPoint(segment.p0, normal);
+        var or1 = this.orientationPoint(segment.p1, normal);
+        return or0 | or1;
       }
 
     }
@@ -3911,7 +3931,20 @@ var cga = (function (exports) {
       intersectLine(line) {} //---平行-------------
 
 
-      parallelLine(line) {}
+      parallelLine(line) {} //---方位---------------------
+
+
+      orientationPoint(point, normal = Vector3$1.UnitY) {
+        var binormal = this.direction.clone().cross(normal);
+        if (this.distancePoint(point).distance < gPrecision) return Orientation.Common;
+        return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
+      }
+
+      orientationSegment(segment, normal = Vector3$1.UnitY) {
+        var or0 = this.orientationPoint(segment.p0, normal);
+        var or1 = this.orientationPoint(segment.p1, normal);
+        return or0 | or1;
+      }
 
     }
     function line(start, end) {
@@ -3941,13 +3974,7 @@ var cga = (function (exports) {
        * Test success
        * 到直线的距离
        * @param  {Line} line
-       * @returns
-       * {
-       *    lineParameter 最近点的参数
-       *    lineClosest 最近点
-       *    distanceSqr //到最近点距离的平方
-       *    distance//到最近点距离
-       * }
+       * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
        */
 
 
@@ -3994,13 +4021,7 @@ var cga = (function (exports) {
        * Test success
        * 到射线的距离
        * @param  {Line} line
-       * @returns
-       * {
-       *    lineParameter 最近点的参数
-       *    lineClosest 最近点
-       *    distanceSqr //到最近点距离的平方
-       *    distance//到最近点距离
-       * }
+       * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
        */
 
 
@@ -4029,13 +4050,7 @@ var cga = (function (exports) {
        * Test success
        * 到线段的距离
        * @param  {Line} line
-       * @returns
-       * {
-       *    lineParameter 最近点的参数
-       *    lineClosest 最近点
-       *    distanceSqr //到最近点距离的平方
-       *    distance//到最近点距离
-       * }
+       * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
        */
 
 
@@ -4466,7 +4481,7 @@ var cga = (function (exports) {
       insidePlane() {} //方位
 
 
-      orientationLine() {}
+      orientationLine(lineormal = Vector3$1.UnitY) {}
 
       orientationPlane() {}
 
@@ -4474,9 +4489,6 @@ var cga = (function (exports) {
 
     }
 
-    function XYZSort(p1, p2) {
-      return p1.x === p2.x ? p1.y === p2.y ? p1.y - p2.y : p1.z - p2.z : p1.x - p2.x;
-    }
     /**
      * 判断多边是否共线:
      * 考虑情况点之间的距离应该大于最小容忍值
@@ -4577,18 +4589,21 @@ var cga = (function (exports) {
       return new Disk(center, radius);
     }
 
-    const Orientation = {
-      Common: 0,
-      Positive: 1,
-      Negative: 2,
-      Intersect: 3
-    };
-
     class Plane {
-      constructor(normal, w) {
+      constructor(normal = Vector3$1.UnitZ, w = 0) {
         this.normal = normal;
         this.w = w;
         this.origin = this.normal.clone().multiplyScalar(w); // this.w = this.normal.dot(this.origin)
+      }
+
+      setFromThreePoint(p0, p1, p2) {
+        this.normal = p1.clone().sub(p0).cross(p2.clone().sub(p0)).normalize();
+        this.w = p0.dot(this.normal);
+      }
+
+      negate() {
+        this.normal.negate();
+        this.w = -this.w;
       }
       /**
        * 判断一个点在平面的正面或者反面
@@ -4799,13 +4814,87 @@ var cga = (function (exports) {
      */
 
     class Polyline extends ArrayEx {
-      constructor(vs) {
+      constructor(vs, normal = v3(0, 1, 0)) {
         super();
         this.push(...vs);
+        this.isCoPlanar = true;
+        this.normal = normal;
       }
+      /**
+       * 偏移
+       * @param {Number} distance  偏移距离  
+       * @param {Vector3} normal  折线所在平面法线
+       */
 
-      offset(distance) {
+
+      offset(distance, normal = this.normal) {
+        var offsetSign = sign(distance) > 0 ? Orientation.Positive : Orientation.Negative;
+        var direction = new Vector3$1();
+        var segments = []; //偏移过后的线段
+
+        for (let i = 0; i < this.length - 1; i++) {
+          const point = this[i];
+          const pointNext = this[i + 1];
+          var binormal = direction.sub(pointNext, point).normalize().cross(this.normal).normalize();
+          var offsetVector = binormal.clone().multiplyScalar(distance);
+          segments.push([offsetVector.clone().add(point), offsetVector.add(pointNext)]);
+        } //线段两两相交
+
+
+        for (let i = 0; i < segments.length; i++) {
+          const segi = segments[i];
+
+          for (let j = 0; j < segments.length; j++) {
+            if (i === j) continue;
+            const segj = segments[j];
+            var orien0 = segi.orientationSegment(segj.p0, normal);
+            var orien1 = segi.orientationSegment(segj.fixedPoint1, normal);
+            var orienInfo = orien0 | orien1;
+            var disRes = segi.distanceSegment(segj);
+
+            if (disRes.distance > gPrecision) {
+              if (orienInfo !== offsetSign) {
+                segments.splice(j, 1);
+                j--;
+              }
+            } else {
+              // 出现相交  那么就会有切割
+              var intersectPoit = disRes.closests[0]; //删除不要的部分
+            }
+          }
+        }
+
         return new Polyline(this);
+      }
+      /**
+       * 圆角   将折线拐点圆角化
+       * @param {Number} useDistance 圆角段距离 
+       * @param {Number} segments 分切割段数
+       */
+
+
+      corner(useDistance, segments = 3, normal = this.normal, threshold = 0.1) {
+        var polyline = new Polyline();
+
+        for (let i = 0; i < this.length - 2; i++) {
+          polyline.push(p0);
+          const p0 = this[i];
+          const p1 = this[i + 1];
+          const p2 = this[i + 2];
+          var fixedPoint0 = p0.distanceTo(p1).length() <= useDistance * 2 ? p0.clone().add(p1).multiplyScalar(0.5) : p0.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+          var fixedPoint1 = p2.distanceTo(p1).length() <= useDistance * 2 ? p2.clone().add(p1).multiplyScalar(0.5) : p2.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+          polyline.push(fixedPoint0);
+          var binormal0 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2);
+          var binormal1 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2); //计算圆弧点
+
+          var line0 = new Line(fixedPoint0, binormal0.add(fixedPoint0));
+          var line1 = new Line(fixedPoint1, binormal1.add(fixedPoint1));
+          var center = line0.distanceLine(line1).closests[0]; //圆心
+
+          polyline.push(fixedPoint1);
+        }
+
+        return polyline;
       }
 
     }
@@ -4914,8 +5003,9 @@ var cga = (function (exports) {
     }
     /**
      * 将向量拆解为数字
-     * @param {*} points 
-     * @param {*} feature 
+     * @param {Array} points 
+     * @param {String} feature 
+     * @returns {Array<Number>} 数字数组
      */
 
     function verctorToNumbers(points, feature = "xyz") {
@@ -4946,13 +5036,14 @@ var cga = (function (exports) {
       return numbers;
     }
     /**
-     * 计算
-     * @param {*} points 
+     * 计算包围盒
+     * @param {*} points  点集
+     * @returns {Array[min,max]} 返回最小最大值
      */
 
     function boundingBox(points) {
-      this.min = new Vector3(+Infinity, +Infinity, +Infinity);
-      this.max = new Vector3(-Infinity, -Infinity, -Infinity);
+      this.min = new Vector3$1(+Infinity, +Infinity, +Infinity);
+      this.max = new Vector3$1(-Infinity, -Infinity, -Infinity);
 
       for (let i = 0; i < points.length; i++) {
         this.min.min(points[i]);
@@ -5007,7 +5098,7 @@ var cga = (function (exports) {
       return applyQuaternion(points, new Quaternion().setFromAxisAngle(axis, angle), ref);
     }
     /**
-     * 旋转
+     * 两个向量之间存在的旋转量来旋转点集
      * @param {*} points 
      * @param {*} axis 
      * @param {*} angle 
@@ -5105,17 +5196,50 @@ var cga = (function (exports) {
     function projectOnPlane(points, plane, projectDirect) {
       return points;
     }
-    /** 
-     * 最优凸包 quick-hull 2D 3D 都行
-     * @param {*} points 点集 
-     * @param {*} select 如果是3d的，并且在同一平面，可以使用此项选抽取两个轴，来生成平面凸包
+    /**
+     * 计算共面点集所在的平面
+     * @param {Array<Vector3|Point>} points 
      */
 
-    function convexHull(points, select = "XYZ") {
-      return new Polygon();
+    function recognitionPlane(points) {
+      points.sort(vectorCompare);
+      var line = new Line(points[0], points.get(-1));
+      var maxDistance = -Infinity;
+      var ipos = -1;
+
+      for (let i = 1; i < points.length - 1; i++) {
+        const pt = points[i];
+        var distance = line.distancePoint(pt).distance;
+
+        if (distance > maxDistance) {
+          maxDistance = distance;
+          ipos = i;
+        }
+      }
+
+      var plane = new Plane();
+      plane.setFromThreePoint(points[0], points.get(-1), points[ipos]);
+      return plane;
+    }
+    /** 
+     * 判断所有点是否在同一个平面
+     * @param {Array<Vector3|Point>} points 
+     * @param {*} precision 
+     * @returns {Boolean|Plane} 如果在同一个平面返回所在平面，否则返回false 
+     */
+
+    function isInOnePlane(points, precision = gPrecision) {
+      var plane = recognitionPlane(points);
+
+      for (let i = 0; i < points.length; i++) {
+        const pt = points[i];
+        if (plane.distancePoint(pt) >= precision) return false;
+      }
+
+      return plane;
     } // export function
 
-    class Polygon$1 extends Polyline {
+    class Polygon extends Polyline {
       constructor() {
         super();
       }
@@ -5483,12 +5607,13 @@ var cga = (function (exports) {
     }
 
     class Path extends Polyline {
-      constructor(vs) {
+      constructor(vs = []) {
         super(vs);
         this.init();
       }
 
       init() {
+        if (this.length === 0) return;
         this[0].len = 0;
         this[0].tlen = 0;
         this[0].direction = this[1].clone().sub(this[0]).normalize();
@@ -5500,25 +5625,84 @@ var cga = (function (exports) {
           this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
         }
       }
+
+      get tlen() {
+        if (this.length === 0) return 0;
+        return Math.max(this.get(-1).tlen, this[0].tlen);
+      }
       /**
-       * 从起点出发到距离等于distance位置  的坐标
-       * @param {Number} distance 
+       * 截取一段从from到to的path
+       * @param {Number} from 
+       * @param {Number} to
+       */
+
+
+      splitByFromToDistance(from = 0, to = 0) {
+        if (to <= from) return null;
+        var newPath = new Path([]);
+
+        for (let i = 0; i < this.length - 1; i++) {
+          const pt = this[i];
+          const ptnext = this[i + 1];
+
+          if (pt.tlen <= from && ptnext.tlen >= from) {
+            var v3 = new Vector3().lerpVectors(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
+            newPath.add(v3);
+          }
+
+          if (pt.tlen > from && pt.tlen < to) {
+            newPath.add(pt.clone());
+            return data;
+          }
+
+          if (pt.tlen <= to && ptnext.tlen >= to) {
+            var v3 = new Vector3().lerpVectors(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
+            newPath.add(v3);
+            return newPath;
+          }
+        }
+
+        return newPath;
+      }
+      /**
+       * 从起点出发到距离等于distance位置  的坐标 二分查找
+       * @param {Number} distance
        */
 
 
       getPointByDistance(arg_distance) {
-        distance = clamp(arg_distance, 0, this.lastElement.tlen);
-        if (distance !== arg_distance) console.warn("当前距离不在线上");
+        const distance = clamp(arg_distance, 0, this.get(-1).tlen);
+        if (distance !== arg_distance) return null;
 
-        for (var i = 0; i < this.length - 1; i++) {
-          if (distance >= this[i].tlen && distance < this[i + 1].tlen) {
-            return {
-              range: [i, i + 1],
-              point: new THREE.Vector3().lerpVectors(this.data[i], this.data[i + 1], (len - this.data[i].tlen) / this.data[i + 1].len),
-              direction: this.data[i].direction
-            };
-          }
+        if (right - left === 1) {
+          return {
+            position: left,
+            isNode: false,
+            //是否在节点上
+            point: new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+          };
         }
+
+        var mid = left + right >> 1;
+        if (this[mid].tlen > distance) return this.getPointByDistanceEx(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistanceEx(distance, mid, right);else return {
+          position: mid,
+          isNode: true,
+          //是否在节点上
+          point: new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+        };
+      }
+      /**
+       * 从起点出发到距离等于distance位置  的坐标 二分查找
+       * @param {Number} distance 
+       */
+
+
+      getPointByDistancePure(arg_distance) {
+        const distance = clamp(arg_distance, 0, this.get(-1).tlen);
+        if (distance !== arg_distance) return null;
+        if (right - left === 1) return new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+        var mid = left + right >> 1;
+        if (this[mid].tlen > distance) return this.getPointByDistanceEx(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistanceEx(distance, mid, right);else return this[mid].clone();
       }
       /**
        * 平均切割为 splitCount 段
@@ -5529,15 +5713,25 @@ var cga = (function (exports) {
 
       splitAverage(splitCount) {
         var tlen = this.lastElement.tlen;
-        var perlen = tlen / splitCount;
         var res = [];
 
-        for (var i = 0; i <= splitCount; i++) {
-          var p = this.findByLen(i * perlen);
-          res.push(p.point);
-        }
-
         return Path(res);
+      }
+      /**
+       * 
+       * @param  {...any} ps 
+       */
+
+
+      add(...ps) {
+        for (let i = 0; i < ps.length; i++) {
+          const pt = ps[i];
+          this.push(pt);
+          pt.len = pt.distanceTo(this.get(-1));
+          pt.tlen = this.get(-1).tlen + pt.len;
+          pt.direction = pt.clone().sub(this.get(-1).normalize());
+          this.get(-1).direction.copy(pt.direction);
+        }
       }
 
     }
@@ -6386,8 +6580,9 @@ var cga = (function (exports) {
     }
     /**
      * 缝合shape集合
-     * @param {Array} shapes  路基 点集的集合， 每个shape的点数量一致
+     * @param {Array<Array<Point|Vector3>} shapes  路基 点集的集合， 每个shape的点数量一致
      * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+     * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
      */
 
     function linkSides(shapes, isClosed = false, isClosed2 = false) {
@@ -6403,6 +6598,7 @@ var cga = (function (exports) {
     /**
      * 缝合shape 折线集合
      * @param {Array} polylines  路基 点集的集合， 
+     * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
      */
 
     function linkPolyline(polylines) {
@@ -6411,6 +6607,7 @@ var cga = (function (exports) {
     /**
      * 缝合shape 多边形集合
      * @param {Array} polygon
+     * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
      */
 
     function linkPloygon(polygon) {
@@ -6418,8 +6615,16 @@ var cga = (function (exports) {
     }
     /**
      * 挤压
-     * @param {Polygon }    Polygon
-     * @param {Path|Array} path 
+     * @param {Polygon|Array<Point|Vector3> }  shape   多边形或顶点数组
+     * @param {Path|Array<Point|Vector3> } path  路径或者或顶点数组
+     * @param {Object} options {  
+     *      isClosed: false,闭合为多边形
+     *      isClosed2: false, 闭合为圈
+     *      textureEnable: true, 计算纹理坐标
+     *      textureScale: new Vector2(1, 1),纹理坐标缩放
+     *      smoothAngle: Math.PI / 180 * 30,大于这个角度则不平滑
+     *      sealStart: true, 是否密封开始面
+     *      sealEnd: true,是否密封结束面}
      */
 
     function extrude(shape, arg_path, options = {}) {
@@ -6526,6 +6731,116 @@ var cga = (function (exports) {
       };
     }
 
+    class ConvexHull {
+      /**
+       * 
+       * @param {Array<Points>} points  点集
+       * @param {} options  {planeNormal,method}
+       */
+      constructor(points, options = {
+        planeNormal: null,
+        method: 'quick'
+      }) {
+        if (points.length < 3) {
+          throw Error('cannot build a simplex out of <3 points');
+        }
+
+        this._hull = [];
+        this.originPoints = points;
+        var newpoints = clone(points);
+        indexable(newpoints);
+        var planeNormal = options.planeNormal;
+
+        if (!planeNormal) {
+          var plane = isInOnePlane(newpoints);
+          if (plane) planeNormal = plane.normal;
+        }
+
+        this.normal = Vector3$1.UnitZ;
+
+        if (planeNormal) {
+          //在一个平面  2D ConvexHull 
+          if (this.normal.dot(planeNormal) < 0) planeNormal.negate();
+          rotateByUnitVectors(newpoints, planeNormal, this.normal);
+          newpoints.forEach(pt => pt.z = 0); //找出一段在某个轴距离最远点
+
+          var [minPt, maxPt] = this.getMinMax(newpoints);
+          var line0 = new Line(minPt, maxPt);
+          var line1 = new Line(maxPt, minPt);
+          this.addBoundSeg(line0, newpoints);
+          this.addBoundSeg(line1, newpoints);
+        }
+      }
+
+      getMinMax(points) {
+        var maxXp = points[0];
+        var minXp = points[0];
+
+        for (let i = 1; i < points.length; i++) {
+          var point = points[i];
+          if (maxXp.x < point.x) maxXp = point;else if (minXp.x > point.x) minXp = point;
+        }
+
+        return [minXp, maxXp];
+      }
+
+      outerPoints(line, points) {
+        var outerPoint = [];
+
+        for (let i = 0; i < points.length; i++) {
+          const point = points[i];
+          if (line.orientationPoint(point, this.normal) === Orientation.Positive) outerPoint.push(point);
+        }
+
+        return outerPoint;
+      }
+
+      distalPoints(line, points) {
+        var distalPoint = null;
+        var maxDistance = -Infinity;
+
+        for (let i = 0; i < points.length; i++) {
+          const point = points[i];
+          var distance = line.distancePoint(point).distance;
+
+          if (distance > maxDistance) {
+            distalPoint = point;
+            maxDistance = distance;
+          }
+        }
+
+        return distalPoint;
+      }
+
+      addBoundSeg(line, points) {
+        var subPoints = this.outerPoints(line, points);
+        if (subPoints.length === 0) return this._hull.push(line.origin);
+        var distalPt = this.distalPoints(line, subPoints);
+        this.addBoundSeg(new Line(line.origin, distalPt), subPoints);
+        this.addBoundSeg(new Line(distalPt, line.end), subPoints);
+      }
+
+      get hull() {
+        if (!this.__hull) {
+          this.__hull = [];
+          debugger;
+
+          for (let i = 0; i < this._hull.length; i++) {
+            const point = this._hull[i];
+
+            this.__hull.push(this.originPoints[point.index]);
+          }
+        }
+
+        return this.__hull;
+      }
+
+    }
+    function quickHull(points) {
+      var ch = new ConvexHull(points);
+      return ch.hull;
+    }
+
     if (!Array.prototype.get) Array.prototype.get = function (index) {
       if (index < 0) index = this.length + index;
       return this[index];
@@ -6601,6 +6916,7 @@ var cga = (function (exports) {
 
     exports.ArrayEx = ArrayEx;
     exports.Circle = Circle;
+    exports.ConvexHull = ConvexHull;
     exports.Disk = Disk;
     exports.Euler = Euler;
     exports.Line = Line;
@@ -6609,7 +6925,7 @@ var cga = (function (exports) {
     exports.Path = Path;
     exports.Plane = Plane;
     exports.Point = Point;
-    exports.Polygon = Polygon$1;
+    exports.Polygon = Polygon;
     exports.Polyline = Polyline;
     exports.Quaternion = Quaternion;
     exports.Ray = Ray;
@@ -6629,7 +6945,6 @@ var cga = (function (exports) {
     exports.clamp = clamp;
     exports.classify = classify;
     exports.clone = clone;
-    exports.convexHull = convexHull;
     exports.degToRad = degToRad;
     exports.disk = disk;
     exports.euler = euler;
@@ -6639,6 +6954,7 @@ var cga = (function (exports) {
     exports.fromTwoPoint = fromTwoPoint;
     exports.gPrecision = gPrecision;
     exports.indexable = indexable;
+    exports.isInOnePlane = isInOnePlane;
     exports.isPowerOfTwo = isPowerOfTwo;
     exports.lerp = lerp;
     exports.line = line;
@@ -6650,10 +6966,12 @@ var cga = (function (exports) {
     exports.m4 = m4;
     exports.projectOnPlane = projectOnPlane;
     exports.quat = quat;
+    exports.quickHull = quickHull;
     exports.radToDeg = radToDeg;
     exports.randFloat = randFloat;
     exports.randInt = randInt;
     exports.ray = ray;
+    exports.recognitionPlane = recognitionPlane;
     exports.recognitionPolygonNormal = recognitionPolygonNormal;
     exports.reverseOnPlane = reverseOnPlane;
     exports.rotate = rotate;
