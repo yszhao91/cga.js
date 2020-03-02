@@ -1,5 +1,6 @@
 import { Polyline } from "./Polyline"
 import { clamp } from "../../math/Math";
+import { Vector3 } from "../../math/Vector3";
 export class Path extends Polyline {
     constructor(vs = []) {
         super(vs);
@@ -65,7 +66,7 @@ export class Path extends Polyline {
      * 从起点出发到距离等于distance位置  的坐标 二分查找
      * @param {Number} distance
      */
-    getPointByDistance(arg_distance) {
+    getPointByDistance(arg_distance, left = 0, right = this.length - 1) {
         const distance = clamp(arg_distance, 0, this.get(-1).tlen);
         if (distance !== arg_distance)
             return null;
@@ -93,13 +94,16 @@ export class Path extends Polyline {
      * 从起点出发到距离等于distance位置  的坐标 二分查找
      * @param {Number} distance 
      */
-    getPointByDistancePure(arg_distance) {
+    getPointByDistancePure(arg_distance, left = 0, right = this.length - 1) {
         const distance = clamp(arg_distance, 0, this.get(-1).tlen);
         if (distance !== arg_distance)
             return null;
 
         if (right - left === 1)
+        {
+            debugger
             return new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+        }
 
         var mid = (left + right) >> 1;
         if (this[mid].tlen > distance)
@@ -119,13 +123,34 @@ export class Path extends Polyline {
         var perlen = tlen / splitCount;
 
         var res = [];
+        var curJ = 0
         for (var i = 0; i <= splitCount; i++)
         {
-            // 需要重写
-            //     var p = this.findByLen(i * perlen);
-            //     res.push(p.point)
+            var plen = i * perlen;
+            for (let j = curJ; j < this.length - 1; j++)
+            {
+                if (this[j].tlen <= plen && this[j + 1].tlen >= plen)
+                {
+                    var p = new Vector3().lerpVectors(this[j], this[j + 1], (plen - this[j].tlen) / (this[j + 1].len))
+                    res.push(p);
+                    curJ = j;
+                    break;
+                }
+            }
         }
-        return Path(res);
+        return new Path(res);
+    }
+
+    /**
+     * 通过测试
+    * 平均切割为 splitCount 段
+    * @param {Number} splitCount 
+    * @returns {Path} 新的path
+    */
+    splitAverageLength(splitLength) {
+        var tlen = this.lastElement.tlen;
+        var count = tlen / splitLength;
+        return this.splitAverage(count);
     }
 
     /**
@@ -133,14 +158,27 @@ export class Path extends Polyline {
      * @param  {...any} ps 
      */
     add(...ps) {
+        if (this.length == 0)
+        {
+            const firstpt = ps.shift();
+            this.push(firstpt);
+            this[0].len = 0;
+            this[0].tlen = 0;
+
+        }
         for (let i = 0; i < ps.length; i++)
         {
             const pt = ps[i];
-            this.push(pt);
             pt.len = pt.distanceTo(this.get(-1));
             pt.tlen = this.get(-1).tlen + pt.len;
-            pt.direction = pt.clone().sub(this.get(-1).normalize());
-            this.get(-1).direction.copy(pt.direction);
+            pt.direction = pt.clone().sub(this.get(-1)).normalize();
+            if (!this.get(-1).direction)
+                this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();
+            else
+                this.get(-1).direction.copy(pt.direction);
+            this.push(pt);
         }
+
+
     }
 }
