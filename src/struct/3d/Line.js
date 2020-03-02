@@ -1,6 +1,7 @@
-import { v3 } from "../../math/Vector3";
+import { v3, Vector3 } from "../../math/Vector3";
 import { gPrecision } from "../../math/Math";
 import { Segment } from "./Segment";
+import { Orientation } from "./type";
 
 export class Line {
   constructor(origin, end) {
@@ -31,14 +32,12 @@ export class Line {
     var a01 = -this.direction.dot(line.direction);
     var b0 = diff.dot(this.direction);
     var s0, s1;
-    if (Math.abs(a01) < 1)
-    {
+    if (Math.abs(a01) < 1) {
       var det = 1 - a01 * a01;
       var b1 = -diff.dot(line.direction);
       s0 = (a01 * b1 - b0) / det;
       s1 = (a01 * b0 - b1) / det;
-    } else
-    {
+    } else {
       s0 = -b0;
       s1 = 0;
     }
@@ -74,26 +73,22 @@ export class Line {
     var a01 = - this.direction.dot(ray.direction);
     var b0 = diff.dot(this.direction);
     var s0, s1;
-    if (Math.abs(a01) < 1)
-    {
+    if (Math.abs(a01) < 1) {
       var b1 = -diff.dot(ray.direction);
       s1 = a01 * b0 - b1;
 
-      if (s1 >= 0)
-      {
+      if (s1 >= 0) {
         //在最近点在射线上，相当于直线与直线最短距离
         var det = 1 - a01 * a01;
         s0 = (a01 * b1 - b0) / det;
         s1 /= det;
       }
-      else
-      {
+      else {
         // 射线的起始点是离直线的最近点
         s0 = -b0;
         s1 = 0;
       }
-    } else
-    {
+    } else {
       s0 = -b0;
       s1 = 0;
     }
@@ -127,41 +122,35 @@ export class Line {
     var b0 = diff.dot(this.direction);
     var s0, s1;
 
-    if (Math.abs(a01) < 1)
-    {
+    if (Math.abs(a01) < 1) {
       // 判断是否平行
       var det = 1 - a01 * a01;
       var extDet = segExtent * det;
       var b1 = -diff.dot(segDirection);
       s1 = a01 * b0 - b1;
 
-      if (s1 >= -extDet)
-      {
-        if (s1 <= extDet)
-        {
+      if (s1 >= -extDet) {
+        if (s1 <= extDet) {
           // Two interior points are closest, one on the this
           // and one on the segment.
           s0 = (a01 * b1 - b0) / det;
           s1 /= det;
         }
-        else
-        {
+        else {
           // The endpoint e1 of the segment and an interior
           // point of the this are closest.
           s1 = segExtent;
           s0 = -(a01 * s1 + b0);
         }
       }
-      else
-      {
+      else {
         // The endpoint e0 of the segment and an interior point
         // of the this are closest.
         s1 = -segExtent;
         s0 = -(a01 * s1 + b0);
       }
     }
-    else
-    {
+    else {
       // The this and segment are parallel.  Choose the closest pair
       // so that one point is at segment origin.
       s1 = 0;
@@ -186,21 +175,17 @@ export class Line {
 
   distanceTriangle(triangle) {
     function Orthonormalize(numInputs, v, robust = false) {
-      if (v && 1 <= numInputs && numInputs <= 3)
-      {
+      if (v && 1 <= numInputs && numInputs <= 3) {
         var minLength = v[0].length();
         v[0].normalize();
-        for (var i = 1; i < numInputs; ++i)
-        {
-          for (var j = 0; j < i; ++j)
-          {
+        for (var i = 1; i < numInputs; ++i) {
+          for (var j = 0; j < i; ++j) {
             var dot = v[i].dot(v[j]);
             v[i].sub(v[j].clone().multiplyScalar(dot));
           }
           var length = v[i].length();
           v[i].normalize();
-          if (length < minLength)
-          {
+          if (length < minLength) {
             minLength = length;
           }
         }
@@ -210,21 +195,17 @@ export class Line {
       return 0;
     }
     function ComputeOrthogonalComplement(numInputs, v, robust = false) {
-      if (numInputs === 1)
-      {
-        if (Math.abs(v[0][0]) > Math.abs(v[0][1]))
-        {
+      if (numInputs === 1) {
+        if (Math.abs(v[0][0]) > Math.abs(v[0][1])) {
           v[1] = v3(- v[0].z, 0, +v[0].x)
         }
-        else
-        {
+        else {
           v[1] = v3(0, + v[0].z, -v[0].y)
         };
         numInputs = 2;
       }
 
-      if (numInputs == 2)
-      {
+      if (numInputs == 2) {
         v[2] = v[0].clone().cross(v[1]);
         return Orthonormalize(3, v, robust);
       }
@@ -245,8 +226,7 @@ export class Line {
     var normal = edge0.clone().cross(edge1).normalize();
     var NdD = normal.dot(this.direction);
 
-    if (Math.abs(NdD) >= gPrecision)
-    {
+    if (Math.abs(NdD) >= gPrecision) {
       // The line and triangle are not parallel, so the line
       // intersects/ the plane of the triangle.
       var diff = this.origin.clone().sub(triangle.p0);
@@ -266,8 +246,7 @@ export class Line {
       var b2 = (UdE0 * VdDiff - VdE0 * UdDiff) * invDet;
       var b0 = 1 - b1 - b2;
 
-      if (b0 >= 0 && b1 >= 0 && b2 >= 0)
-      {
+      if (b0 >= 0 && b1 >= 0 && b2 >= 0) {
         // Line parameter for the point of intersection.
         var DdE0 = this.direction.dot(edge0);
         var DdE1 = this.direction.dot(edge1);
@@ -297,8 +276,7 @@ export class Line {
     // of the triangle.
     result.distance = +Infinity;
     result.sqrDistance = +Infinity;
-    for (var i0 = 2, i1 = 0; i1 < 3; i0 = i1++)
-    {
+    for (var i0 = 2, i1 = 0; i1 < 3; i0 = i1++) {
       var segCenter = triangle[i0].clone().add(triangle[i1]).multiplyScalar(0.5);
       var segDirection = triangle[i1].clone().sub(triangle[i0]);
       var segExtent = 0.5 * segDirection.length();
@@ -306,8 +284,7 @@ export class Line {
       var segment = new Segment(triangle[i0], triangle[i1]);
 
       var lsResult = this.distanceSegment(segment);
-      if (lsResult.sqrDistance < result.sqrDistance)
-      {
+      if (lsResult.sqrDistance < result.sqrDistance) {
         result.sqrDistance = lsResult.sqrDistance;
         result.distance = lsResult.distance;
         result.lineParameter = lsResult.parameters[0];
@@ -333,6 +310,20 @@ export class Line {
 
   //---平行-------------
   parallelLine(line) { }
+
+  //---方位---------------------
+  orientationPoint(point, normal = Vector3.UnitY) {
+    var binormal = this.direction.clone().cross(normal);
+    if (this.distancePoint(point).distance < gPrecision)
+      return Orientation.Common; 
+    return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
+  }
+
+  orientationSegment(segment, normal = Vector3.UnitY) {
+    var or0 = this.orientationPoint(segment.p0, normal);
+    var or1 = this.orientationPoint(segment.p1, normal);
+    return or0 | or1;
+  }
 }
 
 export function line(start, end) {

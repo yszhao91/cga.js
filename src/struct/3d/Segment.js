@@ -1,5 +1,6 @@
 import { v3 } from "../../math/Vector3";
 import { gPrecision, approximateEqual } from "../../math/Math";
+import { Orientation } from "./type"
 
 export class Segment extends Array {
   /**
@@ -81,23 +82,18 @@ export class Segment extends Array {
 
     function GetClampedRoot(slope, h0, h1) {
       var r;
-      if (h0 < 0)
-      {
-        if (h1 > 0)
-        {
+      if (h0 < 0) {
+        if (h1 > 0) {
           r = -h0 / slope;
-          if (r > 1)
-          {
+          if (r > 1) {
             r = 0.5;
           }
           // The slope is positive and -h0 is positive, so there is no
           // need to test for a negative value and clamp it.
-        } else
-        {
+        } else {
           r = 1;
         }
-      } else
-      {
+      } else {
         r = 0;
       }
       return r;
@@ -105,18 +101,15 @@ export class Segment extends Array {
 
     function ComputevarIntersection(sValue, classify, edge, end) {
 
-      if (classify[0] < 0)
-      {
+      if (classify[0] < 0) {
         edge[0] = 0;
         end[0][0] = 0;
         end[0][1] = mF00 / mB;
-        if (end[0][1] < 0 || end[0][1] > 1)
-        {
+        if (end[0][1] < 0 || end[0][1] > 1) {
           end[0][1] = 0.5;
         }
 
-        if (classify[1] == 0)
-        {
+        if (classify[1] == 0) {
           edge[1] = 3;
           end[1][0] = sValue[1];
           end[1][1] = 1;
@@ -125,38 +118,31 @@ export class Segment extends Array {
           edge[1] = 1;
           end[1][0] = 1;
           end[1][1] = mF10 / mB;
-          if (end[1][1] < 0 || end[1][1] > 1)
-          {
+          if (end[1][1] < 0 || end[1][1] > 1) {
             end[1][1] = 0.5;
           }
         }
-      } else if (classify[0] == 0)
-      {
+      } else if (classify[0] == 0) {
         edge[0] = 2;
         end[0][0] = sValue[0];
         end[0][1] = 0;
 
-        if (classify[1] < 0)
-        {
+        if (classify[1] < 0) {
           edge[1] = 0;
           end[1][0] = 0;
           end[1][1] = mF00 / mB;
-          if (end[1][1] < 0 || end[1][1] > 1)
-          {
+          if (end[1][1] < 0 || end[1][1] > 1) {
             end[1][1] = 0.5;
           }
-        } else if (classify[1] == 0)
-        {
+        } else if (classify[1] == 0) {
           edge[1] = 3;
           end[1][0] = sValue[1];
           end[1][1] = 1;
-        } else
-        {
+        } else {
           edge[1] = 1;
           end[1][0] = 1;
           end[1][1] = mF10 / mB;
-          if (end[1][1] < 0 || end[1][1] > 1)
-          {
+          if (end[1][1] < 0 || end[1][1] > 1) {
             end[1][1] = 0.5;
           }
         }
@@ -165,23 +151,19 @@ export class Segment extends Array {
         edge[0] = 1;
         end[0][0] = 1;
         end[0][1] = mF10 / mB;
-        if (end[0][1] < 0 || end[0][1] > 1)
-        {
+        if (end[0][1] < 0 || end[0][1] > 1) {
           end[0][1] = 0.5;
         }
 
-        if (classify[1] == 0)
-        {
+        if (classify[1] == 0) {
           edge[1] = 3;
           end[1][0] = sValue[1];
           end[1][1] = 1;
-        } else
-        {
+        } else {
           edge[1] = 0;
           end[1][0] = 0;
           end[1][1] = mF00 / mB;
-          if (end[1][1] < 0 || end[1][1] > 1)
-          {
+          if (end[1][1] < 0 || end[1][1] > 1) {
             end[1][1] = 0.5;
           }
         }
@@ -191,36 +173,27 @@ export class Segment extends Array {
     function ComputeMinimumParameters(edge, end, parameters) {
       var delta = end[1][1] - end[0][1];
       var h0 = delta * (-mB * end[0][0] + mC * end[0][1] - mE);
-      if (h0 >= 0)
-      {
-        if (edge[0] == 0)
-        {
+      if (h0 >= 0) {
+        if (edge[0] == 0) {
           parameters[0] = 0;
           parameters[1] = GetClampedRoot(mC, mG00, mG01);
-        } else if (edge[0] == 1)
-        {
+        } else if (edge[0] == 1) {
           parameters[0] = 1;
           parameters[1] = GetClampedRoot(mC, mG10, mG11);
-        } else
-        {
+        } else {
           parameters[0] = end[0][0];
           parameters[1] = end[0][1];
         }
-      } else
-      {
+      } else {
         var h1 = delta * (-mB * end[1][0] + mC * end[1][1] - mE);
-        if (h1 <= 0)
-        {
-          if (edge[1] == 0)
-          {
+        if (h1 <= 0) {
+          if (edge[1] == 0) {
             parameters[0] = 0;
             parameters[1] = GetClampedRoot(mC, mG00, mG01);
-          } else if (edge[1] == 1)
-          {
+          } else if (edge[1] == 1) {
             parameters[0] = 1;
             parameters[1] = GetClampedRoot(mC, mG10, mG11);
-          } else
-          {
+          } else {
             parameters[0] = end[1][0];
             parameters[1] = end[1][1];
           }
@@ -253,39 +226,31 @@ export class Segment extends Array {
     var mG01 = mG00 + mC;
     var mG11 = mG10 + mC;
 
-    if (mA > 0 && mC > 0)
-    {
+    if (mA > 0 && mC > 0) {
       var sValue = [];
       sValue[0] = GetClampedRoot(mA, mF00, mF10);
       sValue[1] = GetClampedRoot(mA, mF01, mF11);
 
       var classify = [];
-      for (var i = 0; i < 2; ++i)
-      {
-        if (sValue[i] <= 0)
-        {
+      for (var i = 0; i < 2; ++i) {
+        if (sValue[i] <= 0) {
           classify[i] = -1;
-        } else if (sValue[i] >= 1)
-        {
+        } else if (sValue[i] >= 1) {
           classify[i] = +1;
-        } else
-        {
+        } else {
           classify[i] = 0;
         }
       }
 
-      if (classify[0] == -1 && classify[1] == -1)
-      {
+      if (classify[0] == -1 && classify[1] == -1) {
         // The minimum must occur on s = 0 for 0 <= t <= 1.
         result.parameters[0] = 0;
         result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
-      } else if (classify[0] == +1 && classify[1] == +1)
-      {
+      } else if (classify[0] == +1 && classify[1] == +1) {
         // The minimum must occur on s = 1 for 0 <= t <= 1.
         result.parameters[0] = 1;
         result.parameters[1] = GetClampedRoot(mC, mG10, mG11);
-      } else
-      {
+      } else {
         // The line dR/ds = 0 varersects the domain [0,1]^2 in a
         // nondegenerate segment.  Compute the endpoints of that segment,
         // end[0] and end[1].  The edge[i] flag tells you on which domain
@@ -304,26 +269,22 @@ export class Segment extends Array {
         // the segment.  Compute the minimum of H on [0,1].
         ComputeMinimumParameters(edge, end, result.parameters);
       }
-    } else
-    {
-      if (mA > 0)
-      {
+    } else {
+      if (mA > 0) {
         // The Q-segment is degenerate ( segment.point0 and  segment.p0 are the same point) and
         // the quadratic is R(s,0) = a*s^2 + 2*d*s + f and has (half)
         // first derivative F(t) = a*s + d.  The closests P-point is
         // varerior to the P-segment when F(0) < 0 and F(1) > 0.
         result.parameters[0] = GetClampedRoot(mA, mF00, mF10);
         result.parameters[1] = 0;
-      } else if (mC > 0)
-      {
+      } else if (mC > 0) {
         // The P-segment is degenerate ( this.point0 and  this.p0 are the same point) and
         // the quadratic is R(0,t) = c*t^2 - 2*e*t + f and has (half)
         // first derivative G(t) = c*t - e.  The closests Q-point is
         // varerior to the Q-segment when G(0) < 0 and G(1) > 0.
         result.parameters[0] = 0;
         result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
-      } else
-      {
+      } else {
         // P-segment and Q-segment are degenerate.
         result.parameters[0] = 0;
         result.parameters[1] = 0;
@@ -360,28 +321,22 @@ export class Segment extends Array {
     const result = this.distanceSegment(segment);
     const resultLine = this.distanceLine(segment);
     result.interserct = false;
-    if (!approximateEqual(this.normal.dot(segment.normal), 1, gPrecision))
-    {
+    if (!approximateEqual(this.normal.dot(segment.normal), 1, gPrecision)) {
       // 平行
-      if (resultLine.distance >= gPrecision)
-      {
+      if (resultLine.distance >= gPrecision) {
         //平行或共线不重叠 
-      } else
-      {
+      } else {
         //共线重叠
-        if (this.equals(segment))
-        {
+        if (this.equals(segment)) {
           //# 相等
           result.equals = true;
         }
-        else if (result.parameters.every(o => o === 0 || o === 1))
-        {
+        else if (result.parameters.every(o => o === 0 || o === 1)) {
           //只是端点相交
 
-        } else
-        {
+        } else {
           //# 包含 被包含不用切割  包含被切割三段
-          
+
 
           //# 部分重叠  
 
@@ -389,27 +344,22 @@ export class Segment extends Array {
 
       }
     }
-    else  
-    {
+    else {
       if (result.distance > gPrecision)
         return result;
 
       result.interserct = true
       //相交
-      if (result.parameters.every(o => o === 0 || o === 1))
-      {
+      if (result.parameters.every(o => o === 0 || o === 1)) {
         //都是端点碰触 
       }
-      else if (result.parameters[0] === 0 || result.parameters[0] === 1)
-      {
+      else if (result.parameters[0] === 0 || result.parameters[0] === 1) {
         // this线段 在端点上
         result.splitSegs = [[this], [new Segment(segment.p0, result.closests[1]), new Segment(result.closests[1], segment.p1)]]
-      } else if (result.parameters[1] === 0 || result.parameters[1] === 1)
-      {
+      } else if (result.parameters[1] === 0 || result.parameters[1] === 1) {
         //segment线段在端点上
         result.splitSegs = [[new Segment(this.p0, result.closests[0]), new Segment(result.closests[0], this.p1)], segment];
-      } else
-      {
+      } else {
         // 两个都不在端点上
         result.splitSegs = [[new Segment(this.p0, result.closests[0]), new Segment(result.closests[0], this.p1)], [new Segment(segment.p0, result.closests[1]), new Segment(result.closests[1], segment.p1)]];
       }
@@ -421,14 +371,14 @@ export class Segment extends Array {
   //---Offset------------------------------------------------------
   /**
    * 线段偏移
-   * @param {Vector3} normal  偏移平面法线
+   * @param {Vector3} binormal  偏移平面法线
    * @param {Vector3} direction 偏移方向
    * @param {Number} distance 偏移距离
    */
-  offset(normal, direction, distance) {
-    normal = normal || new Vector3(0, 1, 0);
+  offset(binormal, direction, distance) {
+    binormal = binormal || new Vector3(0, 1, 0);
     var direction = p1.clone().sub(p0).normalize();
-    var tandir = direction.clone().cross(normal).normalize();
+    var tandir = direction.clone().cross(binormal).normalize();
     var result = {}
     result.arr = [
       tandir.clone().multiplyScalar(distance).add(p0),
@@ -437,6 +387,20 @@ export class Segment extends Array {
     result.direction = direction
     result.tandir = tandir
     return result
+  }
+
+  //---方位---------------------
+  orientationPoint(point, normal = Vector3.UnitY) {
+    var binormal = this.direction.clone().cross(normal);
+    if (this.distanceLine(point).distance < gPrecision)
+      return Orientation.Common;
+    return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
+  }
+ 
+  orientationSegment(segment, normal = Vector3.UnitY) {
+    var or0 = this.orientationPoint(segment.p0,normal);
+    var or1 = this.orientationPoint(segment.p1,normal);
+    return or0 | or1;
   }
 }
 

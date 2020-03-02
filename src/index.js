@@ -26,6 +26,7 @@ export * from "./alg/points"
 export * from "./alg/mesh"
 export * from "./alg/shape"
 export * from "./alg/triangulation"
+export * from "./alg/convexHull"
 
 if (!Array.prototype.get)
     Array.prototype.get = function (index) {

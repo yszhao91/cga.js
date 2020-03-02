@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.14.2",
+  "version": "0.0.15",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "src/index.js",
   "scripts": {
@@ -26,7 +26,8 @@
     "threejs",
     "compute geometry algorithm",
     "MIT",
-    "开源"
+    "开源",
+    "gis"
   ],
   "license": "MIT",
   "dependencies": {
