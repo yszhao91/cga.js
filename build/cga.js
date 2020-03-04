@@ -1,5 +1,6 @@
 /**
-*CGA Lib |赵耀圣 |alex Zhao | Zhao yaosheng
+* https://github.com/yszhao91/xtorcga
+*CGA Lib |xtorcga |alex Zhao | Zhao yaosheng
 *@license free for all
 */
 var cga = (function (exports) {
@@ -5646,7 +5647,7 @@ var cga = (function (exports) {
           const ptnext = this[i + 1];
 
           if (pt.tlen <= from && ptnext.tlen >= from) {
-            var v3 = new Vector3().lerpVectors(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
+            var v3 = new Vector3$1().lerpVectors(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
             newPath.add(v3);
           }
 
@@ -5656,7 +5657,7 @@ var cga = (function (exports) {
           }
 
           if (pt.tlen <= to && ptnext.tlen >= to) {
-            var v3 = new Vector3().lerpVectors(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
+            var v3 = new Vector3$1().lerpVectors(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
             newPath.add(v3);
             return newPath;
           }
@@ -5670,7 +5671,7 @@ var cga = (function (exports) {
        */
 
 
-      getPointByDistance(arg_distance) {
+      getPointByDistance(arg_distance, left = 0, right = this.length - 1) {
         const distance = clamp(arg_distance, 0, this.get(-1).tlen);
         if (distance !== arg_distance) return null;
 
@@ -5679,7 +5680,7 @@ var cga = (function (exports) {
             position: left,
             isNode: false,
             //是否在节点上
-            point: new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+            point: new Vector3$1().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
           };
         }
 
@@ -5688,7 +5689,7 @@ var cga = (function (exports) {
           position: mid,
           isNode: true,
           //是否在节点上
-          point: new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+          point: new Vector3$1().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
         };
       }
       /**
@@ -5697,10 +5698,15 @@ var cga = (function (exports) {
        */
 
 
-      getPointByDistancePure(arg_distance) {
+      getPointByDistancePure(arg_distance, left = 0, right = this.length - 1) {
         const distance = clamp(arg_distance, 0, this.get(-1).tlen);
         if (distance !== arg_distance) return null;
-        if (right - left === 1) return new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+
+        if (right - left === 1) {
+          debugger;
+          return new Vector3$1().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+        }
+
         var mid = left + right >> 1;
         if (this[mid].tlen > distance) return this.getPointByDistanceEx(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistanceEx(distance, mid, right);else return this[mid].clone();
       }
@@ -5713,9 +5719,37 @@ var cga = (function (exports) {
 
       splitAverage(splitCount) {
         var tlen = this.lastElement.tlen;
+        var perlen = tlen / splitCount;
         var res = [];
+        var curJ = 0;
 
-        return Path(res);
+        for (var i = 0; i <= splitCount; i++) {
+          var plen = i * perlen;
+
+          for (let j = curJ; j < this.length - 1; j++) {
+            if (this[j].tlen <= plen && this[j + 1].tlen >= plen) {
+              var p = new Vector3$1().lerpVectors(this[j], this[j + 1], (plen - this[j].tlen) / this[j + 1].len);
+              res.push(p);
+              curJ = j;
+              break;
+            }
+          }
+        }
+
+        return new Path(res);
+      }
+      /**
+       * 通过测试
+      * 平均切割为 splitCount 段
+      * @param {Number} splitCount 
+      * @returns {Path} 新的path
+      */
+
+
+      splitAverageLength(splitLength) {
+        var tlen = this.lastElement.tlen;
+        var count = tlen / splitLength;
+        return this.splitAverage(count);
       }
       /**
        * 
@@ -5724,13 +5758,20 @@ var cga = (function (exports) {
 
 
       add(...ps) {
+        if (this.length == 0) {
+          const firstpt = ps.shift();
+          this.push(firstpt);
+          this[0].len = 0;
+          this[0].tlen = 0;
+        }
+
         for (let i = 0; i < ps.length; i++) {
           const pt = ps[i];
-          this.push(pt);
           pt.len = pt.distanceTo(this.get(-1));
           pt.tlen = this.get(-1).tlen + pt.len;
-          pt.direction = pt.clone().sub(this.get(-1).normalize());
-          this.get(-1).direction.copy(pt.direction);
+          pt.direction = pt.clone().sub(this.get(-1)).normalize();
+          if (!this.get(-1).direction) this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();else this.get(-1).direction.copy(pt.direction);
+          this.push(pt);
         }
       }
 

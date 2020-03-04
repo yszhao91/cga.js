@@ -14,7 +14,8 @@ const DIST = process.env.DIST || false;
 const MIN = process.env.MIN || false;
 
 const banner = `/**
-*CGA Lib |赵耀圣 |alex Zhao | Zhao yaosheng
+* https://github.com/yszhao91/xtorcga
+*CGA Lib |xtorcga |alex Zhao | Zhao yaosheng
 *@license free for all
 */`;
 
@@ -33,8 +34,7 @@ const plugins = [
     })
 ];
 
-if (MIN)
-{
+if (MIN) {
     plugins.push(uglify({
         output: {
             comments: /@license/
