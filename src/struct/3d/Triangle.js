@@ -33,6 +33,11 @@ class Triangle extends ArrayEx {
     distanceSegment(segment) {
 
     }
+
+    //
+    containPoint(point) {
+
+    }
 }
 
 export { Triangle };

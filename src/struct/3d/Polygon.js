@@ -14,6 +14,10 @@ export class Polygon extends Polyline {
 
     }
 
+    containPoint(point) {
+        
+    }
+
 
 }
 
@@ -27,14 +31,12 @@ export function recognitionPolygonNormal(points) {
 
     var minV = +Infinity
     var minVIndex = -1
-    for (let i = 0; i < len + 2; i++)
-    {
+    for (let i = 0; i < len + 2; i++) {
         var p0 = points[i % len];
         var p1 = points[(i + 1) % len];
         var p2 = points[(i + 2) % len];
         var dotv = Math.abs(p1.clone().sub(p0).normalize().dot(p2.clone().sub(p1).normalize()));
-        if (minV > dotv)
-        {
+        if (minV > dotv) {
             dotv = minV;
             minVIndex = i;
         }
