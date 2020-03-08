@@ -16,7 +16,7 @@ import {
     Quaternion,
     Matrix4
 } from "three";
-import { clamp } from "../../../src/";
+import { clamp, trianglation } from "../../../src/";
 function randomGeo(key) {
     switch (key)
     {
@@ -48,6 +48,10 @@ function randomGeo(key) {
             return new cga.Capsule(randomV3(), randomV3());
 
     }
+}
+
+export function poufeng(polygon) {
+    trianglation(polygon)
 }
 
 export function initTestScene(geoKey1, geoKey2, scene) {

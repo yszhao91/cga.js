@@ -532,12 +532,21 @@ export class Vector3 {
     return this.sub(_vector.copy(normal).multiplyScalar(2 * this.dot(normal)));
   }
 
-  angleTo(v) {
+  angleTo(v, normal = null) {
+    if (normal)
+      return this.angleToEx(v, normal)
+
+    var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq());
+    return Math.acos(clamp(theta, -1, 1));
+  }
+
+  angleToEx(v, normal) {
     var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq());
 
-    // clamp, to handle numerical problems
-
-    return Math.acos(clamp(theta, -1, 1));
+    if (this.clone().cross(v).dot(normal) > 0)
+      return Math.acos(clamp(theta, -1, 1));
+    else
+      return Math.PI * 2 - Math.acos(clamp(theta, -1, 1));
   }
 
   distanceTo(v) {

@@ -6,6 +6,7 @@ export const IntersectType = {
 }
 
 export const Orientation = {
+    None: -1,
     Common: 0,
     Positive: 1,
     Negative: 2,
