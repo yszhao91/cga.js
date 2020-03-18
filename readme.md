@@ -112,17 +112,36 @@ npm run dev  //运行项目，自己更改源码测试
 ## 已经实现算法
 
 ### 在同一平面点集的凸包
->  已完成
-### 3d凸包
-> 进行中
-### 同一平面点集delauny三角网构建
-> 进行中
-### 3d点集delauny四面体构建
+
+[](./cga/img/点与射线.png)
+
+> 已完成
+>
+> ![](./docs/.vuepress/public/plane-set-convex.png)
+>
+> ```js
+> var convexHull = new ConvexHull(points, { planeNormal: cga.Vector3.UnitZ });
+> var hull = convexHull.hull;
+> ```
+
+### 3d 凸包
+
 > 进行中
 
-### 同一平面voronoi图构建
+### 同一平面点集 delauny 三角网构建
+
 > 进行中
-### 3d voronoi图构建
+
+### 3d 点集 delauny 四面体构建
+
+> 进行中
+
+### 同一平面 voronoi 图构建
+
+> 进行中
+
+### 3d voronoi 图构建
+
 > 进行中
 
 ### 最近点对问题

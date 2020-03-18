@@ -43,13 +43,15 @@ function toPolygon(points) {
 
 function toMesh(obj, opts) {
     var renderObj = null;
-    if (obj instanceof cga.Point || obj.isVector3) {
+    if (obj instanceof cga.Point || obj.isVector3)
+    {
         var geometry = new BufferGeometry()
         geometry.setAttribute('position', new Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
         var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
         renderObj = new Points(geometry, material);
 
-    } else if (obj instanceof cga.Line) {
+    } else if (obj instanceof cga.Line)
+    {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         var v2 = obj.direction.clone().multiplyScalar(-10000).add(obj.origin);
@@ -57,18 +59,21 @@ function toMesh(obj, opts) {
         var material = new LineBasicMaterial({ color: 0xffff8f });
         renderObj = new Line(geometry, material);
 
-    } else if (obj instanceof cga.Ray) {
+    } else if (obj instanceof cga.Ray)
+    {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         geometry.vertices.push(obj.origin, v1);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Segment) {
+    } else if (obj instanceof cga.Segment)
+    {
         var geometry = new Geometry()
         geometry.vertices.push(obj.p0, obj.p1);
         var material = new LineBasicMaterial({ color: 0x8fffff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Triangle) {
+    } else if (obj instanceof cga.Triangle)
+    {
         debugger
         var geometry = new Geometry()
         geometry.vertices = [...obj];
@@ -77,12 +82,14 @@ function toMesh(obj, opts) {
         renderObj = new Mesh(geometry, material);
     }
 
-    else if (obj instanceof cga.Polyline) {
+    else if (obj instanceof cga.Polyline)
+    {
         var geometry = new Geometry()
         geometry.vertices.push(...obj);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Polygon) {
+    } else if (obj instanceof cga.Polygon)
+    {
 
     }
 
@@ -278,10 +285,12 @@ scene.add(new AxesHelper(10000))
 // scene.add(mesh);
 
 var points = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 100; i++)
+{
     const point = new Point(Math.random() * 100 - 50, Math.random() * 100 - 50, 0);
     points.push(point);
 }
+debugger
 var convexHull = new ConvexHull(points, { planeNormal: cga.Vector3.UnitZ });
 var hull = convexHull.hull;
 scene.add(toPoints(points));
