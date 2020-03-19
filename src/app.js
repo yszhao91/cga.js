@@ -4,10 +4,11 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { Point } from "./struct/3d/Point";
 import { BufferGeometry, Geometry, Line, LineDashedMaterial, Float32BufferAttribute, PointsMaterial, Points, LineBasicMaterial, Mesh, WebGLRenderer, PerspectiveCamera, Scene, HemisphereLight, PolarGridHelper, Face3, DoubleSide, CylinderBufferGeometry, MeshStandardMaterial, MeshBasicMaterial, AxesHelper, SphereBufferGeometry } from "three";
 import { Quaternion } from "./math/Quaternion";
-import { v3 } from "./math/Vector3";
+import { v3, Vector3 } from "./math/Vector3";
 import { Polyline } from "./struct/3d/Polyline";
 import { ConvexHull } from "./alg/convexHull";
 import { verctorToNumbers } from "./alg/points";
+import { extrudeToMesh } from "./render/threeaid";
 function toDisSeg(obj, opts) {
     var geometry = new Geometry()
     geometry.vertices.push(...obj)
@@ -18,7 +19,7 @@ function toDisSeg(obj, opts) {
         scale: 1, // 比例越大，虚线越密；反之，虚线越疏 
         ...opts
     });
-    // debugger
+    // 
     // Line.computeLineDistances(geometry);//
     var line = new Line(geometry, material);
     line.computeLineDistances();
@@ -74,7 +75,7 @@ function toMesh(obj, opts) {
         renderObj = new Line(geometry, material);
     } else if (obj instanceof cga.Triangle)
     {
-        debugger
+
         var geometry = new Geometry()
         geometry.vertices = [...obj];
         geometry.faces.push(new Face3(0, 1, 2))
@@ -188,7 +189,7 @@ scene.add(new AxesHelper(10000))
 
 //---直线与直线的距离测试----------------------------------------------------------------
 // var line = new cga.Line(randomV3(), randomV3());
-// var line1 = new cga.Line(randomV3(), randomV3()); debugger
+// var line1 = new cga.Line(randomV3(), randomV3()); 
 // var result = line.distanceLine(line1);
 // infoPanel.innerText = JSON.stringify(result);
 // scene.add(toMesh(line));
@@ -225,7 +226,7 @@ scene.add(new AxesHelper(10000))
 // infoPanel.innerText = JSON.stringify(result);
 // scene.add(toMesh(ray));
 // scene.add(toMesh(segment));
-// debugger
+// 
 // scene.add(toMesh(result.closests[0]));
 // scene.add(toMesh(result.closests[1]));
 // scene.add(toDisSeg(result.closests))
@@ -243,7 +244,7 @@ scene.add(new AxesHelper(10000))
 //---折线偏移测试----------------------------------------------------------------
 // var polyline = new Polyline([v3(0, 0, 0), v3(0, 0, 10), v3(2, 0, 20), v3(5, 0, 30), v3(10, 0, 40), v3(17, 0, 50)])
 // scene.add(toMesh(polyline));
-// debugger
+// 
 // polyline.offset(2);
 // var result = seg0.distanceSegment(seg1);
 // infoPanel.innerText = JSON.stringify(result);
@@ -290,11 +291,14 @@ for (let i = 0; i < 100; i++)
     const point = new Point(Math.random() * 100 - 50, Math.random() * 100 - 50, 0);
     points.push(point);
 }
-debugger
+
 var convexHull = new ConvexHull(points, { planeNormal: cga.Vector3.UnitZ });
 var hull = convexHull.hull;
 scene.add(toPoints(points));
 scene.add(toPolygon(hull));
+
+var mesh = extrudeToMesh([v3(-5, 0, 0), v3(5, 0)], [v3(0, 0, 0), v3(0, 0, 100), v3(100, 0, 200)], { normal: Vector3.UnitZ })
+scene.add(mesh);
 
 function render() {
     renderer.render(scene, camera)

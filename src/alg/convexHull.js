@@ -15,7 +15,8 @@ export class ConvexHull {
      * @param {} options  {planeNormal,method}
      */
     constructor(points, options = { planeNormal: null, method: 'quick' }) {
-        if (points.length < 3) {
+        if (points.length < 3)
+        {
             throw Error('cannot build a simplex out of <3 points')
         }
         this._hull = [];
@@ -23,13 +24,15 @@ export class ConvexHull {
         var newpoints = clone(points);
         indexable(newpoints);
         var planeNormal = options.planeNormal
-        if (!planeNormal) {
+        if (!planeNormal)
+        {
             var plane = isInOnePlane(newpoints);
             if (plane)
                 planeNormal = plane.normal;
         }
         this.normal = Vector3.UnitZ;
-        if (planeNormal) {
+        if (planeNormal)
+        {
             //在一个平面  2D ConvexHull 
             if (this.normal.dot(planeNormal) < 0)
                 planeNormal.negate();
@@ -42,7 +45,8 @@ export class ConvexHull {
 
             this.addBoundSeg(line0, newpoints);
             this.addBoundSeg(line1, newpoints);
-        } else {
+        } else
+        {
             //3D Hull
             // 先找出一个平面最大Convex
 
@@ -52,7 +56,8 @@ export class ConvexHull {
     getMinMax(points) {
         var maxXp = points[0];
         var minXp = points[0];
-        for (let i = 1; i < points.length; i++) {
+        for (let i = 1; i < points.length; i++)
+        {
             var point = points[i];
             if (maxXp.x < point.x)
                 maxXp = point;
@@ -64,7 +69,8 @@ export class ConvexHull {
 
     outerPoints(line, points) {
         var outerPoint = []
-        for (let i = 0; i < points.length; i++) {
+        for (let i = 0; i < points.length; i++)
+        {
             const point = points[i];
             if (line.orientationPoint(point, this.normal) === Orientation.Positive)
                 outerPoint.push(point);
@@ -74,10 +80,12 @@ export class ConvexHull {
     distalPoints(line, points) {
         var distalPoint = null;
         var maxDistance = -Infinity;
-        for (let i = 0; i < points.length; i++) {
+        for (let i = 0; i < points.length; i++)
+        {
             const point = points[i];
             var distance = line.distancePoint(point).distance;
-            if (distance > maxDistance) {
+            if (distance > maxDistance)
+            {
                 distalPoint = point;
                 maxDistance = distance;
             }
@@ -95,10 +103,12 @@ export class ConvexHull {
     }
 
     get hull() {
-        if (!this.__hull) {
+        if (!this.__hull)
+        {
             this.__hull = [];
-            debugger
-            for (let i = 0; i < this._hull.length; i++) {
+
+            for (let i = 0; i < this._hull.length; i++)
+            {
                 const point = this._hull[i];
                 this.__hull.push(this.originPoints[point.index]);
             }

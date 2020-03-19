@@ -27,6 +27,7 @@ export * from "./alg/mesh"
 export * from "./alg/shape"
 export * from "./alg/triangulation"
 export * from "./alg/convexHull"
+export * from "./render/threeaid"
 
 if (!Array.prototype.get)
     Array.prototype.get = function (index) {

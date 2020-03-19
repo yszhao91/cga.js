@@ -12,7 +12,7 @@ import { gPrecision } from "../math/Math";
  * @param {options:{feature,dim,normal}} feature 选择平平面 
  * @returns {Array<Number>} 三角形索引数组
  */
-export function trianglation(inboundary, holes = [], options = {}) {
+export function triangulation(inboundary, holes = [], options = {}) {
     options = { feature: "xyz", dim: 3, ...options }
     let boundary = null;
     let feature = options.feature;

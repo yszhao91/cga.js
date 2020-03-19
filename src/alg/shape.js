@@ -5,7 +5,7 @@ import { clone } from "../utils/array";
 import { ArrayEx } from "../struct/data/ArrayEx";
 import { indexable } from "./mesh";
 import { Vector2 } from "../math/Vector2";
-import { trianglation } from "./triangulation";
+import { triangulation } from "./triangulation";
 import { recognitionPolygonNormal } from "../struct/3d/Polygon";
 import { Point } from "../struct/3d/Point";
 
@@ -151,8 +151,8 @@ export function extrude(shape, arg_path, options = {}) {
         textureEnable: true,
         textureScale: new Vector2(1, 1),
         smoothAngle: Math.PI / 180 * 30,
-        sealStart: true,
-        sealEnd: true,
+        sealStart: false,
+        sealEnd: false,
         ...options
     }
     var normal = options.normal || recognitionPolygonNormal(shape);
@@ -222,7 +222,7 @@ export function extrude(shape, arg_path, options = {}) {
     rotateByUnitVectors(endSeal, normal, path.get(-1).direction);
     translate(endSeal, path.get(-1));
 
-    var sealStartTris = trianglation(sealUv, [], { normal })
+    var sealStartTris = triangulation(sealUv, [], { normal })
     if (options.sealStart)
         indexable(startSeal, index);
     if (options.sealEnd)

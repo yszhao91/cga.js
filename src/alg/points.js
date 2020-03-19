@@ -13,7 +13,8 @@ const _vector = v3();
  * @param {Vector*} b
  */
 export function vectorCompare(a, b) {
-    if (a.x === b.x) {
+    if (a.x === b.x)
+    {
         if (a.z !== undefined && a.y === b.y)
             return a.z - b.z
         else
@@ -30,28 +31,36 @@ export function vectorCompare(a, b) {
  * @returns {Array<Number>} 数字数组
  */
 export function verctorToNumbers(points, feature = "xyz") {
-    if (!(points instanceof Array)) {
+    if (!(points instanceof Array))
+    {
         console.error("传入参数必须是数组");
         return;
     }
 
     var numbers = [];
-    if (points[0].x !== undefined && points[0].y !== undefined && points[0].z !== undefined) {
-        for (var i = 0; i < points.length; i++) {
-            for (let j = 0; j < feature.length; j++) {
+    if (points[0].x !== undefined && points[0].y !== undefined && points[0].z !== undefined)
+    {
+        for (var i = 0; i < points.length; i++)
+        {
+            for (let j = 0; j < feature.length; j++)
+            {
                 numbers.push(points[i][feature[j]]);
             }
         }
     } else if (points[0].x !== undefined && points[0].y !== undefined)
-        for (var i = 0; i < points.length; i++) {
+        for (var i = 0; i < points.length; i++)
+        {
             numbers.push(points[i].x);
             numbers.push(points[i].y);
         }
-    else if (points[0] instanceof Array) {
-        for (var i = 0; i < points.length; i++) {
+    else if (points[0] instanceof Array)
+    {
+        for (var i = 0; i < points.length; i++)
+        {
             numbers = numbers.concat(verctorToNumbers(points[i]));
         }
-    } else {
+    } else
+    {
         console.error("数组内部的元素不是向量");
     }
 
@@ -66,7 +75,8 @@ export function verctorToNumbers(points, feature = "xyz") {
 export function boundingBox(points) {
     this.min = new Vector3(+Infinity, +Infinity, +Infinity);
     this.max = new Vector3(-Infinity, -Infinity, -Infinity);
-    for (let i = 0; i < points.length; i++) {
+    for (let i = 0; i < points.length; i++)
+    {
         this.min.min(points[i]);
         this.max.max(points[i]);
     }
@@ -80,14 +90,15 @@ export function boundingBox(points) {
  * @param {Boolean} ref 是否是引用
  */
 export function applyQuaternion(points, quaternion, ref = true) {
-    if (ref) {
+    if (ref)
+    {
         points.flat(Infinity).forEach(point => {
             point.applyQuaternion(quaternion);
         });
         return points;
     }
 
-    return applyQuaternion(clone(points))
+    return applyQuaternion(clone(points), quaternion)
 }
 
 /**
@@ -97,7 +108,8 @@ export function applyQuaternion(points, quaternion, ref = true) {
  * @param {*} ref 
  */
 export function translate(points, distance, ref = true) {
-    if (ref) {
+    if (ref)
+    {
         points.flat(Infinity).forEach(point => {
             point.add(distance);
         });
@@ -137,7 +149,8 @@ export function rotateByUnitVectors(points, vFrom, vTo, ref = true) {
  * @param {*} ref 
  */
 export function scale(points, scale, ref = true) {
-    if (ref) {
+    if (ref)
+    {
         points.flat(Infinity).forEach(point => {
             point.scale.multiply(scale);
         });
@@ -154,7 +167,8 @@ export function scale(points, scale, ref = true) {
  * @param {*} ref 
  */
 export function applyMatrix4(points, matrix, ref = true) {
-    if (ref) {
+    if (ref)
+    {
         points.flat(Infinity).forEach(point => {
             point.applyMatrix4(matrix);
         });
@@ -170,28 +184,33 @@ export function applyMatrix4(points, matrix, ref = true) {
  * @param {*} maxAngle  简化最大角度
  */
 export function simplifyPointList(points, maxDistance = 0.1, maxAngle = Math.PI / 180 * 5) {
-    for (let i = 0; i < points.length; i++) {
+    for (let i = 0; i < points.length; i++)
+    {
         // 删除小距离
         const P = points[i];
         const nextP = points[i + 1];
-        if (P.distanceTo(nextP) < maxDistance) {
+        if (P.distanceTo(nextP) < maxDistance)
+        {
             if (i === 0)
                 points.remove(i + 1, 1);
             else if (i === points.length - 2)
                 points.splice(i, 1);
-            else {
+            else
+            {
                 points.splice(i, 2, P.clone().add(nextP).multiplyScalar(0.5));
             }
             i--;
         }
     }
 
-    for (let i = 1; i < points.length - 1; i++) {
+    for (let i = 1; i < points.length - 1; i++)
+    {
         // 删除小小角度
         const preP = points[i - 1];
         const P = points[i];
         const nextP = points[i + 1];
-        if (Math.acos(P.clone().sub(preP).normalize().dot(nextP.clone().sub(P).normalize())) < maxAngle) {
+        if (Math.acos(P.clone().sub(preP).normalize().dot(nextP.clone().sub(P).normalize())) < maxAngle)
+        {
             points.splice(i, 1);
             i--
         }
@@ -217,7 +236,7 @@ export function reverseOnPlane(points, plane) {
 export function projectOnPlane(points, plane, projectDirect) {
     return points;
 }
- 
+
 /**
  * 计算共面点集所在的平面
  * @param {Array<Vector3|Point>} points 
@@ -227,10 +246,12 @@ export function recognitionPlane(points) {
     var line = new Line(points[0], points.get(-1));
     var maxDistance = -Infinity;
     var ipos = -1;
-    for (let i = 1; i < points.length - 1; i++) {
+    for (let i = 1; i < points.length - 1; i++)
+    {
         const pt = points[i];
         var distance = line.distancePoint(pt).distance;
-        if (distance > maxDistance) {
+        if (distance > maxDistance)
+        {
             maxDistance = distance;
             ipos = i;
         }
@@ -248,7 +269,8 @@ export function recognitionPlane(points) {
  */
 export function isInOnePlane(points, precision = gPrecision) {
     var plane = recognitionPlane(points);
-    for (let i = 0; i < points.length; i++) {
+    for (let i = 0; i < points.length; i++)
+    {
         const pt = points[i];
         if (plane.distancePoint(pt) >= precision)
             return false;

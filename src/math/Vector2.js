@@ -5,6 +5,10 @@ export class Vector2 {
     this.isVector2 = true;
   }
 
+  static isVector2(v) {
+    return !isNaN(v.x) && !isNaN(v.y) && isNaN(v.z) && isNaN(v.w);
+  }
+
   get width() {
     return this.x;
   }

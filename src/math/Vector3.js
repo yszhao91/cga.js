@@ -7,6 +7,9 @@ export class Vector3 {
     this.y = y || 0;
     this.z = z || 0;
   }
+  static isVector3(v) {
+    return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && isNaN(v.w);
+  }
 
   get isVector3() { return true; }
 

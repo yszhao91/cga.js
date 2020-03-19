@@ -35,7 +35,7 @@ export function triangListToBuffer(vertices, triangleList) {
  */
 export function toBuffer(inVertices, indices, inUvs = []) {
     var vertices = []
-    if (inVertices[0] instanceof Vector3)
+    if (Vector3.isVector3(inVertices[0]))
     {
         for (let i = 0; i < inVertices.length; i++)
         {
@@ -47,7 +47,7 @@ export function toBuffer(inVertices, indices, inUvs = []) {
         vertices = inVertices;
     }
     var uvs = []
-    if (inUvs.length > 0 && inUvs[0] instanceof Vector2)
+    if (inUvs.length > 0 && Vector2.isVector2(inUvs[0]))
     {
         for (let i = 0; i < inUvs.length; i++)
         {

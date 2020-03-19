@@ -8,6 +8,10 @@ export class Vector4 {
     this.isVector4 = true;
   }
 
+  static isVector4(v) {
+    return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && !isNaN(v.w);
+  }
+
   get width() {
     return this.z;
   }
