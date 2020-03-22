@@ -34,11 +34,9 @@ export function linkSide(side0, side1, isClosed = false) {
 
     var triangles = new ArrayEx();
 
-    if (side0[0] instanceof Number)
-    {
+    if (side0[0] instanceof Number) {
         //索引三角形
-        for (var i = 0; i < length; i++)
-        {
+        for (var i = 0; i < length; i++) {
             var v00 = side0[i];
             var v01 = side0[(i + 1) % orgLen];
             var v10 = side1[i];
@@ -52,13 +50,10 @@ export function linkSide(side0, side1, isClosed = false) {
             triangles.push(v11);
             triangles.push(v01);
         }
-    } else
-    {
-        if (side0[0].index !== undefined)
-        {
+    } else {
+        if (side0[0].index !== undefined) {
             //含索引的顶点
-            for (var i = 0; i < length; i++)
-            {
+            for (var i = 0; i < length; i++) {
                 var v00 = side0[i];
                 var v01 = side0[(i + 1) % orgLen];
                 var v10 = side1[i];
@@ -72,11 +67,9 @@ export function linkSide(side0, side1, isClosed = false) {
                 triangles.push(v11.index);
                 triangles.push(v01.index);
             }
-        } else
-        {
+        } else {
             //三角形顶点
-            for (var i = 0; i < length; i++)
-            {
+            for (var i = 0; i < length; i++) {
                 var v00 = side0[i];
                 var v01 = side0[(i + 1) % orgLen];
                 var v10 = side1[i];
@@ -105,8 +98,7 @@ export function linkSide(side0, side1, isClosed = false) {
 export function linkSides(shapes, isClosed = false, isClosed2 = false) {
     var length = isClosed2 ? shapes.length : shapes.length - 1;
     var triangles = new ArrayEx();
-    for (var i = 0; i < length; i++)
-    {
+    for (var i = 0; i < length; i++) {
         triangles.push(...linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
     }
 
@@ -161,14 +153,12 @@ export function extrude(shape, arg_path, options = {}) {
 
     var shapepath = new Path(shape);
     var insertNum = 0;
-    for (let i = 1; i < shapepath.length - 1; i++)
-    { //大角度插入点
-        if (Math.acos(shapepath[i].direction.dot(shapepath[i + 1].direction)) > options.smoothAngle)
+    for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点
+        if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle)
             shape.splice(i + insertNum++, 0, shapepath[i].clone());
     }
 
-    if (options.isClosed)
-    {   //大角度插入点
+    if (options.isClosed) {   //大角度插入点
         var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
         var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
         if (Math.acos(dir1.dot(dir2)) > options.smoothAngle);
@@ -186,10 +176,9 @@ export function extrude(shape, arg_path, options = {}) {
     const shapeArray = [];
 
 
-    for (let i = 0; i < path.length; i++)
-    {
+    for (let i = 0; i < path.length; i++) {
         const node = path[i];
-        var dir = node.direction;
+        var dir = node.tangent;
         var newShape = clone(shape);
         rotateByUnitVectors(newShape, normal, dir);
         translate(newShape, node);
@@ -203,10 +192,8 @@ export function extrude(shape, arg_path, options = {}) {
     shapepath = new Path(shape);
     var uvs = [];
 
-    for (let i = 0; i < path.length; i++)
-    {
-        for (let j = 0; j < shapepath.length; j++)
-        {
+    for (let i = 0; i < path.length; i++) {
+        for (let j = 0; j < shapepath.length; j++) {
             uvs.push(shapepath[j].tlen * options.textureScale.x, path[i].tlen * options.textureScale.y);
         }
     }
@@ -217,9 +204,9 @@ export function extrude(shape, arg_path, options = {}) {
         rotateByUnitVectors(sealUv, normal, v3(0, 0, 1))
 
     var endSeal = clone(startSeal);
-    rotateByUnitVectors(startSeal, normal, path[0].direction);
+    rotateByUnitVectors(startSeal, normal, path[0].tangent);
     translate(startSeal, path[0])
-    rotateByUnitVectors(endSeal, normal, path.get(-1).direction);
+    rotateByUnitVectors(endSeal, normal, path.get(-1).tangent);
     translate(endSeal, path.get(-1));
 
     var sealStartTris = triangulation(sealUv, [], { normal })
@@ -230,31 +217,26 @@ export function extrude(shape, arg_path, options = {}) {
     var sealEndTris = []
     var hasVLen = vertices.length;
     if (options.sealStart)
-        for (let i = 0; i < sealStartTris.length; i++)
-        {
+        for (let i = 0; i < sealStartTris.length; i++) {
             sealStartTris[i] += hasVLen;
         }
     if (options.sealEnd && !options.sealStart)
-        for (let i = 0; i < sealStartTris.length; i++)
-        {
+        for (let i = 0; i < sealStartTris.length; i++) {
             sealEndTris[i] = sealStartTris[i] + hasVLen;
         }
     if (options.sealEnd && options.sealStart)
-        for (let i = 0; i < sealStartTris.length; i++)
-        {
+        for (let i = 0; i < sealStartTris.length; i++) {
             sealEndTris[i] = sealStartTris[i] + startSeal.length;
         }
 
-    if (options.sealStart)
-    {
+    if (options.sealStart) {
         vertices.push(...startSeal);
         triangles.push(...sealStartTris);
         for (let i = 0; i < sealUv.length; i++)
             uvs.push(sealUv[i].x, sealUv[i].y);
     }
 
-    if (options.sealEnd)
-    {
+    if (options.sealEnd) {
         vertices.push(...endSeal);
         triangles.push(...sealEndTris);
         for (let i = 0; i < sealUv.length; i++)
