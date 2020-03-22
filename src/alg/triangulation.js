@@ -12,18 +12,16 @@ import { gPrecision } from "../math/Math";
  * @param {options:{feature,dim,normal}} feature 选择平平面 
  * @returns {Array<Number>} 三角形索引数组
  */
-export function triangulation(inboundary, holes = [], options = {}) {
+export function triangulation(inboundary, holes = [], options = { normal: Vector3.UnitZ }) {
     options = { feature: "xyz", dim: 3, ...options }
     let boundary = null;
     let feature = options.feature;
     let dim = options.dim;
     let normal = options.normal || recognitionPolygonNormal(inboundary);
-    if (normal.dot(Vector3.UnitZ) < 1 - gPrecision)
-    {
+    if (normal.dot(Vector3.UnitZ) < 1 - gPrecision) {
         boundary = clone(inboundary);
         rotateByUnitVectors(boundary, normal, Vector3.UnitZ);
-    } else
-    {
+    } else {
         boundary = inboundary;
     }
 
@@ -32,8 +30,7 @@ export function triangulation(inboundary, holes = [], options = {}) {
 
     var holesIndex = [];
     var baseIndex = boundary.length;
-    for (let i = -1; i < holes.length - 1; i++)
-    {
+    for (let i = -1; i < holes.length - 1; i++) {
         holesIndex.push(baseIndex);
         const hole = holes[i + 1];
         holesIndex.push(baseIndex + hole.length);
