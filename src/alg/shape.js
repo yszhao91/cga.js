@@ -145,6 +145,7 @@ export function extrude(shape, arg_path, options = {}) {
         smoothAngle: Math.PI / 180 * 30,
         sealStart: false,
         sealEnd: false,
+        normal: Vector3.UnitZ,
         ...options
     }
     var normal = options.normal || recognitionPolygonNormal(shape);
