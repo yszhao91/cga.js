@@ -20,21 +20,24 @@ export class Path extends Polyline {
         this[0].len = 0;
         this[0].tlen = 0;
         this[0].direction = this[1].clone().sub(this[0]).normalize();
-        for (let i = 1; i < this.length; i++) {
+        for (let i = 1; i < this.length; i++)
+        {
             const e = this[i];
             e.len = this[i].distanceTo(this[i - 1]);
             e.tlen = this[i - 1].tlen + e.len;
             this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
         }
-        if (this._closed) {
-            this[i].direction.copy(this[0]).sub(this.get(-1)).normalize();
+        if (this._closed)
+        {
+            this.get(-1).direction.copy(this[0]).sub(this.get(-1)).normalize();
         }
 
-        this[i].direction = this;
-        for (let i = 0; i < this.length + 2; i++) {
+        for (let i = 0; i < this.length + 2; i++)
+        {
             this[i % this.length].tangent = this[i % this.length].direction.clone().add(this[(i + 1) % this.length]).normalize();
         }
-        if (!this._closed) {
+        if (!this._closed)
+        {
             this[0].tangent.copy(this[0].direction)
             this.get(-1).tangent.copy(this.get(-1).direction)
         }
@@ -55,18 +58,22 @@ export class Path extends Polyline {
         if (to <= from)
             return null;
         var newPath = new Path([]);
-        for (let i = 0; i < this.length - 1; i++) {
+        for (let i = 0; i < this.length - 1; i++)
+        {
             const pt = this[i];
             const ptnext = this[i + 1];
-            if (pt.tlen <= from && ptnext.tlen >= from) {
+            if (pt.tlen <= from && ptnext.tlen >= from)
+            {
                 var v3 = new Vector3().lerpVectors(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
                 newPath.add(v3);
             }
-            if (pt.tlen > from && pt.tlen < to) {
+            if (pt.tlen > from && pt.tlen < to)
+            {
                 newPath.add(pt.clone());
                 return data;
             }
-            if (pt.tlen <= to && ptnext.tlen >= to) {
+            if (pt.tlen <= to && ptnext.tlen >= to)
+            {
                 var v3 = new Vector3().lerpVectors(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
                 newPath.add(v3);
                 return newPath;
@@ -84,7 +91,8 @@ export class Path extends Polyline {
         if (distance !== arg_distance)
             return null;
 
-        if (right - left === 1) {
+        if (right - left === 1)
+        {
             return {
                 position: left,
                 isNode: false,//是否在节点上
@@ -111,7 +119,8 @@ export class Path extends Polyline {
         if (distance !== arg_distance)
             return null;
 
-        if (right - left === 1) {
+        if (right - left === 1)
+        {
             debugger
             return new Vector3().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
         }
@@ -135,10 +144,13 @@ export class Path extends Polyline {
 
         var res = [];
         var curJ = 0
-        for (var i = 0; i <= splitCount; i++) {
+        for (var i = 0; i <= splitCount; i++)
+        {
             var plen = i * perlen;
-            for (let j = curJ; j < this.length - 1; j++) {
-                if (this[j].tlen <= plen && this[j + 1].tlen >= plen) {
+            for (let j = curJ; j < this.length - 1; j++)
+            {
+                if (this[j].tlen <= plen && this[j + 1].tlen >= plen)
+                {
                     var p = new Vector3().lerpVectors(this[j], this[j + 1], (plen - this[j].tlen) / (this[j + 1].len))
                     res.push(p);
                     curJ = j;
@@ -166,14 +178,16 @@ export class Path extends Polyline {
      * @param  {...any} ps 
      */
     add(...ps) {
-        if (this.length == 0) {
+        if (this.length == 0)
+        {
             const firstpt = ps.shift();
             this.push(firstpt);
             this[0].len = 0;
             this[0].tlen = 0;
 
         }
-        for (let i = 0; i < ps.length; i++) {
+        for (let i = 0; i < ps.length; i++)
+        {
             const pt = ps[i];
             pt.len = pt.distanceTo(this.get(-1));
             pt.tlen = this.get(-1).tlen + pt.len;

@@ -47,7 +47,7 @@ export function extrudeToMesh(shape, arg_path, options, material = new MeshStand
  * @param {*} hole 
  * @param {*} options 
  */
-export function trianglutionToGeometryBuffer(boundary, hole, options) {
+export function trianglutionToGeometryBuffer(boundary, hole = [], options) {
     var triangles = triangulation(boundary, hole, options)
     var vertices = [...boundary, ...hole.flat(Infinity)]
     var uvs = [];

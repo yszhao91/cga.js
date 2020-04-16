@@ -1,9 +1,9 @@
 import { boundingBox, isInOnePlane } from "./points";
-import { v3 } from "../math/Vector3";
+import { v3, Vector3 } from "../math/Vector3";
 import { calcCircleFromThreePoint } from "../struct/3d/Circle";
 
 export class Delaunay {
-    constructor(points, options = { planeNormal: null }) {
+    constructor(points, options = { planeNormal: Vector3.UnitZ }) {
         //如果planeNormal为null 需要判断是否在一个平面
         if (points.length < 3)
             throw ("points 数量必须大于3")
@@ -13,14 +13,17 @@ export class Delaunay {
         var newpoints = clone(points);
         indexable(newpoints);
         var planeNormal = options.planeNormal
-        if (!planeNormal) {
+        if (!planeNormal)
+        {
             var plane = isInOnePlane(newpoints);
             if (plane)
                 planeNormal = plane.normal;
         }
         this.isCoPlane = !!planeNormal;
 
-        if (planeNormal) {
+        if (planeNormal)
+        {
+            // 所有点都在一个平面上
             // 平面上计算 可以看做2D
             if (this.normal.dot(planeNormal) < 0)
                 planeNormal.negate();
@@ -39,12 +42,15 @@ export class Delaunay {
             var nlen = newpoints.length;
 
             var open = [calcCircleFromThreePoint(newpoints[n], newpoints[n + 1], newpoints[n + 2])];
+
             var close = [];
             var edges = [];
 
-            for (let i = 0; i < nlen; i++) {
+            for (let i = 0; i < nlen; i++)
+            {
                 const np = newpoints[i];
-                for (let j = 0; j < open.length; j++) {
+                for (let j = 0; j < open.length; j++)
+                {
                     closed.push(open[j]);
                     open.splice(j, 1);
                     continue;
@@ -59,7 +65,8 @@ export class Delaunay {
      */
     boundTriangle(points) {
         var [min, max] = boundingBox(points);
-        if (this.isCoPlane) {
+        if (this.isCoPlane)
+        {
             var dx = max.x - min.x;
             var dy = max.y - min.y;
             var dmax = Math.max(dx, dy);
