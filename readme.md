@@ -177,7 +177,7 @@ simplifyPointList(points, maxDistance, maxAngle);
 
 ### 距离
 
-一级目录与二级目录存在相应算法关系
+一级目录与二级目录存在相应距离算法关系
 
 - Point
   - Point
@@ -229,4 +229,8 @@ simplifyPointList(points, maxDistance, maxAngle);
 
 ## 讨论
 
-QQ 群：469014839
+QQ 群：469014839 by: 换孤
+本人 2013 接触从事 webgl/threejs 工作，开发经验 7 年左右，一直以来都想着开源，结交更多志同道合的朋友
+其他开源项目 看我的 github 主页
+我的 github 地址：<https://github.com/yszhao91> 欢迎大家 follow star
+希望开源能帮到大家
