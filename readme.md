@@ -229,7 +229,7 @@ simplifyPointList(points, maxDistance, maxAngle);
 
 ## 讨论
 
-> QQ 群：469014839 by: 换孤
+> QQ 群：173306525 by: 换孤
 
 > 本人 2013 接触从事 webgl/threejs 工作，开发经验 7 年左右，一直以来都想着开源，结交更多志同道合的朋友
 
