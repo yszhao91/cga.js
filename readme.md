@@ -1,6 +1,9 @@
 # 3D 计算几何算法库(3D Computional Geometry Algorithm)
 
 inspire by Wild Magic
+threejs/cgajs 开发交流群：284389784
+2020 年 12 月 10 日 开发很久 typescript 全新版本更新 可以根据自己的需要编译成 js 版
+xtorcga 更名为 cga.js
 
 ## 概要
 
@@ -12,23 +15,23 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 
 案例：
 
-[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
+[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/cag.js/)
 
-[文档与演示（github）](https://yszhao91.github.io/xtorcga/)
+[文档与演示（github）](https://yszhao91.github.io/cag.js/)
 
-- [点与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html](http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html)
+- [点与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distPointAll.html](http://dcgraph.gitee.io/cag.js/guide/distPointAll.html)
 
-- [线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html](http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html)
+- [线与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distLineAll.html](http://dcgraph.gitee.io/cag.js/guide/distLineAll.html)
 
-- [射线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html](http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html)
+- [射线与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distRayAll.html](http://dcgraph.gitee.io/cag.js/guide/distRayAll.html)
 
-- [线段与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html](http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html)
-- [常用 https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html)
+- [线段与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cag.js/guide/distSegmentAll.html)
+- [常用 https://yszhao91.github.io/cag.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cag.js/guide/%E5%B8%B8%E7%94%A8.html)
 
 ## 安装
 
 ```
-npm install xtorcga -D
+npm install cag.js -D
 ```
 
 ## 使用
@@ -36,7 +39,7 @@ npm install xtorcga -D
 - 全部引用;：
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "cag.js";
 function randomV3() {
   return cga.v3(
     Math.random() * 100 - 50,
@@ -53,7 +56,7 @@ var result = point.distanceSegment(seg);
 - 按需求引用：
 
 ```javascript
-import { v3, Point, Segment } from "xtorcga";
+import { v3, Point, Segment } from "cag.js";
 function randomV3() {
   return v3(
     Math.random() * 100 - 50,
@@ -72,7 +75,7 @@ var result = point.distanceSegment(seg);
 ```html
 <script src="cga.js" />
 或者
-<script src="https://raw.githack.com/yszhao91/xtorcga/master/build/cga.js" />
+<script src="https://raw.githack.com/yszhao91/cag.js/master/build/cga.js" />
 <script>
   var point = new cga.Point(1, 2, 3);
   var line = new cga.Line(
@@ -90,7 +93,7 @@ npm install
 国内
 cnpm install
 
-npm run build //编译到build目录下
+npm run build //js 编译到build目录下生成cga.js dist目录下生成每个文件的js和.d.ts
 npm run dev  //运行项目，自己更改源码测试
 ```
 
@@ -128,27 +131,19 @@ npm run dev  //运行项目，自己更改源码测试
 
 > 进行中
 
-### 同一平面点集 delauny 三角网构建
+### delauny 三角网构建
 
-> 进行中
+> 完成
 
-### 3d 点集 delauny 四面体构建
+### voronoi 图构建
 
-> 进行中
-
-### 同一平面 voronoi 图构建
-
-> 进行中
-
-### 3d voronoi 图构建
-
-> 进行中
+> 完成
 
 ### 最近点对问题
 
 点集合中最近找出距离最近的一对点 算法时间 O(nlogn)
 
-> 进行中
+> 完成
 
 <!-- **分治法求解**
 
@@ -229,8 +224,8 @@ simplifyPointList(points, maxDistance, maxAngle);
 
 ## 讨论
 
-> QQ 群：173306525 by: 换孤
+> QQ 群：284389784 by: dc
 
-> 本人 2013 接触从事 webgl/threejs 工作，开发经验 7 年左右，一直以来都想着开源，结交更多志同道合的朋友
+> 本人 2013 接触从事 webgl/threejs 工作，开发经验 7 年左右，一直以来都想着开源，结交更多志同道合的朋友,可接 threejs 项目
 
 > 其他开源项目 看我的 github 主页 地址：<https://github.com/yszhao91> 欢迎大家 follow star,希望开源能帮到大家

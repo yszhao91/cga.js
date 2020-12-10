@@ -1,0 +1,318 @@
+import { Vec3 } from '../math/Vec3';
+import { Point } from '../struct/3d/Point';
+import { Vec2 } from '../math/Vec2';
+import { Polygon } from '../struct/3d/Polygon';
+import { Polyline } from '../struct/3d/PolyLine';
+import { Path } from '../struct/3d/Path';
+import { rotateByUnitVectors } from './common';
+import { translate } from './pointset';
+import { indexable } from './mesh';
+import { triangulation } from './trianglution';
+import { clone, flat } from '../utils/array';
+import { recognitionPlane, recognitionCCW } from './recognition';
+/**
+ *  常用shape几何操作
+ */
+
+/**
+ * 缝合两个边
+ * @param {Array} side0 
+ * @param {Array} side1 
+ * @param {Boolean} isClosed 
+ * @returns {Array<Vec3>} 三角形数组，每三个为一个三角形 
+ */
+export function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClosed: boolean = false) {
+    if (side0.length !== side1.length)
+        throw ("拉伸两边的点数量不一致  linkSide");
+
+    if (side0.length < 2 || side1.length < 2)
+        return [];
+
+    var sidelength = side0.length;
+
+    var orgLen = side0.length;
+    var length = isClosed ? side0.length : side0.length - 1;
+
+    var triangles = [];
+
+    if (side0[0] instanceof Number) {
+        //索引三角形
+        for (var i = 0; i < length; i++) {
+            var v00 = side0[i];
+            var v01 = side0[(i + 1) % orgLen];
+            var v10 = side1[i];
+            var v11 = side1[(i + 1) % orgLen];
+
+            triangles.push(v00);
+            triangles.push(v10);
+            triangles.push(v11);
+
+            triangles.push(v00);
+            triangles.push(v11);
+            triangles.push(v01);
+        }
+    } else {
+        if (side0[0].index !== undefined) {
+            //含索引的顶点
+            for (var i = 0; i < length; i++) {
+                var v00 = side0[i];
+                var v01 = side0[(i + 1) % orgLen];
+                var v10 = side1[i];
+                var v11 = side1[(i + 1) % orgLen];
+
+                triangles.push(v00.index);
+                triangles.push(v10.index);
+                triangles.push(v11.index);
+
+                triangles.push(v00.index);
+                triangles.push(v11.index);
+                triangles.push(v01.index);
+            }
+        } else {
+            //三角形顶点
+            for (var i = 0; i < length; i++) {
+                var v00 = side0[i];
+                var v01 = side0[(i + 1) % orgLen];
+                var v10 = side1[i];
+                var v11 = side1[(i + 1) % orgLen];
+
+                triangles.push(v00);
+                triangles.push(v10);
+                triangles.push(v11);
+
+                triangles.push(v00);
+                triangles.push(v01);
+                triangles.push(v11);
+            }
+        }
+    }
+
+    return triangles;
+}
+
+/**
+ * 缝合shape集合
+ * @param {Array<Array<Point|Vec3>} shapes  路基 点集的集合， 每个shape的点数量一致
+ * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+ * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
+ */
+export function linkSides(shapes: Array<Array<Vec3 | Point>>, isClosed = false, isClosed2 = false) {
+    var length = isClosed2 ? shapes.length : shapes.length - 1;
+    var triangles = [];
+    for (var i = 0; i < length; i++) {
+        triangles.push(...linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
+    }
+
+    return triangles;
+}
+
+/**
+ * 缝合集合
+ * @param sides 圈
+ * @param closed1 圈自身是否缝合
+ * @param closed2 圈拉伸后首尾是否缝合
+ */
+export function links(sides: Array<Polygon | Polyline | Array<Vec3 | Point>>, closed1: boolean = false, closed2: boolean = false) {
+    closed1 = sides[0] instanceof Polyline ? true : false || closed1;
+    return linkSides(sides, closed1, closed2);
+}
+
+export interface IExtrudeOptions {
+    fixedY?: boolean;
+    isClosed?: boolean;//闭合为多边形 界面
+    isClosed2?: boolean;//首尾闭合为圈
+    textureEnable?: boolean;
+    textureScale?: Vec2;
+    smoothAngle?: number;
+    sealStart?: boolean;
+    sealEnd?: boolean;
+    normal?: Vec3,
+}
+
+const defaultExtrudeOption = {
+    isClosed: false,
+    isClosed2: false,
+    textureEnable: true,
+    textureScale: new Vec2(1, 1),
+    smoothAngle: Math.PI / 180 * 30,
+    sealStart: false,
+    sealEnd: false,
+    normal: Vec3.UnitZ,
+}
+
+/**
+ * 挤压
+ * @param {Polygon|Array<Point|Vec3> }  shape   多边形或顶点数组
+ * @param {Path|Array<Point|Vec3> } path  路径或者或顶点数组
+ * @param {Object} options {  
+ *      isClosed: false,闭合为多边形 界面
+ *      isClosed2: false, 闭合为圈
+ *      textureEnable: true, 计算纹理坐标
+ *      textureScale: new Vec2(1, 1),纹理坐标缩放
+ *      smoothAngle: Math.PI / 180 * 30,大于这个角度则不平滑
+ *      sealStart: true, 是否密封开始面
+ *      sealEnd: true,是否密封结束面}
+ */
+export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array<Vec3> | any, options: IExtrudeOptions = defaultExtrudeOption) {
+    options = {
+        ...defaultExtrudeOption,
+        ...options
+    }
+    if (arg_path.length < 2) { throw ("路径节点数必须大于2") }
+
+    var isCCW = recognitionCCW(shape);
+    if (!isCCW)
+        shape.reverse();
+
+    var normal = options.normal;
+
+    var startSeal = clone(shape);
+    var shapepath = new Path(shape);
+    var insertNum = 0;
+    for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+        if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
+            shape.splice(i + insertNum++, 0, shapepath[i].clone());
+    }
+
+    if (options.isClosed) {
+        var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
+        var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
+        if (Math.acos(dir1.dot(dir2)) > options.smoothAngle!)
+            shape.push((<any>shape).get(-1).clone());
+
+        //新加起始点纹理拉伸
+        shape.unshift(shape[0].clone());
+    }
+
+
+    let path = arg_path;
+    if (!(path instanceof Path) && path instanceof Array)
+        path = new Path(arg_path);
+
+    const shapeArray = [];
+
+
+    for (let i = 0; i < path.length; i++) {
+        const node = path[i];
+        var dir = node.tangent;
+        var newShape = clone(shape);
+        rotateByUnitVectors(newShape, normal!, dir);
+        if (options.fixedY) {
+            var v = Vec3.UnitX;
+            rotateByUnitVectors([v], normal!, dir);
+            var v1 = v.clone();
+            v1.y = 0;
+            rotateByUnitVectors(newShape, v, v1);
+        }
+        translate(newShape, node);
+        shapeArray.push(newShape);
+    }
+
+    const index = { index: 0 };
+    var vertices = flat(shapeArray);
+    indexable(vertices, index);
+    var triangles = linkSides(shapeArray, options.isClosed, options.isClosed2);
+    shapepath = new Path(shape);
+    var uvs = [];
+
+    for (let i = 0; i < path.length; i++) {
+        for (let j = 0; j < shapepath.length; j++) {
+            uvs.push(shapepath[j].tlen * options.textureScale!.x, path[i].tlen * options.textureScale!.y);
+        }
+    }
+
+
+    var sealUv = clone(startSeal);
+    if (normal!.dot(Vec3.UnitZ) < 1 - 1e-4)
+        rotateByUnitVectors(sealUv, normal!, Vec3.UnitZ);
+
+    var endSeal = clone(startSeal);
+    rotateByUnitVectors(startSeal, normal!, path[0].tangent);
+    if (options.fixedY) {
+        var v = Vec3.UnitX;
+        rotateByUnitVectors([v], normal!, path[0].tangent);
+        var v1 = v.clone();
+        v1.y = 0;
+        rotateByUnitVectors(startSeal, v, v1);
+    }
+    translate(startSeal, path[0])
+    rotateByUnitVectors(endSeal, normal!, path.get(-1).tangent);
+    if (options.fixedY) {
+        var v = Vec3.UnitX;
+        rotateByUnitVectors([v], normal!, path.get(-1).tangent);
+        var v1 = v.clone();
+        v1.y = 0;
+        rotateByUnitVectors(endSeal, v, v1);
+    }
+    translate(endSeal, path.get(-1));
+
+    var sealStartTris = triangulation(sealUv, [], { normal });
+    sealStartTris.reverse();
+
+    if (options.sealStart)
+        indexable(startSeal, index);
+    if (options.sealEnd)
+        indexable(endSeal, index);
+    var sealEndTris = []
+    var hasVLen = vertices.length;
+    if (options.sealStart)
+        for (let i = 0; i < sealStartTris.length; i++) {
+            sealStartTris[i] += hasVLen;
+        }
+    if (options.sealEnd && !options.sealStart)
+        for (let i = 0; i < sealStartTris.length; i++) {
+            sealEndTris[i] = sealStartTris[i] + hasVLen;
+        }
+    if (options.sealEnd && options.sealStart) {
+        for (let i = 0; i < sealStartTris.length; i++) {
+            sealEndTris[i] = sealStartTris[i] + startSeal.length;
+        }
+    }
+
+    if (options.sealStart) {
+        vertices.push(...startSeal);
+        triangles.push(...sealStartTris);
+        for (let i = 0; i < sealUv.length; i++)
+            uvs.push(sealUv[i].x, sealUv[i].y);
+    }
+
+    if (options.sealEnd) {
+        vertices.push(...endSeal);
+        sealEndTris.reverse();
+        triangles.push(...sealEndTris);
+        for (let i = 0; i < sealUv.length; i++)
+            uvs.push(sealUv[i].x, sealUv[i].y);
+    }
+
+    return {
+        vertices,
+        triangles,
+        uvs
+    };
+
+}
+
+
+export interface IExtrudeNextOptions { 
+    sectionClosed?: boolean;//闭合为多边形 界面
+    pathClosed?: boolean;//首尾闭合为圈
+    textureEnable?: boolean;
+    textureScale?: Vec2;
+    smoothAngle?: number;
+    sealStart?: boolean;//section闭合就考虑是否封前后面
+    sealEnd?: boolean;
+    normal?: Vec3;
+    center?:Vec3;// 沿着路线推进是 始终在路线上，
+    smooth?:boolean;//是否拐点平滑
+}
+
+export function extrudeNext(section: Polygon | Polyline | Array<Vec3>,followPath: Array<Vec3> | any, options: IExtrudeNextOptions = defaultExtrudeOption) {
+    if(options.center )
+        translate(section,options.center);
+    
+  
+    
+
+    
+}
+

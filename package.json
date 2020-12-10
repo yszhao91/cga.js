@@ -1,13 +1,15 @@
 {
-  "name": "xtorcga",
-  "version": "0.0.23",
+  "name": "cga.js",
+  "version": "0.0.2",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "release": "tsc && npm publish && git.sh",
     "dev": "webpack-dev-server",
     "build:dev": "webpack --mode development",
     "build:prod": "webpack --mode production",
-    "build": "rollup -c",
+    "build": "tsc && rollup -c",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
     "deploy": "deploy.sh"
@@ -15,11 +17,12 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/yszhao91/xtorcga"
+    "url": "https://github.com/yszhao91/cga.js"
   },
   "author": "Zhao YS",
   "keywords": [
     "cga",
+    "cgajs",
     "cga.js",
     "计算几何库",
     "webgl",
@@ -31,24 +34,20 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "earcut": "^2.2.1"
+    "earcut": "^2.2.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "babel-core": "^6.26.3",
-    "babel-loader": "^8.0.6",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-react": "^6.24.1",
-    "babel-register": "^6.26.0",
+    "@babel/core": "^7.10.2",
+    "@types/earcut": "^2.1.1",
+    "@types/uuid": "^7.0.3",
+    "bignumber.js": "^9.0.1",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
-    "css-loader": "^3.4.1",
-    "element-ui": "^2.13.0",
+    "css-loader": "^3.5.3",
+    "decimal.js": "^10.2.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "html-loader": "^0.5.5",
-    "html-webpack-plugin": "^3.2.0",
-    "jsdoc": "^3.6.3",
-    "node-sass": "^4.12.0",
+    "html-loader": "^1.1.0",
+    "html-webpack-plugin": "^4.2.0",
     "rollup": "^1.27.14",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -56,17 +55,14 @@
     "rollup-plugin-node-resolve": "^5.0.1",
     "rollup-plugin-uglify": "^6.0.4",
     "rollup-watch": "^4.3.1",
-    "sass-loader": "^7.1.0",
-    "style-loader": "^1.1.2",
-    "three": "^0.112.1",
-    "uglifyjs-webpack-plugin": "^2.2.0",
-    "vue-loader": "^15.8.3",
-    "vue-style-loader": "^4.1.2",
-    "vue-template-compiler": "^2.6.11",
-    "vuepress": "^1.2.0",
-    "webpack": "^4.38.0",
-    "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.7.2",
-    "xtorcga": "0.0.8"
+    "style-loader": "^1.2.1",
+    "three": "^0.116.1",
+    "ts-loader": "^7.0.4",
+    "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths-webpack-plugin": "3.2.0",
+    "typescript": "^3.9.2",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0"
   }
 }

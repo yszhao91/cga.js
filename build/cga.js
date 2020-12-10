@@ -1,7040 +1,10912 @@
 /**
-* https://github.com/yszhao91/xtorcga
-*CGA Lib |xtorcga |alex Zhao | Zhao yaosheng
+* https://github.com/yszhao91/cga.js
+*CGA Lib |cga.js |alex Zhao | Zhao yaosheng
 *@license free for all
 */
-var cga = (function (exports) {
-    'use strict';
-
-    const gPrecision = 1e-4;
-    function sign(value) {
-      return value >= 0 ? 1 : -1;
-    }
-    function approximateEqual(v1, v2, precision = gPrecision) {
-      return Math.abs(v1 - v2) < precision;
-    }
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
-    }
-    function lerp(x, y, t) {
-      return (1 - t) * x + t * y;
-    }
-    function smoothstep(x, min, max) {
-      if (x <= min) return 0;
-      if (x >= max) return 1;
-      x = (x - min) / (max - min);
-      return x * x * (3 - 2 * x);
-    }
-    function smootherstep(x, min, max) {
-      if (x <= min) return 0;
-      if (x >= max) return 1;
-      x = (x - min) / (max - min);
-      return x * x * x * (x * (x * 6 - 15) + 10);
-    } // Random integer from <low, high> interval
-
-    function randInt(low, high) {
-      return low + Math.floor(Math.random() * (high - low + 1));
-    } // Random float from <low, high> interval
-
-    /**
-     * 生成一个low~high之间的浮点数
-     * @param {*} low 
-     * @param {*} high 
-     */
-
-    function randFloat(low, high) {
-      return low + Math.random() * (high - low);
-    }
-    function isPowerOfTwo(value) {
-      return (value & value - 1) === 0 && value !== 0;
-    }
-    function ceilPowerOfTwo(value) {
-      return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
-    }
-    function floorPowerOfTwo(value) {
-      return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
-    }
-    function degToRad(degrees) {
-      return degrees * _Math.DEG2RAD;
-    }
-    function radToDeg(radians) {
-      return radians * _Math.RAD2DEG;
-    }
-    /**
-     * 数字或者向量固定位数
-     * @param {Object} obj 数字或者向量
-     * @param {*} fractionDigits 
-     */
-
-    function toFixed(obj, fractionDigits) {
-      if (obj instanceof Number) return parseFloat(obj.toFixed(fractionDigits));else {
-        if (obj.x !== undefined) obj.x = parseFloat(obj.x.toFixed(fractionDigits));
-        if (obj.y !== undefined) obj.y = parseFloat(obj.y.toFixed(fractionDigits));
-        if (obj.z !== undefined) obj.z = parseFloat(obj.z.toFixed(fractionDigits));
-      }
-      return obj;
-    }
-
-    class Vector2 {
-      constructor(x, y) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.isVector2 = true;
-      }
-
-      get width() {
-        return this.x;
-      }
-
-      set width(value) {
-        this.x = value;
-      }
-
-      get height() {
-        return this.y;
-      }
-
-      set height(value) {
-        this.y = value;
-      }
-
-      static get UnitX() {
-        return new Vector2(1, 0);
-      }
-
-      static get UnitY() {
-        return new Vector2(0, 1);
-      }
-
-      set(x, y) {
-        this.x = x;
-        this.y = y;
-        return this;
-      }
-
-      setScalar(scalar) {
-        this.x = scalar;
-        this.y = scalar;
-        return this;
-      }
-
-      setX(x) {
-        this.x = x;
-        return this;
-      }
-
-      setY(y) {
-        this.y = y;
-        return this;
-      }
-
-      setComponent(index, value) {
-        switch (index) {
-          case 0:
-            this.x = value;
-            break;
-
-          case 1:
-            this.y = value;
-            break;
-
-          default:
-            throw new Error("index is out of range: " + index);
-        }
-
-        return this;
-      }
-
-      getComponent(index) {
-        switch (index) {
-          case 0:
-            return this.x;
-
-          case 1:
-            return this.y;
-
-          default:
-            throw new Error("index is out of range: " + index);
-        }
-      }
-
-      clone() {
-        return new this.constructor(this.x, this.y);
-      }
-
-      copy(v) {
-        this.x = v.x;
-        this.y = v.y;
-        return this;
-      }
-
-      add(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector2: .add() now only accepts one argument. Use .addVectors( a, b ) instead.");
-          return this.addVectors(v, w);
-        }
-
-        this.x += v.x;
-        this.y += v.y;
-        return this;
-      }
-
-      addScalar(s) {
-        this.x += s;
-        this.y += s;
-        return this;
-      }
-
-      addVectors(a, b) {
-        this.x = a.x + b.x;
-        this.y = a.y + b.y;
-        return this;
-      }
-
-      addScaledVector(v, s) {
-        this.x += v.x * s;
-        this.y += v.y * s;
-        return this;
-      }
-
-      sub(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector2: .sub() now only accepts one argument. Use .subVectors( a, b ) instead.");
-          return this.subVectors(v, w);
-        }
-
-        this.x -= v.x;
-        this.y -= v.y;
-        return this;
-      }
-
-      subScalar(s) {
-        this.x -= s;
-        this.y -= s;
-        return this;
-      }
-
-      subVectors(a, b) {
-        this.x = a.x - b.x;
-        this.y = a.y - b.y;
-        return this;
-      }
-
-      multiply(v) {
-        this.x *= v.x;
-        this.y *= v.y;
-        return this;
-      }
-
-      multiplyScalar(scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-        return this;
-      }
-
-      divide(v) {
-        this.x /= v.x;
-        this.y /= v.y;
-        return this;
-      }
-
-      divideScalar(scalar) {
-        return this.multiplyScalar(1 / scalar);
-      }
-
-      applyMatrix3(m) {
-        var x = this.x,
-            y = this.y;
-        var e = m.elements;
-        this.x = e[0] * x + e[3] * y + e[6];
-        this.y = e[1] * x + e[4] * y + e[7];
-        return this;
-      }
-
-      min(v) {
-        this.x = Math.min(this.x, v.x);
-        this.y = Math.min(this.y, v.y);
-        return this;
-      }
-
-      max(v) {
-        this.x = Math.max(this.x, v.x);
-        this.y = Math.max(this.y, v.y);
-        return this;
-      }
-
-      clamp(min, max) {
-        // assumes min < max, componentwise
-        this.x = Math.max(min.x, Math.min(max.x, this.x));
-        this.y = Math.max(min.y, Math.min(max.y, this.y));
-        return this;
-      }
-
-      clampScalar(minVal, maxVal) {
-        this.x = Math.max(minVal, Math.min(maxVal, this.x));
-        this.y = Math.max(minVal, Math.min(maxVal, this.y));
-        return this;
-      }
-
-      clampLength(min, max) {
-        var length = this.length();
-        return this.divideScalar(length || 1).multiplyScalar(Math.max(min, Math.min(max, length)));
-      }
-
-      floor() {
-        this.x = Math.floor(this.x);
-        this.y = Math.floor(this.y);
-        return this;
-      }
-
-      ceil() {
-        this.x = Math.ceil(this.x);
-        this.y = Math.ceil(this.y);
-        return this;
-      }
-
-      round() {
-        this.x = Math.round(this.x);
-        this.y = Math.round(this.y);
-        return this;
-      }
-
-      roundToZero() {
-        this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-        this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
-        return this;
-      }
-
-      negate() {
-        this.x = -this.x;
-        this.y = -this.y;
-        return this;
-      }
-
-      dot(v) {
-        return this.x * v.x + this.y * v.y;
-      }
-
-      cross(v) {
-        return this.x * v.y - this.y * v.x;
-      }
-
-      lengthSq() {
-        return this.x * this.x + this.y * this.y;
-      }
-
-      length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-      }
-
-      manhattanLength() {
-        return Math.abs(this.x) + Math.abs(this.y);
-      }
-
-      normalize() {
-        return this.divideScalar(this.length() || 1);
-      }
-
-      angle() {
-        // computes the angle in radians with respect to the positive x-axis
-        var angle = Math.atan2(this.y, this.x);
-        if (angle < 0) angle += 2 * Math.PI;
-        return angle;
-      }
-
-      distanceTo(v) {
-        return Math.sqrt(this.distanceToSquared(v));
-      }
-
-      distanceToSquared(v) {
-        var dx = this.x - v.x,
-            dy = this.y - v.y;
-        return dx * dx + dy * dy;
-      }
-
-      manhattanDistanceTo(v) {
-        return Math.abs(this.x - v.x) + Math.abs(this.y - v.y);
-      }
-
-      setLength(length) {
-        return this.normalize().multiplyScalar(length);
-      }
-
-      lerp(v, alpha) {
-        this.x += (v.x - this.x) * alpha;
-        this.y += (v.y - this.y) * alpha;
-        return this;
-      }
-
-      lerpVectors(v1, v2, alpha) {
-        return this.subVectors(v2, v1).multiplyScalar(alpha).add(v1);
-      }
-
-      equals(v) {
-        return v.x === this.x && v.y === this.y;
-      }
-
-      fromArray(array, offset) {
-        if (offset === undefined) offset = 0;
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-        return array;
-      }
-
-      fromBufferAttribute(attribute, index, offset) {
-        if (offset !== undefined) {
-          console.warn("Vector2: offset has been removed from .fromBufferAttribute().");
-        }
-
-        this.x = attribute.getX(index);
-        this.y = attribute.getY(index);
-        return this;
-      }
-
-      rotateAround(center, angle) {
-        var c = Math.cos(angle),
-            s = Math.sin(angle);
-        var x = this.x - center.x;
-        var y = this.y - center.y;
-        this.x = x * c - y * s + center.x;
-        this.y = x * s + y * c + center.y;
-        return this;
-      }
-
-    }
-    function v2() {
-      return new Vector2();
-    }
-
-    class Quaternion {
-      constructor(x, y, z, w) {
-        this._x = x || 0;
-        this._y = y || 0;
-        this._z = z || 0;
-        this._w = w !== undefined ? w : 1;
-        this.isQuaternion = true;
-      }
-
-      slerp(qa, qb, qm, t) {
-        return qm.copy(qa).slerp(qb, t);
-      }
-
-      slerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t) {
-        // fuzz-free, array-based Quaternion SLERP operation
-        var x0 = src0[srcOffset0 + 0],
-            y0 = src0[srcOffset0 + 1],
-            z0 = src0[srcOffset0 + 2],
-            w0 = src0[srcOffset0 + 3],
-            x1 = src1[srcOffset1 + 0],
-            y1 = src1[srcOffset1 + 1],
-            z1 = src1[srcOffset1 + 2],
-            w1 = src1[srcOffset1 + 3];
-
-        if (w0 !== w1 || x0 !== x1 || y0 !== y1 || z0 !== z1) {
-          var s = 1 - t,
-              cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
-              dir = cos >= 0 ? 1 : -1,
-              sqrSin = 1 - cos * cos; // Skip the Slerp for tiny steps to avoid numeric problems:
-
-          if (sqrSin > Number.EPSILON) {
-            var sin = Math.sqrt(sqrSin),
-                len = Math.atan2(sin, cos * dir);
-            s = Math.sin(s * len) / sin;
-            t = Math.sin(t * len) / sin;
-          }
-
-          var tDir = t * dir;
-          x0 = x0 * s + x1 * tDir;
-          y0 = y0 * s + y1 * tDir;
-          z0 = z0 * s + z1 * tDir;
-          w0 = w0 * s + w1 * tDir; // Normalize in case we just did a lerp:
-
-          if (s === 1 - t) {
-            var f = 1 / Math.sqrt(x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0);
-            x0 *= f;
-            y0 *= f;
-            z0 *= f;
-            w0 *= f;
-          }
-        }
-
-        dst[dstOffset] = x0;
-        dst[dstOffset + 1] = y0;
-        dst[dstOffset + 2] = z0;
-        dst[dstOffset + 3] = w0;
-      }
-
-      get x() {
-        return this._x;
-      }
-
-      set x(value) {
-        this._x = value;
-
-        this._onChangeCallback();
-      }
-
-      get y() {
-        return this._y;
-      }
-
-      set y(value) {
-        this._y = value;
-
-        this._onChangeCallback();
-      }
-
-      get z() {
-        return this._z;
-      }
-
-      set z(value) {
-        this._z = value;
-
-        this._onChangeCallback();
-      }
-
-      get w() {
-        return this._w;
-      }
-
-      set w(value) {
-        this._w = value;
-
-        this._onChangeCallback();
-      }
-
-      set(x, y, z, w) {
-        this._x = x;
-        this._y = y;
-        this._z = z;
-        this._w = w;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      clone() {
-        return new this.constructor(this._x, this._y, this._z, this._w);
-      }
-
-      copy(quaternion) {
-        this._x = quaternion.x;
-        this._y = quaternion.y;
-        this._z = quaternion.z;
-        this._w = quaternion.w;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      setFromEuler(euler, update) {
-        if (!(euler && euler.isEuler)) {
-          throw new Error("Quaternion: .setFromEuler() now expects an Euler rotation rather than a Vector3 and order.");
-        }
-
-        var x = euler._x,
-            y = euler._y,
-            z = euler._z,
-            order = euler.order; // http://www.mathworks.com/matlabcentral/fileexchange/
-        // 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
-        //	content/SpinCalc.m
-
-        var cos = Math.cos;
-        var sin = Math.sin;
-        var c1 = cos(x / 2);
-        var c2 = cos(y / 2);
-        var c3 = cos(z / 2);
-        var s1 = sin(x / 2);
-        var s2 = sin(y / 2);
-        var s3 = sin(z / 2);
-
-        if (order === "XYZ") {
-          this._x = s1 * c2 * c3 + c1 * s2 * s3;
-          this._y = c1 * s2 * c3 - s1 * c2 * s3;
-          this._z = c1 * c2 * s3 + s1 * s2 * c3;
-          this._w = c1 * c2 * c3 - s1 * s2 * s3;
-        } else if (order === "YXZ") {
-          this._x = s1 * c2 * c3 + c1 * s2 * s3;
-          this._y = c1 * s2 * c3 - s1 * c2 * s3;
-          this._z = c1 * c2 * s3 - s1 * s2 * c3;
-          this._w = c1 * c2 * c3 + s1 * s2 * s3;
-        } else if (order === "ZXY") {
-          this._x = s1 * c2 * c3 - c1 * s2 * s3;
-          this._y = c1 * s2 * c3 + s1 * c2 * s3;
-          this._z = c1 * c2 * s3 + s1 * s2 * c3;
-          this._w = c1 * c2 * c3 - s1 * s2 * s3;
-        } else if (order === "ZYX") {
-          this._x = s1 * c2 * c3 - c1 * s2 * s3;
-          this._y = c1 * s2 * c3 + s1 * c2 * s3;
-          this._z = c1 * c2 * s3 - s1 * s2 * c3;
-          this._w = c1 * c2 * c3 + s1 * s2 * s3;
-        } else if (order === "YZX") {
-          this._x = s1 * c2 * c3 + c1 * s2 * s3;
-          this._y = c1 * s2 * c3 + s1 * c2 * s3;
-          this._z = c1 * c2 * s3 - s1 * s2 * c3;
-          this._w = c1 * c2 * c3 - s1 * s2 * s3;
-        } else if (order === "XZY") {
-          this._x = s1 * c2 * c3 - c1 * s2 * s3;
-          this._y = c1 * s2 * c3 - s1 * c2 * s3;
-          this._z = c1 * c2 * s3 + s1 * s2 * c3;
-          this._w = c1 * c2 * c3 + s1 * s2 * s3;
-        }
-
-        if (update !== false) this._onChangeCallback();
-        return this;
-      }
-
-      setFromAxisAngle(axis, angle) {
-        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
-        // assumes axis is normalized
-        var halfAngle = angle / 2,
-            s = Math.sin(halfAngle);
-        this._x = axis.x * s;
-        this._y = axis.y * s;
-        this._z = axis.z * s;
-        this._w = Math.cos(halfAngle);
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      setFromRotationMatrix(m) {
-        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-        // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
-        var te = m.elements,
-            m11 = te[0],
-            m12 = te[4],
-            m13 = te[8],
-            m21 = te[1],
-            m22 = te[5],
-            m23 = te[9],
-            m31 = te[2],
-            m32 = te[6],
-            m33 = te[10],
-            trace = m11 + m22 + m33,
-            s;
-
-        if (trace > 0) {
-          s = 0.5 / Math.sqrt(trace + 1.0);
-          this._w = 0.25 / s;
-          this._x = (m32 - m23) * s;
-          this._y = (m13 - m31) * s;
-          this._z = (m21 - m12) * s;
-        } else if (m11 > m22 && m11 > m33) {
-          s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
-          this._w = (m32 - m23) / s;
-          this._x = 0.25 * s;
-          this._y = (m12 + m21) / s;
-          this._z = (m13 + m31) / s;
-        } else if (m22 > m33) {
-          s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
-          this._w = (m13 - m31) / s;
-          this._x = (m12 + m21) / s;
-          this._y = 0.25 * s;
-          this._z = (m23 + m32) / s;
-        } else {
-          s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
-          this._w = (m21 - m12) / s;
-          this._x = (m13 + m31) / s;
-          this._y = (m23 + m32) / s;
-          this._z = 0.25 * s;
-        }
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      setFromUnitVectors(vFrom, vTo) {
-        // assumes direction vectors vFrom and vTo are normalized
-        var EPS = 0.000001;
-        var r = vFrom.dot(vTo) + 1;
-
-        if (r < EPS) {
-          r = 0;
-
-          if (Math.abs(vFrom.x) > Math.abs(vFrom.z)) {
-            this._x = -vFrom.y;
-            this._y = vFrom.x;
-            this._z = 0;
-            this._w = r;
-          } else {
-            this._x = 0;
-            this._y = -vFrom.z;
-            this._z = vFrom.y;
-            this._w = r;
-          }
-        } else {
-          // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency on Vector3
-          this._x = vFrom.y * vTo.z - vFrom.z * vTo.y;
-          this._y = vFrom.z * vTo.x - vFrom.x * vTo.z;
-          this._z = vFrom.x * vTo.y - vFrom.y * vTo.x;
-          this._w = r;
-        }
-
-        return this.normalize();
-      }
-
-      angleTo(q) {
-        return 2 * Math.acos(Math.abs(clamp(this.dot(q), -1, 1)));
-      }
-
-      rotateTowards(q, step) {
-        var angle = this.angleTo(q);
-        if (angle === 0) return this;
-        var t = Math.min(1, step / angle);
-        this.slerp(q, t);
-        return this;
-      }
-
-      inverse() {
-        // quaternion is assumed to have unit length
-        return this.conjugate();
-      }
-
-      conjugate() {
-        this._x *= -1;
-        this._y *= -1;
-        this._z *= -1;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      dot(v) {
-        return this._x * v._x + this._y * v._y + this._z * v._z + this._w * v._w;
-      }
-
-      lengthSq() {
-        return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
-      }
-
-      length() {
-        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
-      }
-
-      normalize() {
-        var l = this.length();
-
-        if (l === 0) {
-          this._x = 0;
-          this._y = 0;
-          this._z = 0;
-          this._w = 1;
-        } else {
-          l = 1 / l;
-          this._x = this._x * l;
-          this._y = this._y * l;
-          this._z = this._z * l;
-          this._w = this._w * l;
-        }
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      multiply(q, p) {
-        if (p !== undefined) {
-          console.warn("Quaternion: .multiply() now only accepts one argument. Use .multiplyQuaternions( a, b ) instead.");
-          return this.multiplyQuaternions(q, p);
-        }
-
-        return this.multiplyQuaternions(this, q);
-      }
-
-      premultiply(q) {
-        return this.multiplyQuaternions(q, this);
-      }
-
-      multiplyQuaternions(a, b) {
-        // from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/code/index.htm
-        var qax = a._x,
-            qay = a._y,
-            qaz = a._z,
-            qaw = a._w;
-        var qbx = b._x,
-            qby = b._y,
-            qbz = b._z,
-            qbw = b._w;
-        this._x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
-        this._y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
-        this._z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
-        this._w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      slerp(qb, t) {
-        if (t === 0) return this;
-        if (t === 1) return this.copy(qb);
-        var x = this._x,
-            y = this._y,
-            z = this._z,
-            w = this._w; // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
-
-        var cosHalfTheta = w * qb._w + x * qb._x + y * qb._y + z * qb._z;
-
-        if (cosHalfTheta < 0) {
-          this._w = -qb._w;
-          this._x = -qb._x;
-          this._y = -qb._y;
-          this._z = -qb._z;
-          cosHalfTheta = -cosHalfTheta;
-        } else {
-          this.copy(qb);
-        }
-
-        if (cosHalfTheta >= 1.0) {
-          this._w = w;
-          this._x = x;
-          this._y = y;
-          this._z = z;
-          return this;
-        }
-
-        var sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
-
-        if (sqrSinHalfTheta <= Number.EPSILON) {
-          var s = 1 - t;
-          this._w = s * w + t * this._w;
-          this._x = s * x + t * this._x;
-          this._y = s * y + t * this._y;
-          this._z = s * z + t * this._z;
-          this.normalize();
-
-          this._onChangeCallback();
-
-          return this;
-        }
-
-        var sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
-        var halfTheta = Math.atan2(sinHalfTheta, cosHalfTheta);
-        var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta,
-            ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
-        this._w = w * ratioA + this._w * ratioB;
-        this._x = x * ratioA + this._x * ratioB;
-        this._y = y * ratioA + this._y * ratioB;
-        this._z = z * ratioA + this._z * ratioB;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      equals(quaternion) {
-        return quaternion._x === this._x && quaternion._y === this._y && quaternion._z === this._z && quaternion._w === this._w;
-      }
-
-      fromArray(array, offset) {
-        if (offset === undefined) offset = 0;
-        this._x = array[offset];
-        this._y = array[offset + 1];
-        this._z = array[offset + 2];
-        this._w = array[offset + 3];
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        array[offset] = this._x;
-        array[offset + 1] = this._y;
-        array[offset + 2] = this._z;
-        array[offset + 3] = this._w;
-        return array;
-      }
-
-      _onChange(callback) {
-        this._onChangeCallback = callback;
-        return this;
-      }
-
-      _onChangeCallback() {}
-
-    }
-    function quat(x, y, z, w) {
-      return new Quaternion(x, y, z, w);
-    }
-
-    class Vector3$1 {
-      constructor(x, y, z) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.z = z || 0;
-      }
-
-      get isVector3() {
-        return true;
-      }
-
-      static get Up() {
-        return new Vector3$1(0, 1, 0);
-      }
-
-      static get Down() {
-        return new Vector3$1(0, 1, 0);
-      }
-
-      static get UnitX() {
-        return new Vector3$1(1, 0, 0);
-      }
-
-      static get UnitY() {
-        return new Vector3$1(0, 1, 0);
-      }
-
-      static get UnitZ() {
-        return new Vector3$1(0, 0, 1);
-      }
-
-      set(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        return this;
-      }
-
-      setScalar(scalar) {
-        this.x = scalar;
-        this.y = scalar;
-        this.z = scalar;
-        return this;
-      }
-
-      setX(x) {
-        this.x = x;
-        return this;
-      }
-
-      setY(y) {
-        this.y = y;
-        return this;
-      }
-
-      setZ(z) {
-        this.z = z;
-        return this;
-      }
-
-      setComponent(index, value) {
-        switch (index) {
-          case 0:
-            this.x = value;
-            break;
-
-          case 1:
-            this.y = value;
-            break;
-
-          case 2:
-            this.z = value;
-            break;
-
-          default:
-            throw new Error("index is out of range: " + index);
-        }
-
-        return this;
-      }
-
-      getComponent(index) {
-        switch (index) {
-          case 0:
-            return this.x;
-
-          case 1:
-            return this.y;
-
-          case 2:
-            return this.z;
-
-          default:
-            throw new Error("index is out of range: " + index);
-        }
-      }
-
-      clone() {
-        return new this.constructor(this.x, this.y, this.z);
-      }
-
-      copy(v) {
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
-        return this;
-      }
-
-      add(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector3: .add() now only accepts one argument. Use .addVectors( a, b ) instead.");
-          return this.addVectors(v, w);
-        }
-
-        this.x += v.x;
-        this.y += v.y;
-        this.z += v.z;
-        return this;
-      }
-
-      addScalar(s) {
-        this.x += s;
-        this.y += s;
-        this.z += s;
-        return this;
-      }
-
-      addVectors(a, b) {
-        this.x = a.x + b.x;
-        this.y = a.y + b.y;
-        this.z = a.z + b.z;
-        return this;
-      }
-
-      addScaledVector(v, s) {
-        this.x += v.x * s;
-        this.y += v.y * s;
-        this.z += v.z * s;
-        return this;
-      }
-
-      sub(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector3: .sub() now only accepts one argument. Use .subVectors( a, b ) instead.");
-          return this.subVectors(v, w);
-        }
-
-        this.x -= v.x;
-        this.y -= v.y;
-        this.z -= v.z;
-        return this;
-      }
-
-      subScalar(s) {
-        this.x -= s;
-        this.y -= s;
-        this.z -= s;
-        return this;
-      }
-
-      subVectors(a, b) {
-        this.x = a.x - b.x;
-        this.y = a.y - b.y;
-        this.z = a.z - b.z;
-        return this;
-      }
-
-      multiply(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector3: .multiply() now only accepts one argument. Use .multiplyVectors( a, b ) instead.");
-          return this.multiplyVectors(v, w);
-        }
-
-        this.x *= v.x;
-        this.y *= v.y;
-        this.z *= v.z;
-        return this;
-      }
-
-      multiplyScalar(scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-        this.z *= scalar;
-        return this;
-      }
-
-      multiplyVectors(a, b) {
-        this.x = a.x * b.x;
-        this.y = a.y * b.y;
-        this.z = a.z * b.z;
-        return this;
-      }
-
-      applyEuler(euler) {
-        if (!(euler && euler.isEuler)) {
-          console.error("Vector3: .applyEuler() now expects an Euler rotation rather than a Vector3 and order.");
-        }
-
-        return this.applyQuaternion(_quaternion.setFromEuler(euler));
-      }
-
-      applyAxisAngle(axis, angle) {
-        return this.applyQuaternion(_quaternion.setFromAxisAngle(axis, angle));
-      }
-
-      applyMatrix3(m) {
-        var x = this.x,
-            y = this.y,
-            z = this.z;
-        var e = m.elements;
-        this.x = e[0] * x + e[3] * y + e[6] * z;
-        this.y = e[1] * x + e[4] * y + e[7] * z;
-        this.z = e[2] * x + e[5] * y + e[8] * z;
-        return this;
-      }
-
-      applyMatrix4(m) {
-        var x = this.x,
-            y = this.y,
-            z = this.z;
-        var e = m.elements;
-        var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
-        this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-        this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-        this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
-        return this;
-      }
-
-      applyQuaternion(q) {
-        var x = this.x,
-            y = this.y,
-            z = this.z;
-        var qx = q.x,
-            qy = q.y,
-            qz = q.z,
-            qw = q.w; // calculate quat * vector
-
-        var ix = qw * x + qy * z - qz * y;
-        var iy = qw * y + qz * x - qx * z;
-        var iz = qw * z + qx * y - qy * x;
-        var iw = -qx * x - qy * y - qz * z; // calculate result * inverse quat
-
-        this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-        this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-        this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-        return this;
-      }
-
-      project(camera) {
-        return this.applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
-      }
-
-      unproject(camera) {
-        return this.applyMatrix4(camera.projectionMatrixInverse).applyMatrix4(camera.matrixWorld);
-      }
-
-      transformDirection(m) {
-        // input: Matrix4 affine matrix
-        // vector interpreted as a direction
-        var x = this.x,
-            y = this.y,
-            z = this.z;
-        var e = m.elements;
-        this.x = e[0] * x + e[4] * y + e[8] * z;
-        this.y = e[1] * x + e[5] * y + e[9] * z;
-        this.z = e[2] * x + e[6] * y + e[10] * z;
-        return this.normalize();
-      }
-
-      divide(v) {
-        this.x /= v.x;
-        this.y /= v.y;
-        this.z /= v.z;
-        return this;
-      }
-
-      divideScalar(scalar) {
-        return this.multiplyScalar(1 / scalar);
-      }
-
-      min(v) {
-        this.x = Math.min(this.x, v.x);
-        this.y = Math.min(this.y, v.y);
-        this.z = Math.min(this.z, v.z);
-        return this;
-      }
-
-      max(v) {
-        this.x = Math.max(this.x, v.x);
-        this.y = Math.max(this.y, v.y);
-        this.z = Math.max(this.z, v.z);
-        return this;
-      }
-
-      clamp(min, max) {
-        // assumes min < max, componentwise
-        this.x = Math.max(min.x, Math.min(max.x, this.x));
-        this.y = Math.max(min.y, Math.min(max.y, this.y));
-        this.z = Math.max(min.z, Math.min(max.z, this.z));
-        return this;
-      }
-
-      clampScalar(minVal, maxVal) {
-        this.x = Math.max(minVal, Math.min(maxVal, this.x));
-        this.y = Math.max(minVal, Math.min(maxVal, this.y));
-        this.z = Math.max(minVal, Math.min(maxVal, this.z));
-        return this;
-      }
-
-      clampLength(min, max) {
-        var length = this.length();
-        return this.divideScalar(length || 1).multiplyScalar(Math.max(min, Math.min(max, length)));
-      }
-
-      floor() {
-        this.x = Math.floor(this.x);
-        this.y = Math.floor(this.y);
-        this.z = Math.floor(this.z);
-        return this;
-      }
-
-      ceil() {
-        this.x = Math.ceil(this.x);
-        this.y = Math.ceil(this.y);
-        this.z = Math.ceil(this.z);
-        return this;
-      }
-
-      round() {
-        this.x = Math.round(this.x);
-        this.y = Math.round(this.y);
-        this.z = Math.round(this.z);
-        return this;
-      }
-
-      roundToZero() {
-        this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-        this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
-        this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
-        return this;
-      }
-
-      negate() {
-        this.x = -this.x;
-        this.y = -this.y;
-        this.z = -this.z;
-        return this;
-      }
-
-      dot(v) {
-        return this.x * v.x + this.y * v.y + this.z * v.z;
-      } // TODO lengthSquared?
-
-
-      lengthSq() {
-        return this.x * this.x + this.y * this.y + this.z * this.z;
-      }
-
-      length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-      }
-
-      manhattanLength() {
-        return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
-      }
-
-      normalize(robust = false) {
-        return this.divideScalar(this.length() || 1); // if (robust)
-        // {
-        //   var maxAbsComp = Math.abs(v[0]);
-        //   for (var i = 1; i < N; ++i)
-        //   {
-        //     var absComp = Math.abs(v[i]);
-        //     if (absComp > maxAbsComp)
-        //     {
-        //       maxAbsComp = absComp;
-        //     }
-        //   }
-        //   var length;
-        //   if (maxAbsComp > 0)
-        //   {
-        //     v /= maxAbsComp;
-        //     length = Math.sqrt(Dot(v, v));
-        //     v /= length;
-        //     length *= maxAbsComp;
-        //   }
-        //   else
-        //   {
-        //     length = 0;
-        //     for (var i = 0; i < N; ++i)
-        //     {
-        //       v[i] = 0;
-        //     }
-        //   }
-        //   return length;
-        // }
-        // else
-        // {
-        //   var length = this.length();
-        //   if (length > 0)
-        //   {
-        //     v /= length;
-        //   }
-        //   else
-        //   {
-        //     for (var i = 0; i < N; ++i)
-        //     {
-        //       v[i] = 0;
-        //     }
-        //   }
-        // }
-      }
-
-      setLength(length) {
-        return this.normalize().multiplyScalar(length);
-      }
-
-      lerp(v, alpha) {
-        this.x += (v.x - this.x) * alpha;
-        this.y += (v.y - this.y) * alpha;
-        this.z += (v.z - this.z) * alpha;
-        return this;
-      }
-
-      lerpVectors(v1, v2, alpha) {
-        return this.subVectors(v2, v1).multiplyScalar(alpha).add(v1);
-      }
-
-      cross(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector3: .cross() now only accepts one argument. Use .crossVectors( a, b ) instead.");
-          return this.crossVectors(v, w);
-        }
-
-        return this.crossVectors(this, v);
-      }
-
-      crossVectors(a, b) {
-        var ax = a.x,
-            ay = a.y,
-            az = a.z;
-        var bx = b.x,
-            by = b.y,
-            bz = b.z;
-        this.x = ay * bz - az * by;
-        this.y = az * bx - ax * bz;
-        this.z = ax * by - ay * bx;
-        return this;
-      }
-
-      projectOnVector(vector) {
-        var scalar = vector.dot(this) / vector.lengthSq();
-        return this.copy(vector).multiplyScalar(scalar);
-      }
-
-      projectOnPlane(planeNormal) {
-        _vector.copy(this).projectOnVector(planeNormal);
-
-        return this.sub(_vector);
-      }
-
-      reflect(normal) {
-        // reflect incident vector off plane orthogonal to normal
-        // normal is assumed to have unit length
-        return this.sub(_vector.copy(normal).multiplyScalar(2 * this.dot(normal)));
-      }
-
-      angleTo(v) {
-        var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq()); // clamp, to handle numerical problems
-
-        return Math.acos(clamp(theta, -1, 1));
-      }
-
-      distanceTo(v) {
-        return Math.sqrt(this.distanceToSquared(v));
-      }
-
-      distanceToSquared(v) {
-        var dx = this.x - v.x,
-            dy = this.y - v.y,
-            dz = this.z - v.z;
-        return dx * dx + dy * dy + dz * dz;
-      }
-
-      manhattanDistanceTo(v) {
-        return Math.abs(this.x - v.x) + Math.abs(this.y - v.y) + Math.abs(this.z - v.z);
-      }
-
-      setFromSpherical(s) {
-        return this.setFromSphericalCoords(s.radius, s.phi, s.theta);
-      }
-
-      setFromSphericalCoords(radius, phi, theta) {
-        var sinPhiRadius = Math.sin(phi) * radius;
-        this.x = sinPhiRadius * Math.sin(theta);
-        this.y = Math.cos(phi) * radius;
-        this.z = sinPhiRadius * Math.cos(theta);
-        return this;
-      }
-
-      setFromCylindrical(c) {
-        return this.setFromCylindricalCoords(c.radius, c.theta, c.y);
-      }
-
-      setFromCylindricalCoords(radius, theta, y) {
-        this.x = radius * Math.sin(theta);
-        this.y = y;
-        this.z = radius * Math.cos(theta);
-        return this;
-      }
-
-      setFromMatrixPosition(m) {
-        var e = m.elements;
-        this.x = e[12];
-        this.y = e[13];
-        this.z = e[14];
-        return this;
-      }
-
-      setFromMatrixScale(m) {
-        var sx = this.setFromMatrixColumn(m, 0).length();
-        var sy = this.setFromMatrixColumn(m, 1).length();
-        var sz = this.setFromMatrixColumn(m, 2).length();
-        this.x = sx;
-        this.y = sy;
-        this.z = sz;
-        return this;
-      }
-
-      setFromMatrixColumn(m, index) {
-        return this.fromArray(m.elements, index * 4);
-      }
-
-      equals(v) {
-        return v.x === this.x && v.y === this.y && v.z === this.z;
-      }
-
-      fromArray(array, offset) {
-        if (offset === undefined) offset = 0;
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-        array[offset + 2] = this.z;
-        return array;
-      }
-
-      fromBufferAttribute(attribute, index, offset) {
-        if (offset !== undefined) {
-          console.warn("Vector3: offset has been removed from .fromBufferAttribute().");
-        }
-
-        this.x = attribute.getX(index);
-        this.y = attribute.getY(index);
-        this.z = attribute.getZ(index);
-        return this;
-      }
-
-      toFixed(fractionDigits) {
-        if (fractionDigits !== undefined) {
-          this.x = parseFloat(this.x.toFixed(fractionDigits));
-          this.y = parseFloat(this.y.toFixed(fractionDigits));
-          this.z = parseFloat(this.z.toFixed(fractionDigits));
-        }
-
-        return this;
-      }
-
-    }
-
-    const _vector = v3();
-
-    const _quaternion = quat();
-
-    function v3(x, y, z) {
-      return new Vector3$1(x, y, z);
-    }
-
-    class Vector4 {
-      constructor(x, y, z, w) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.z = z || 0;
-        this.w = w !== undefined ? w : 1;
-        this.isVector4 = true;
-      }
-
-      get width() {
-        return this.z;
-      }
-
-      set width(value) {
-        this.z = value;
-      }
-
-      get height() {
-        return this.w;
-      }
-
-      set height(value) {
-        this.w = value;
-      }
-
-      set(x, y, z, w) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
-        return this;
-      }
-
-      setScalar(scalar) {
-        this.x = scalar;
-        this.y = scalar;
-        this.z = scalar;
-        this.w = scalar;
-        return this;
-      }
-
-      setX(x) {
-        this.x = x;
-        return this;
-      }
-
-      setY(y) {
-        this.y = y;
-        return this;
-      }
-
-      setZ(z) {
-        this.z = z;
-        return this;
-      }
-
-      setW(w) {
-        this.w = w;
-        return this;
-      }
-
-      setComponent(index, value) {
-        switch (index) {
-          case 0:
-            this.x = value;
-            break;
-
-          case 1:
-            this.y = value;
-            break;
-
-          case 2:
-            this.z = value;
-            break;
-
-          case 3:
-            this.w = value;
-            break;
-
-          default:
-            throw new Error("index is out of range: " + index);
-        }
-
-        return this;
-      }
-
-      getComponent(index) {
-        switch (index) {
-          case 0:
-            return this.x;
-
-          case 1:
-            return this.y;
-
-          case 2:
-            return this.z;
-
-          case 3:
-            return this.w;
-
-          default:
-            throw new Error("index is out of range: " + index);
-        }
-      }
-
-      clone() {
-        return new this.constructor(this.x, this.y, this.z, this.w);
-      }
-
-      copy(v) {
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
-        this.w = v.w !== undefined ? v.w : 1;
-        return this;
-      }
-
-      add(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector4: .add() now only accepts one argument. Use .addVectors( a, b ) instead.");
-          return this.addVectors(v, w);
-        }
-
-        this.x += v.x;
-        this.y += v.y;
-        this.z += v.z;
-        this.w += v.w;
-        return this;
-      }
-
-      addScalar(s) {
-        this.x += s;
-        this.y += s;
-        this.z += s;
-        this.w += s;
-        return this;
-      }
-
-      addVectors(a, b) {
-        this.x = a.x + b.x;
-        this.y = a.y + b.y;
-        this.z = a.z + b.z;
-        this.w = a.w + b.w;
-        return this;
-      }
-
-      addScaledVector(v, s) {
-        this.x += v.x * s;
-        this.y += v.y * s;
-        this.z += v.z * s;
-        this.w += v.w * s;
-        return this;
-      }
-
-      sub(v, w) {
-        if (w !== undefined) {
-          console.warn("Vector4: .sub() now only accepts one argument. Use .subVectors( a, b ) instead.");
-          return this.subVectors(v, w);
-        }
-
-        this.x -= v.x;
-        this.y -= v.y;
-        this.z -= v.z;
-        this.w -= v.w;
-        return this;
-      }
-
-      subScalar(s) {
-        this.x -= s;
-        this.y -= s;
-        this.z -= s;
-        this.w -= s;
-        return this;
-      }
-
-      subVectors(a, b) {
-        this.x = a.x - b.x;
-        this.y = a.y - b.y;
-        this.z = a.z - b.z;
-        this.w = a.w - b.w;
-        return this;
-      }
-
-      multiplyScalar(scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-        this.z *= scalar;
-        this.w *= scalar;
-        return this;
-      }
-
-      applyMatrix4(m) {
-        var x = this.x,
-            y = this.y,
-            z = this.z,
-            w = this.w;
-        var e = m.elements;
-        this.x = e[0] * x + e[4] * y + e[8] * z + e[12] * w;
-        this.y = e[1] * x + e[5] * y + e[9] * z + e[13] * w;
-        this.z = e[2] * x + e[6] * y + e[10] * z + e[14] * w;
-        this.w = e[3] * x + e[7] * y + e[11] * z + e[15] * w;
-        return this;
-      }
-
-      divideScalar(scalar) {
-        return this.multiplyScalar(1 / scalar);
-      }
-
-      setAxisAngleFromQuaternion(q) {
-        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
-        // q is assumed to be normalized
-        this.w = 2 * Math.acos(q.w);
-        var s = Math.sqrt(1 - q.w * q.w);
-
-        if (s < 0.0001) {
-          this.x = 1;
-          this.y = 0;
-          this.z = 0;
-        } else {
-          this.x = q.x / s;
-          this.y = q.y / s;
-          this.z = q.z / s;
-        }
-
-        return this;
-      }
-
-      setAxisAngleFromRotationMatrix(m) {
-        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
-        // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
-        var angle,
-            x,
-            y,
-            z,
-            // variables for result
-        epsilon = 0.01,
-            // margin to allow for rounding errors
-        epsilon2 = 0.1,
-            // margin to distinguish between 0 and 180 degrees
-        te = m.elements,
-            m11 = te[0],
-            m12 = te[4],
-            m13 = te[8],
-            m21 = te[1],
-            m22 = te[5],
-            m23 = te[9],
-            m31 = te[2],
-            m32 = te[6],
-            m33 = te[10];
-
-        if (Math.abs(m12 - m21) < epsilon && Math.abs(m13 - m31) < epsilon && Math.abs(m23 - m32) < epsilon) {
-          // singularity found
-          // first check for identity matrix which must have +1 for all terms
-          // in leading diagonal and zero in other terms
-          if (Math.abs(m12 + m21) < epsilon2 && Math.abs(m13 + m31) < epsilon2 && Math.abs(m23 + m32) < epsilon2 && Math.abs(m11 + m22 + m33 - 3) < epsilon2) {
-            // this singularity is identity matrix so angle = 0
-            this.set(1, 0, 0, 0);
-            return this; // zero angle, arbitrary axis
-          } // otherwise this singularity is angle = 180
-
-
-          angle = Math.PI;
-          var xx = (m11 + 1) / 2;
-          var yy = (m22 + 1) / 2;
-          var zz = (m33 + 1) / 2;
-          var xy = (m12 + m21) / 4;
-          var xz = (m13 + m31) / 4;
-          var yz = (m23 + m32) / 4;
-
-          if (xx > yy && xx > zz) {
-            // m11 is the largest diagonal term
-            if (xx < epsilon) {
-              x = 0;
-              y = 0.707106781;
-              z = 0.707106781;
-            } else {
-              x = Math.sqrt(xx);
-              y = xy / x;
-              z = xz / x;
-            }
-          } else if (yy > zz) {
-            // m22 is the largest diagonal term
-            if (yy < epsilon) {
-              x = 0.707106781;
-              y = 0;
-              z = 0.707106781;
-            } else {
-              y = Math.sqrt(yy);
-              x = xy / y;
-              z = yz / y;
-            }
-          } else {
-            // m33 is the largest diagonal term so base result on this
-            if (zz < epsilon) {
-              x = 0.707106781;
-              y = 0.707106781;
-              z = 0;
-            } else {
-              z = Math.sqrt(zz);
-              x = xz / z;
-              y = yz / z;
-            }
-          }
-
-          this.set(x, y, z, angle);
-          return this; // return 180 deg rotation
-        } // as we have reached here there are no singularities so we can handle normally
-
-
-        var s = Math.sqrt((m32 - m23) * (m32 - m23) + (m13 - m31) * (m13 - m31) + (m21 - m12) * (m21 - m12)); // used to normalize
-
-        if (Math.abs(s) < 0.001) s = 1; // prevent divide by zero, should not happen if matrix is orthogonal and should be
-        // caught by singularity test above, but I've left it in just in case
-
-        this.x = (m32 - m23) / s;
-        this.y = (m13 - m31) / s;
-        this.z = (m21 - m12) / s;
-        this.w = Math.acos((m11 + m22 + m33 - 1) / 2);
-        return this;
-      }
-
-      min(v) {
-        this.x = Math.min(this.x, v.x);
-        this.y = Math.min(this.y, v.y);
-        this.z = Math.min(this.z, v.z);
-        this.w = Math.min(this.w, v.w);
-        return this;
-      }
-
-      max(v) {
-        this.x = Math.max(this.x, v.x);
-        this.y = Math.max(this.y, v.y);
-        this.z = Math.max(this.z, v.z);
-        this.w = Math.max(this.w, v.w);
-        return this;
-      }
-
-      clamp(min, max) {
-        // assumes min < max, componentwise
-        this.x = Math.max(min.x, Math.min(max.x, this.x));
-        this.y = Math.max(min.y, Math.min(max.y, this.y));
-        this.z = Math.max(min.z, Math.min(max.z, this.z));
-        this.w = Math.max(min.w, Math.min(max.w, this.w));
-        return this;
-      }
-
-      clampScalar(minVal, maxVal) {
-        this.x = Math.max(minVal, Math.min(maxVal, this.x));
-        this.y = Math.max(minVal, Math.min(maxVal, this.y));
-        this.z = Math.max(minVal, Math.min(maxVal, this.z));
-        this.w = Math.max(minVal, Math.min(maxVal, this.w));
-        return this;
-      }
-
-      clampLength(min, max) {
-        var length = this.length();
-        return this.divideScalar(length || 1).multiplyScalar(Math.max(min, Math.min(max, length)));
-      }
-
-      floor() {
-        this.x = Math.floor(this.x);
-        this.y = Math.floor(this.y);
-        this.z = Math.floor(this.z);
-        this.w = Math.floor(this.w);
-        return this;
-      }
-
-      ceil() {
-        this.x = Math.ceil(this.x);
-        this.y = Math.ceil(this.y);
-        this.z = Math.ceil(this.z);
-        this.w = Math.ceil(this.w);
-        return this;
-      }
-
-      round() {
-        this.x = Math.round(this.x);
-        this.y = Math.round(this.y);
-        this.z = Math.round(this.z);
-        this.w = Math.round(this.w);
-        return this;
-      }
-
-      roundToZero() {
-        this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-        this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
-        this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
-        this.w = this.w < 0 ? Math.ceil(this.w) : Math.floor(this.w);
-        return this;
-      }
-
-      negate() {
-        this.x = -this.x;
-        this.y = -this.y;
-        this.z = -this.z;
-        this.w = -this.w;
-        return this;
-      }
-
-      dot(v) {
-        return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
-      }
-
-      lengthSq() {
-        return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
-      }
-
-      length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
-      }
-
-      manhattanLength() {
-        return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z) + Math.abs(this.w);
-      }
-
-      normalize() {
-        return this.divideScalar(this.length() || 1);
-      }
-
-      setLength(length) {
-        return this.normalize().multiplyScalar(length);
-      }
-
-      lerp(v, alpha) {
-        this.x += (v.x - this.x) * alpha;
-        this.y += (v.y - this.y) * alpha;
-        this.z += (v.z - this.z) * alpha;
-        this.w += (v.w - this.w) * alpha;
-        return this;
-      }
-
-      lerpVectors(v1, v2, alpha) {
-        return this.subVectors(v2, v1).multiplyScalar(alpha).add(v1);
-      }
-
-      equals(v) {
-        return v.x === this.x && v.y === this.y && v.z === this.z && v.w === this.w;
-      }
-
-      fromArray(array, offset) {
-        if (offset === undefined) offset = 0;
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
-        this.w = array[offset + 3];
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-        array[offset + 2] = this.z;
-        array[offset + 3] = this.w;
-        return array;
-      }
-
-      fromBufferAttribute(attribute, index, offset) {
-        if (offset !== undefined) {
-          console.warn("Vector4: offset has been removed from .fromBufferAttribute().");
-        }
-
-        this.x = attribute.getX(index);
-        this.y = attribute.getY(index);
-        this.z = attribute.getZ(index);
-        this.w = attribute.getW(index);
-        return this;
-      }
-
-    }
-    function v4(x, y, z, w) {
-      return Vector4(x, y, z, w);
-    }
-
-    var _vector$1 = v3();
-
-    class Matrix3 {
-      constructor() {
-        this.elements = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-
-        if (arguments.length > 0) {
-          console.error("Matrix3: the constructor no longer reads arguments. use .set() instead.");
-        }
-
-        this.isMatrix3 = true;
-      }
-
-      set(n11, n12, n13, n21, n22, n23, n31, n32, n33) {
-        var te = this.elements;
-        te[0] = n11;
-        te[1] = n21;
-        te[2] = n31;
-        te[3] = n12;
-        te[4] = n22;
-        te[5] = n32;
-        te[6] = n13;
-        te[7] = n23;
-        te[8] = n33;
-        return this;
-      }
-
-      identity() {
-        this.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
-        return this;
-      }
-
-      clone() {
-        return new this.constructor().fromArray(this.elements);
-      }
-
-      copy(m) {
-        var te = this.elements;
-        var me = m.elements;
-        te[0] = me[0];
-        te[1] = me[1];
-        te[2] = me[2];
-        te[3] = me[3];
-        te[4] = me[4];
-        te[5] = me[5];
-        te[6] = me[6];
-        te[7] = me[7];
-        te[8] = me[8];
-        return this;
-      }
-
-      setFromMatrix4(m) {
-        var me = m.elements;
-        this.set(me[0], me[4], me[8], me[1], me[5], me[9], me[2], me[6], me[10]);
-        return this;
-      }
-
-      applyToBufferAttribute(attribute) {
-        for (var i = 0, l = attribute.count; i < l; i++) {
-          _vector$1.x = attribute.getX(i);
-          _vector$1.y = attribute.getY(i);
-          _vector$1.z = attribute.getZ(i);
-
-          _vector$1.applyMatrix3(this);
-
-          attribute.setXYZ(i, _vector$1.x, _vector$1.y, _vector$1.z);
-        }
-
-        return attribute;
-      }
-
-      multiply(m) {
-        return this.multiplyMatrices(this, m);
-      }
-
-      premultiply(m) {
-        return this.multiplyMatrices(m, this);
-      }
-
-      multiplyMatrices(a, b) {
-        var ae = a.elements;
-        var be = b.elements;
-        var te = this.elements;
-        var a11 = ae[0],
-            a12 = ae[3],
-            a13 = ae[6];
-        var a21 = ae[1],
-            a22 = ae[4],
-            a23 = ae[7];
-        var a31 = ae[2],
-            a32 = ae[5],
-            a33 = ae[8];
-        var b11 = be[0],
-            b12 = be[3],
-            b13 = be[6];
-        var b21 = be[1],
-            b22 = be[4],
-            b23 = be[7];
-        var b31 = be[2],
-            b32 = be[5],
-            b33 = be[8];
-        te[0] = a11 * b11 + a12 * b21 + a13 * b31;
-        te[3] = a11 * b12 + a12 * b22 + a13 * b32;
-        te[6] = a11 * b13 + a12 * b23 + a13 * b33;
-        te[1] = a21 * b11 + a22 * b21 + a23 * b31;
-        te[4] = a21 * b12 + a22 * b22 + a23 * b32;
-        te[7] = a21 * b13 + a22 * b23 + a23 * b33;
-        te[2] = a31 * b11 + a32 * b21 + a33 * b31;
-        te[5] = a31 * b12 + a32 * b22 + a33 * b32;
-        te[8] = a31 * b13 + a32 * b23 + a33 * b33;
-        return this;
-      }
-
-      multiplyScalar(s) {
-        var te = this.elements;
-        te[0] *= s;
-        te[3] *= s;
-        te[6] *= s;
-        te[1] *= s;
-        te[4] *= s;
-        te[7] *= s;
-        te[2] *= s;
-        te[5] *= s;
-        te[8] *= s;
-        return this;
-      }
-
-      determinant() {
-        var te = this.elements;
-        var a = te[0],
-            b = te[1],
-            c = te[2],
-            d = te[3],
-            e = te[4],
-            f = te[5],
-            g = te[6],
-            h = te[7],
-            i = te[8];
-        return a * e * i - a * f * h - b * d * i + b * f * g + c * d * h - c * e * g;
-      }
-
-      getInverse(matrix, throwOnDegenerate) {
-        if (matrix && matrix.isMatrix4) {
-          console.error("Matrix3: .getInverse() no longer takes a Matrix4 argument.");
-        }
-
-        var me = matrix.elements,
-            te = this.elements,
-            n11 = me[0],
-            n21 = me[1],
-            n31 = me[2],
-            n12 = me[3],
-            n22 = me[4],
-            n32 = me[5],
-            n13 = me[6],
-            n23 = me[7],
-            n33 = me[8],
-            t11 = n33 * n22 - n32 * n23,
-            t12 = n32 * n13 - n33 * n12,
-            t13 = n23 * n12 - n22 * n13,
-            det = n11 * t11 + n21 * t12 + n31 * t13;
-
-        if (det === 0) {
-          var msg = "Matrix3: .getInverse() can't invert matrix, determinant is 0";
-
-          if (throwOnDegenerate === true) {
-            throw new Error(msg);
-          } else {
-            console.warn(msg);
-          }
-
-          return this.identity();
-        }
-
-        var detInv = 1 / det;
-        te[0] = t11 * detInv;
-        te[1] = (n31 * n23 - n33 * n21) * detInv;
-        te[2] = (n32 * n21 - n31 * n22) * detInv;
-        te[3] = t12 * detInv;
-        te[4] = (n33 * n11 - n31 * n13) * detInv;
-        te[5] = (n31 * n12 - n32 * n11) * detInv;
-        te[6] = t13 * detInv;
-        te[7] = (n21 * n13 - n23 * n11) * detInv;
-        te[8] = (n22 * n11 - n21 * n12) * detInv;
-        return this;
-      }
-
-      transpose() {
-        var tmp,
-            m = this.elements;
-        tmp = m[1];
-        m[1] = m[3];
-        m[3] = tmp;
-        tmp = m[2];
-        m[2] = m[6];
-        m[6] = tmp;
-        tmp = m[5];
-        m[5] = m[7];
-        m[7] = tmp;
-        return this;
-      }
-
-      getNormalMatrix(matrix4) {
-        return this.setFromMatrix4(matrix4).getInverse(this).transpose();
-      }
-
-      transposeIntoArray(r) {
-        var m = this.elements;
-        r[0] = m[0];
-        r[1] = m[3];
-        r[2] = m[6];
-        r[3] = m[1];
-        r[4] = m[4];
-        r[5] = m[7];
-        r[6] = m[2];
-        r[7] = m[5];
-        r[8] = m[8];
-        return this;
-      }
-
-      setUvTransform(tx, ty, sx, sy, rotation, cx, cy) {
-        var c = Math.cos(rotation);
-        var s = Math.sin(rotation);
-        this.set(sx * c, sx * s, -sx * (c * cx + s * cy) + cx + tx, -sy * s, sy * c, -sy * (-s * cx + c * cy) + cy + ty, 0, 0, 1);
-      }
-
-      scale(sx, sy) {
-        var te = this.elements;
-        te[0] *= sx;
-        te[3] *= sx;
-        te[6] *= sx;
-        te[1] *= sy;
-        te[4] *= sy;
-        te[7] *= sy;
-        return this;
-      }
-
-      rotate(theta) {
-        var c = Math.cos(theta);
-        var s = Math.sin(theta);
-        var te = this.elements;
-        var a11 = te[0],
-            a12 = te[3],
-            a13 = te[6];
-        var a21 = te[1],
-            a22 = te[4],
-            a23 = te[7];
-        te[0] = c * a11 + s * a21;
-        te[3] = c * a12 + s * a22;
-        te[6] = c * a13 + s * a23;
-        te[1] = -s * a11 + c * a21;
-        te[4] = -s * a12 + c * a22;
-        te[7] = -s * a13 + c * a23;
-        return this;
-      }
-
-      translate(tx, ty) {
-        var te = this.elements;
-        te[0] += tx * te[2];
-        te[3] += tx * te[5];
-        te[6] += tx * te[8];
-        te[1] += ty * te[2];
-        te[4] += ty * te[5];
-        te[7] += ty * te[8];
-        return this;
-      }
-
-      equals(matrix) {
-        var te = this.elements;
-        var me = matrix.elements;
-
-        for (var i = 0; i < 9; i++) {
-          if (te[i] !== me[i]) return false;
-        }
-
-        return true;
-      }
-
-      fromArray(array, offset) {
-        if (offset === undefined) offset = 0;
-
-        for (var i = 0; i < 9; i++) {
-          this.elements[i] = array[i + offset];
-        }
-
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        var te = this.elements;
-        array[offset] = te[0];
-        array[offset + 1] = te[1];
-        array[offset + 2] = te[2];
-        array[offset + 3] = te[3];
-        array[offset + 4] = te[4];
-        array[offset + 5] = te[5];
-        array[offset + 6] = te[6];
-        array[offset + 7] = te[7];
-        array[offset + 8] = te[8];
-        return array;
-      }
-
-    }
-    function m3() {
-      return new Matrix3();
-    }
-
-    class Matrix4 {
-      constructor() {
-        this.elements = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-
-        if (arguments.length > 0) {
-          console.error(" Matrix4: the constructor no longer reads arguments. use .set() instead.");
-        }
-
-        this.isMatrix4 = true;
-      }
-
-      set(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44) {
-        var te = this.elements;
-        te[0] = n11;
-        te[4] = n12;
-        te[8] = n13;
-        te[12] = n14;
-        te[1] = n21;
-        te[5] = n22;
-        te[9] = n23;
-        te[13] = n24;
-        te[2] = n31;
-        te[6] = n32;
-        te[10] = n33;
-        te[14] = n34;
-        te[3] = n41;
-        te[7] = n42;
-        te[11] = n43;
-        te[15] = n44;
-        return this;
-      }
-
-      static get Identity() {
-        return new Matrix4();
-      }
-
-      identity() {
-        this.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      clone() {
-        return new Matrix4().fromArray(this.elements);
-      }
-
-      copy(m) {
-        var te = this.elements;
-        var me = m.elements;
-        te[0] = me[0];
-        te[1] = me[1];
-        te[2] = me[2];
-        te[3] = me[3];
-        te[4] = me[4];
-        te[5] = me[5];
-        te[6] = me[6];
-        te[7] = me[7];
-        te[8] = me[8];
-        te[9] = me[9];
-        te[10] = me[10];
-        te[11] = me[11];
-        te[12] = me[12];
-        te[13] = me[13];
-        te[14] = me[14];
-        te[15] = me[15];
-        return this;
-      }
-
-      copyPosition(m) {
-        var te = this.elements,
-            me = m.elements;
-        te[12] = me[12];
-        te[13] = me[13];
-        te[14] = me[14];
-        return this;
-      }
-
-      extractBasis(xAxis, yAxis, zAxis) {
-        xAxis.setFromMatrixColumn(this, 0);
-        yAxis.setFromMatrixColumn(this, 1);
-        zAxis.setFromMatrixColumn(this, 2);
-        return this;
-      }
-
-      makeBasis(xAxis, yAxis, zAxis) {
-        this.set(xAxis.x, yAxis.x, zAxis.x, 0, xAxis.y, yAxis.y, zAxis.y, 0, xAxis.z, yAxis.z, zAxis.z, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      extractRotation(m) {
-        // this method does not support reflection matrices
-        var te = this.elements;
-        var me = m.elements;
-
-        var scaleX = 1 / _v1.setFromMatrixColumn(m, 0).length();
-
-        var scaleY = 1 / _v1.setFromMatrixColumn(m, 1).length();
-
-        var scaleZ = 1 / _v1.setFromMatrixColumn(m, 2).length();
-
-        te[0] = me[0] * scaleX;
-        te[1] = me[1] * scaleX;
-        te[2] = me[2] * scaleX;
-        te[3] = 0;
-        te[4] = me[4] * scaleY;
-        te[5] = me[5] * scaleY;
-        te[6] = me[6] * scaleY;
-        te[7] = 0;
-        te[8] = me[8] * scaleZ;
-        te[9] = me[9] * scaleZ;
-        te[10] = me[10] * scaleZ;
-        te[11] = 0;
-        te[12] = 0;
-        te[13] = 0;
-        te[14] = 0;
-        te[15] = 1;
-        return this;
-      }
-
-      makeRotationFromEuler(euler) {
-        if (!(euler && euler.isEuler)) {
-          console.error(" Matrix4: .makeRotationFromEuler() now expects a Euler rotation rather than a Vector3 and order.");
-        }
-
-        var te = this.elements;
-        var x = euler.x,
-            y = euler.y,
-            z = euler.z;
-        var a = Math.cos(x),
-            b = Math.sin(x);
-        var c = Math.cos(y),
-            d = Math.sin(y);
-        var e = Math.cos(z),
-            f = Math.sin(z);
-
-        if (euler.order === "XYZ") {
-          var ae = a * e,
-              af = a * f,
-              be = b * e,
-              bf = b * f;
-          te[0] = c * e;
-          te[4] = -c * f;
-          te[8] = d;
-          te[1] = af + be * d;
-          te[5] = ae - bf * d;
-          te[9] = -b * c;
-          te[2] = bf - ae * d;
-          te[6] = be + af * d;
-          te[10] = a * c;
-        } else if (euler.order === "YXZ") {
-          var ce = c * e,
-              cf = c * f,
-              de = d * e,
-              df = d * f;
-          te[0] = ce + df * b;
-          te[4] = de * b - cf;
-          te[8] = a * d;
-          te[1] = a * f;
-          te[5] = a * e;
-          te[9] = -b;
-          te[2] = cf * b - de;
-          te[6] = df + ce * b;
-          te[10] = a * c;
-        } else if (euler.order === "ZXY") {
-          var ce = c * e,
-              cf = c * f,
-              de = d * e,
-              df = d * f;
-          te[0] = ce - df * b;
-          te[4] = -a * f;
-          te[8] = de + cf * b;
-          te[1] = cf + de * b;
-          te[5] = a * e;
-          te[9] = df - ce * b;
-          te[2] = -a * d;
-          te[6] = b;
-          te[10] = a * c;
-        } else if (euler.order === "ZYX") {
-          var ae = a * e,
-              af = a * f,
-              be = b * e,
-              bf = b * f;
-          te[0] = c * e;
-          te[4] = be * d - af;
-          te[8] = ae * d + bf;
-          te[1] = c * f;
-          te[5] = bf * d + ae;
-          te[9] = af * d - be;
-          te[2] = -d;
-          te[6] = b * c;
-          te[10] = a * c;
-        } else if (euler.order === "YZX") {
-          var ac = a * c,
-              ad = a * d,
-              bc = b * c,
-              bd = b * d;
-          te[0] = c * e;
-          te[4] = bd - ac * f;
-          te[8] = bc * f + ad;
-          te[1] = f;
-          te[5] = a * e;
-          te[9] = -b * e;
-          te[2] = -d * e;
-          te[6] = ad * f + bc;
-          te[10] = ac - bd * f;
-        } else if (euler.order === "XZY") {
-          var ac = a * c,
-              ad = a * d,
-              bc = b * c,
-              bd = b * d;
-          te[0] = c * e;
-          te[4] = -f;
-          te[8] = d * e;
-          te[1] = ac * f + bd;
-          te[5] = a * e;
-          te[9] = ad * f - bc;
-          te[2] = bc * f - ad;
-          te[6] = b * e;
-          te[10] = bd * f + ac;
-        } // bottom row
-
-
-        te[3] = 0;
-        te[7] = 0;
-        te[11] = 0; // last column
-
-        te[12] = 0;
-        te[13] = 0;
-        te[14] = 0;
-        te[15] = 1;
-        return this;
-      }
-
-      makeRotationFromQuaternion(q) {
-        return this.compose(_zero, q, _one);
-      }
-
-      lookAt(eye, target, up) {
-        var te = this.elements;
-
-        _z.subVectors(eye, target);
-
-        if (_z.lengthSq() === 0) {
-          // eye and target are in the same position
-          _z.z = 1;
-        }
-
-        _z.normalize();
-
-        _x.crossVectors(up, _z);
-
-        if (_x.lengthSq() === 0) {
-          // up and z are parallel
-          if (Math.abs(up.z) === 1) {
-            _z.x += 0.0001;
-          } else {
-            _z.z += 0.0001;
-          }
-
-          _z.normalize();
-
-          _x.crossVectors(up, _z);
-        }
-
-        _x.normalize();
-
-        _y.crossVectors(_z, _x);
-
-        te[0] = _x.x;
-        te[4] = _y.x;
-        te[8] = _z.x;
-        te[1] = _x.y;
-        te[5] = _y.y;
-        te[9] = _z.y;
-        te[2] = _x.z;
-        te[6] = _y.z;
-        te[10] = _z.z;
-        return this;
-      }
-
-      multiply(m, n) {
-        if (n !== undefined) {
-          console.warn(" Matrix4: .multiply() now only accepts one argument. Use .multiplyMatrices( a, b ) instead.");
-          return this.multiplyMatrices(m, n);
-        }
-
-        return this.multiplyMatrices(this, m);
-      }
-
-      premultiply(m) {
-        return this.multiplyMatrices(m, this);
-      }
-
-      multiplyMatrices(a, b) {
-        var ae = a.elements;
-        var be = b.elements;
-        var te = this.elements;
-        var a11 = ae[0],
-            a12 = ae[4],
-            a13 = ae[8],
-            a14 = ae[12];
-        var a21 = ae[1],
-            a22 = ae[5],
-            a23 = ae[9],
-            a24 = ae[13];
-        var a31 = ae[2],
-            a32 = ae[6],
-            a33 = ae[10],
-            a34 = ae[14];
-        var a41 = ae[3],
-            a42 = ae[7],
-            a43 = ae[11],
-            a44 = ae[15];
-        var b11 = be[0],
-            b12 = be[4],
-            b13 = be[8],
-            b14 = be[12];
-        var b21 = be[1],
-            b22 = be[5],
-            b23 = be[9],
-            b24 = be[13];
-        var b31 = be[2],
-            b32 = be[6],
-            b33 = be[10],
-            b34 = be[14];
-        var b41 = be[3],
-            b42 = be[7],
-            b43 = be[11],
-            b44 = be[15];
-        te[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-        te[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-        te[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-        te[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
-        te[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-        te[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-        te[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-        te[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
-        te[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-        te[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-        te[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-        te[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
-        te[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
-        te[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
-        te[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
-        te[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
-        return this;
-      }
-
-      multiplyScalar(s) {
-        var te = this.elements;
-        te[0] *= s;
-        te[4] *= s;
-        te[8] *= s;
-        te[12] *= s;
-        te[1] *= s;
-        te[5] *= s;
-        te[9] *= s;
-        te[13] *= s;
-        te[2] *= s;
-        te[6] *= s;
-        te[10] *= s;
-        te[14] *= s;
-        te[3] *= s;
-        te[7] *= s;
-        te[11] *= s;
-        te[15] *= s;
-        return this;
-      }
-
-      applyToBufferAttribute(attribute) {
-        for (var i = 0, l = attribute.count; i < l; i++) {
-          _v1.x = attribute.getX(i);
-          _v1.y = attribute.getY(i);
-          _v1.z = attribute.getZ(i);
-
-          _v1.applyMatrix4(this);
-
-          attribute.setXYZ(i, _v1.x, _v1.y, _v1.z);
-        }
-
-        return attribute;
-      }
-
-      determinant() {
-        var te = this.elements;
-        var n11 = te[0],
-            n12 = te[4],
-            n13 = te[8],
-            n14 = te[12];
-        var n21 = te[1],
-            n22 = te[5],
-            n23 = te[9],
-            n24 = te[13];
-        var n31 = te[2],
-            n32 = te[6],
-            n33 = te[10],
-            n34 = te[14];
-        var n41 = te[3],
-            n42 = te[7],
-            n43 = te[11],
-            n44 = te[15]; //TODO: make this more efficient
-        //( based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm )
-
-        return n41 * (+n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34) + n42 * (+n11 * n23 * n34 - n11 * n24 * n33 + n14 * n21 * n33 - n13 * n21 * n34 + n13 * n24 * n31 - n14 * n23 * n31) + n43 * (+n11 * n24 * n32 - n11 * n22 * n34 - n14 * n21 * n32 + n12 * n21 * n34 + n14 * n22 * n31 - n12 * n24 * n31) + n44 * (-n13 * n22 * n31 - n11 * n23 * n32 + n11 * n22 * n33 + n13 * n21 * n32 - n12 * n21 * n33 + n12 * n23 * n31);
-      }
-
-      transpose() {
-        var te = this.elements;
-        var tmp;
-        tmp = te[1];
-        te[1] = te[4];
-        te[4] = tmp;
-        tmp = te[2];
-        te[2] = te[8];
-        te[8] = tmp;
-        tmp = te[6];
-        te[6] = te[9];
-        te[9] = tmp;
-        tmp = te[3];
-        te[3] = te[12];
-        te[12] = tmp;
-        tmp = te[7];
-        te[7] = te[13];
-        te[13] = tmp;
-        tmp = te[11];
-        te[11] = te[14];
-        te[14] = tmp;
-        return this;
-      }
-
-      setPosition(x, y, z) {
-        var te = this.elements;
-
-        if (x.isVector3) {
-          te[12] = x.x;
-          te[13] = x.y;
-          te[14] = x.z;
-        } else {
-          te[12] = x;
-          te[13] = y;
-          te[14] = z;
-        }
-
-        return this;
-      }
-
-      getInverse(m, throwOnDegenerate) {
-        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
-        var te = this.elements,
-            me = m.elements,
-            n11 = me[0],
-            n21 = me[1],
-            n31 = me[2],
-            n41 = me[3],
-            n12 = me[4],
-            n22 = me[5],
-            n32 = me[6],
-            n42 = me[7],
-            n13 = me[8],
-            n23 = me[9],
-            n33 = me[10],
-            n43 = me[11],
-            n14 = me[12],
-            n24 = me[13],
-            n34 = me[14],
-            n44 = me[15],
-            t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
-            t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
-            t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
-            t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
-        var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
-
-        if (det === 0) {
-          var msg = " Matrix4: .getInverse() can't invert matrix, determinant is 0";
-
-          if (throwOnDegenerate === true) {
-            throw new Error(msg);
-          } else {
-            console.warn(msg);
-          }
-
-          return this.identity();
-        }
-
-        var detInv = 1 / det;
-        te[0] = t11 * detInv;
-        te[1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * detInv;
-        te[2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * detInv;
-        te[3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * detInv;
-        te[4] = t12 * detInv;
-        te[5] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * detInv;
-        te[6] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * detInv;
-        te[7] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * detInv;
-        te[8] = t13 * detInv;
-        te[9] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * detInv;
-        te[10] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * detInv;
-        te[11] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * detInv;
-        te[12] = t14 * detInv;
-        te[13] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * detInv;
-        te[14] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * detInv;
-        te[15] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * detInv;
-        return this;
-      }
-
-      scale(v) {
-        var te = this.elements;
-        var x = v.x,
-            y = v.y,
-            z = v.z;
-        te[0] *= x;
-        te[4] *= y;
-        te[8] *= z;
-        te[1] *= x;
-        te[5] *= y;
-        te[9] *= z;
-        te[2] *= x;
-        te[6] *= y;
-        te[10] *= z;
-        te[3] *= x;
-        te[7] *= y;
-        te[11] *= z;
-        return this;
-      }
-
-      getMaxScaleOnAxis() {
-        var te = this.elements;
-        var scaleXSq = te[0] * te[0] + te[1] * te[1] + te[2] * te[2];
-        var scaleYSq = te[4] * te[4] + te[5] * te[5] + te[6] * te[6];
-        var scaleZSq = te[8] * te[8] + te[9] * te[9] + te[10] * te[10];
-        return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
-      }
-
-      makeTranslation(x, y, z) {
-        this.set(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
-        return this;
-      }
-
-      makeRotationX(theta) {
-        var c = Math.cos(theta),
-            s = Math.sin(theta);
-        this.set(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      makeRotationY(theta) {
-        var c = Math.cos(theta),
-            s = Math.sin(theta);
-        this.set(c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      makeRotationZ(theta) {
-        var c = Math.cos(theta),
-            s = Math.sin(theta);
-        this.set(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      makeRotationAxis(axis, angle) {
-        // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        var c = Math.cos(angle);
-        var s = Math.sin(angle);
-        var t = 1 - c;
-        var x = axis.x,
-            y = axis.y,
-            z = axis.z;
-        var tx = t * x,
-            ty = t * y;
-        this.set(tx * x + c, tx * y - s * z, tx * z + s * y, 0, tx * y + s * z, ty * y + c, ty * z - s * x, 0, tx * z - s * y, ty * z + s * x, t * z * z + c, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      makeScale(x, y, z) {
-        this.set(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      makeShear(x, y, z) {
-        this.set(1, y, z, 0, x, 1, z, 0, x, y, 1, 0, 0, 0, 0, 1);
-        return this;
-      }
-
-      compose(position, quaternion, scale) {
-        var te = this.elements;
-        var x = quaternion._x,
-            y = quaternion._y,
-            z = quaternion._z,
-            w = quaternion._w;
-        var x2 = x + x,
-            y2 = y + y,
-            z2 = z + z;
-        var xx = x * x2,
-            xy = x * y2,
-            xz = x * z2;
-        var yy = y * y2,
-            yz = y * z2,
-            zz = z * z2;
-        var wx = w * x2,
-            wy = w * y2,
-            wz = w * z2;
-        var sx = scale.x,
-            sy = scale.y,
-            sz = scale.z;
-        te[0] = (1 - (yy + zz)) * sx;
-        te[1] = (xy + wz) * sx;
-        te[2] = (xz - wy) * sx;
-        te[3] = 0;
-        te[4] = (xy - wz) * sy;
-        te[5] = (1 - (xx + zz)) * sy;
-        te[6] = (yz + wx) * sy;
-        te[7] = 0;
-        te[8] = (xz + wy) * sz;
-        te[9] = (yz - wx) * sz;
-        te[10] = (1 - (xx + yy)) * sz;
-        te[11] = 0;
-        te[12] = position.x;
-        te[13] = position.y;
-        te[14] = position.z;
-        te[15] = 1;
-        return this;
-      }
-
-      decompose(position, quaternion, scale) {
-        var te = this.elements;
-
-        var sx = _v1.set(te[0], te[1], te[2]).length();
-
-        var sy = _v1.set(te[4], te[5], te[6]).length();
-
-        var sz = _v1.set(te[8], te[9], te[10]).length(); // if determine is negative, we need to invert one scale
-
-
-        var det = this.determinant();
-        if (det < 0) sx = -sx;
-        position.x = te[12];
-        position.y = te[13];
-        position.z = te[14]; // scale the rotation part
-
-        _m1.copy(this);
-
-        var invSX = 1 / sx;
-        var invSY = 1 / sy;
-        var invSZ = 1 / sz;
-        _m1.elements[0] *= invSX;
-        _m1.elements[1] *= invSX;
-        _m1.elements[2] *= invSX;
-        _m1.elements[4] *= invSY;
-        _m1.elements[5] *= invSY;
-        _m1.elements[6] *= invSY;
-        _m1.elements[8] *= invSZ;
-        _m1.elements[9] *= invSZ;
-        _m1.elements[10] *= invSZ;
-        quaternion.setFromRotationMatrix(_m1);
-        scale.x = sx;
-        scale.y = sy;
-        scale.z = sz;
-        return this;
-      }
-
-      makePerspective(left, right, top, bottom, near, far) {
-        if (far === undefined) {
-          console.warn(" Matrix4: .makePerspective() has been redefined and has a new signature. Please check the docs.");
-        }
-
-        var te = this.elements;
-        var x = 2 * near / (right - left);
-        var y = 2 * near / (top - bottom);
-        var a = (right + left) / (right - left);
-        var b = (top + bottom) / (top - bottom);
-        var c = -(far + near) / (far - near);
-        var d = -2 * far * near / (far - near);
-        te[0] = x;
-        te[4] = 0;
-        te[8] = a;
-        te[12] = 0;
-        te[1] = 0;
-        te[5] = y;
-        te[9] = b;
-        te[13] = 0;
-        te[2] = 0;
-        te[6] = 0;
-        te[10] = c;
-        te[14] = d;
-        te[3] = 0;
-        te[7] = 0;
-        te[11] = -1;
-        te[15] = 0;
-        return this;
-      }
-
-      makeOrthographic(left, right, top, bottom, near, far) {
-        var te = this.elements;
-        var w = 1.0 / (right - left);
-        var h = 1.0 / (top - bottom);
-        var p = 1.0 / (far - near);
-        var x = (right + left) * w;
-        var y = (top + bottom) * h;
-        var z = (far + near) * p;
-        te[0] = 2 * w;
-        te[4] = 0;
-        te[8] = 0;
-        te[12] = -x;
-        te[1] = 0;
-        te[5] = 2 * h;
-        te[9] = 0;
-        te[13] = -y;
-        te[2] = 0;
-        te[6] = 0;
-        te[10] = -2 * p;
-        te[14] = -z;
-        te[3] = 0;
-        te[7] = 0;
-        te[11] = 0;
-        te[15] = 1;
-        return this;
-      }
-
-      equals(matrix) {
-        var te = this.elements;
-        var me = matrix.elements;
-
-        for (var i = 0; i < 16; i++) {
-          if (te[i] !== me[i]) return false;
-        }
-
-        return true;
-      }
-
-      fromArray(array, offset) {
-        if (offset === undefined) offset = 0;
-
-        for (var i = 0; i < 16; i++) {
-          this.elements[i] = array[i + offset];
-        }
-
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        var te = this.elements;
-        array[offset] = te[0];
-        array[offset + 1] = te[1];
-        array[offset + 2] = te[2];
-        array[offset + 3] = te[3];
-        array[offset + 4] = te[4];
-        array[offset + 5] = te[5];
-        array[offset + 6] = te[6];
-        array[offset + 7] = te[7];
-        array[offset + 8] = te[8];
-        array[offset + 9] = te[9];
-        array[offset + 10] = te[10];
-        array[offset + 11] = te[11];
-        array[offset + 12] = te[12];
-        array[offset + 13] = te[13];
-        array[offset + 14] = te[14];
-        array[offset + 15] = te[15];
-        return array;
-      }
-
-    }
-
-    const _v1 = v3();
-
-    const _m1 = m4();
-
-    const _zero = v3(0, 0, 0);
-
-    const _one = v3(1, 1, 1);
-
-    const _x = v3();
-
-    const _y = v3();
-
-    const _z = v3();
-
-    function m4() {
-      return new Matrix4();
-    }
-
-    var _matrix = m4();
-
-    var _quaternion$1 = quat();
-    class Euler {
-      constructor(x, y, z, order) {
-        this._x = x || 0;
-        this._y = y || 0;
-        this._z = z || 0;
-        this._order = order || Euler.DefaultOrder;
-        this.isEuler = true;
-      }
-
-      get x() {
-        return this._x;
-      }
-
-      set x(value) {
-        this._x = value;
-
-        this._onChangeCallback();
-      }
-
-      get y() {
-        return this._y;
-      }
-
-      set y(value) {
-        this._y = value;
-
-        this._onChangeCallback();
-      }
-
-      get z() {
-        return this._z;
-      }
-
-      set z(value) {
-        this._z = value;
-
-        this._onChangeCallback();
-      }
-
-      get order() {
-        return this._order;
-      }
-
-      set order(value) {
-        this._order = value;
-
-        this._onChangeCallback();
-      }
-
-      set(x, y, z, order) {
-        this._x = x;
-        this._y = y;
-        this._z = z;
-        this._order = order || this._order;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      clone() {
-        return new this.constructor(this._x, this._y, this._z, this._order);
-      }
-
-      copy(euler) {
-        this._x = euler._x;
-        this._y = euler._y;
-        this._z = euler._z;
-        this._order = euler._order;
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      setFromRotationMatrix(m, order, update) {
-        // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
-        var te = m.elements;
-        var m11 = te[0],
-            m12 = te[4],
-            m13 = te[8];
-        var m21 = te[1],
-            m22 = te[5],
-            m23 = te[9];
-        var m31 = te[2],
-            m32 = te[6],
-            m33 = te[10];
-        order = order || this._order;
-
-        if (order === "XYZ") {
-          this._y = Math.asin(clamp(m13, -1, 1));
-
-          if (Math.abs(m13) < 0.9999999) {
-            this._x = Math.atan2(-m23, m33);
-            this._z = Math.atan2(-m12, m11);
-          } else {
-            this._x = Math.atan2(m32, m22);
-            this._z = 0;
-          }
-        } else if (order === "YXZ") {
-          this._x = Math.asin(-clamp(m23, -1, 1));
-
-          if (Math.abs(m23) < 0.9999999) {
-            this._y = Math.atan2(m13, m33);
-            this._z = Math.atan2(m21, m22);
-          } else {
-            this._y = Math.atan2(-m31, m11);
-            this._z = 0;
-          }
-        } else if (order === "ZXY") {
-          this._x = Math.asin(clamp(m32, -1, 1));
-
-          if (Math.abs(m32) < 0.9999999) {
-            this._y = Math.atan2(-m31, m33);
-            this._z = Math.atan2(-m12, m22);
-          } else {
-            this._y = 0;
-            this._z = Math.atan2(m21, m11);
-          }
-        } else if (order === "ZYX") {
-          this._y = Math.asin(-clamp(m31, -1, 1));
-
-          if (Math.abs(m31) < 0.9999999) {
-            this._x = Math.atan2(m32, m33);
-            this._z = Math.atan2(m21, m11);
-          } else {
-            this._x = 0;
-            this._z = Math.atan2(-m12, m22);
-          }
-        } else if (order === "YZX") {
-          this._z = Math.asin(clamp(m21, -1, 1));
-
-          if (Math.abs(m21) < 0.9999999) {
-            this._x = Math.atan2(-m23, m22);
-            this._y = Math.atan2(-m31, m11);
-          } else {
-            this._x = 0;
-            this._y = Math.atan2(m13, m33);
-          }
-        } else if (order === "XZY") {
-          this._z = Math.asin(-clamp(m12, -1, 1));
-
-          if (Math.abs(m12) < 0.9999999) {
-            this._x = Math.atan2(m32, m22);
-            this._y = Math.atan2(m13, m11);
-          } else {
-            this._x = Math.atan2(-m23, m33);
-            this._y = 0;
-          }
-        } else {
-          console.warn("Euler: .setFromRotationMatrix() given unsupported order: " + order);
-        }
-
-        this._order = order;
-        if (update !== false) this._onChangeCallback();
-        return this;
-      }
-
-      setFromQuaternion(q, order, update) {
-        _matrix.makeRotationFromQuaternion(q);
-
-        return this.setFromRotationMatrix(_matrix, order, update);
-      }
-
-      setFromVector3(v, order) {
-        return this.set(v.x, v.y, v.z, order || this._order);
-      }
-
-      reorder(newOrder) {
-        // WARNING: this discards revolution information -bhouston
-        _quaternion$1.setFromEuler(this);
-
-        return this.setFromQuaternion(_quaternion$1, newOrder);
-      }
-
-      equals(euler) {
-        return euler._x === this._x && euler._y === this._y && euler._z === this._z && euler._order === this._order;
-      }
-
-      fromArray(array) {
-        this._x = array[0];
-        this._y = array[1];
-        this._z = array[2];
-        if (array[3] !== undefined) this._order = array[3];
-
-        this._onChangeCallback();
-
-        return this;
-      }
-
-      toArray(array, offset) {
-        if (array === undefined) array = [];
-        if (offset === undefined) offset = 0;
-        array[offset] = this._x;
-        array[offset + 1] = this._y;
-        array[offset + 2] = this._z;
-        array[offset + 3] = this._order;
-        return array;
-      }
-
-      toVector3(optionalResult) {
-        if (optionalResult) {
-          return optionalResult.set(this._x, this._y, this._z);
-        } else {
-          return v3(this._x, this._y, this._z);
-        }
-      }
-
-      _onChange(callback) {
-        this._onChangeCallback = callback;
-        return this;
-      }
-
-      _onChangeCallback() {}
-
-    }
-    function euler(x, y, z) {
-      return Euler(x, y, z);
-    }
-
-    const Orientation = {
-      Common: 0,
-      Positive: 1,
-      Negative: 2,
-      Intersect: 3
-    };
-
-    class Segment extends Array {
-      /**
-       * 线段
-       * @param  {Point|Vector3} p0
-       * @param  {Point|Vector3} p1
-       */
-      constructor(p0, p1) {
-        super();
-        this.push(p0 || v3(), p1 || v3());
-        this.center = this.p0.clone().add(this.p1).multiplyScalar(0.5);
-        this.lenDirection = this.p1.clone().sub(this.p0);
-        this.lenSq = this.lenDirection.lengthSq();
-        this.len = Math.sqrt(this.lenSq);
-        this.direction = this.lenDirection.clone().normalize();
-      }
-
-      get p0() {
-        return this[0];
-      }
-
-      set p0(value) {
-        this[0] = value;
-      }
-
-      get p1() {
-        return this[1];
-      }
-
-      set p1(value) {
-        this[1] = value;
-      }
-      /**
-       * @param  {Vector3} amount
-       * @param  {Vector3 target
-       */
-
-
-      at(amount, target) {
-        if (target === undefined) target = new Vector3();
-        return target.subVectors(this.end, this.start).multiplyScalar(amount).add(this.start);
-      }
-
-      equals(segment) {
-        return this.p0.equals(segment.p0) && this.p1.equals(segment.p1) || this.p1.equals(segment.p0) && this.p1.equals(segment.p0);
-      }
-
-      clone() {
-        return new Segment(this.p0.clone(), this.p1.clone());
-      } //---Distance---------------------------------------------
-
-      /**
-       * 点是否在线段上
-       * @param  {Vector3} point
-       */
-
-
-      containPoint(point) {
-        return point.inside(this);
-      }
-      /**
-       * 点与线段的距离
-       * @param  {Vector3} point
-       */
-
-
-      distancePoint(point) {
-        return point.distanceSegment(this);
-      }
-      /**
-       * 线段到线段的距离
-       * @param  {Segment} segment
-       */
-
-
-      distanceSegment(segment) {
-        var result = {
-          parameters: [],
-          closests: []
-        };
-
-        function GetClampedRoot(slope, h0, h1) {
-          var r;
-
-          if (h0 < 0) {
-            if (h1 > 0) {
-              r = -h0 / slope;
-
-              if (r > 1) {
-                r = 0.5;
-              } // The slope is positive and -h0 is positive, so there is no
-              // need to test for a negative value and clamp it.
-
-            } else {
-              r = 1;
-            }
-          } else {
-            r = 0;
-          }
-
-          return r;
-        }
-
-        function ComputevarIntersection(sValue, classify, edge, end) {
-          if (classify[0] < 0) {
-            edge[0] = 0;
-            end[0][0] = 0;
-            end[0][1] = mF00 / mB;
-
-            if (end[0][1] < 0 || end[0][1] > 1) {
-              end[0][1] = 0.5;
-            }
-
-            if (classify[1] == 0) {
-              edge[1] = 3;
-              end[1][0] = sValue[1];
-              end[1][1] = 1;
-            } else // classify[1] > 0
-              {
-                edge[1] = 1;
-                end[1][0] = 1;
-                end[1][1] = mF10 / mB;
-
-                if (end[1][1] < 0 || end[1][1] > 1) {
-                  end[1][1] = 0.5;
-                }
-              }
-          } else if (classify[0] == 0) {
-            edge[0] = 2;
-            end[0][0] = sValue[0];
-            end[0][1] = 0;
-
-            if (classify[1] < 0) {
-              edge[1] = 0;
-              end[1][0] = 0;
-              end[1][1] = mF00 / mB;
-
-              if (end[1][1] < 0 || end[1][1] > 1) {
-                end[1][1] = 0.5;
-              }
-            } else if (classify[1] == 0) {
-              edge[1] = 3;
-              end[1][0] = sValue[1];
-              end[1][1] = 1;
-            } else {
-              edge[1] = 1;
-              end[1][0] = 1;
-              end[1][1] = mF10 / mB;
-
-              if (end[1][1] < 0 || end[1][1] > 1) {
-                end[1][1] = 0.5;
-              }
-            }
-          } else // classify[0] > 0
-            {
-              edge[0] = 1;
-              end[0][0] = 1;
-              end[0][1] = mF10 / mB;
-
-              if (end[0][1] < 0 || end[0][1] > 1) {
-                end[0][1] = 0.5;
-              }
-
-              if (classify[1] == 0) {
-                edge[1] = 3;
-                end[1][0] = sValue[1];
-                end[1][1] = 1;
-              } else {
-                edge[1] = 0;
-                end[1][0] = 0;
-                end[1][1] = mF00 / mB;
-
-                if (end[1][1] < 0 || end[1][1] > 1) {
-                  end[1][1] = 0.5;
-                }
-              }
-            }
-        }
-
-        function ComputeMinimumParameters(edge, end, parameters) {
-          var delta = end[1][1] - end[0][1];
-          var h0 = delta * (-mB * end[0][0] + mC * end[0][1] - mE);
-
-          if (h0 >= 0) {
-            if (edge[0] == 0) {
-              parameters[0] = 0;
-              parameters[1] = GetClampedRoot(mC, mG00, mG01);
-            } else if (edge[0] == 1) {
-              parameters[0] = 1;
-              parameters[1] = GetClampedRoot(mC, mG10, mG11);
-            } else {
-              parameters[0] = end[0][0];
-              parameters[1] = end[0][1];
-            }
-          } else {
-            var h1 = delta * (-mB * end[1][0] + mC * end[1][1] - mE);
-
-            if (h1 <= 0) {
-              if (edge[1] == 0) {
-                parameters[0] = 0;
-                parameters[1] = GetClampedRoot(mC, mG00, mG01);
-              } else if (edge[1] == 1) {
-                parameters[0] = 1;
-                parameters[1] = GetClampedRoot(mC, mG10, mG11);
-              } else {
-                parameters[0] = end[1][0];
-                parameters[1] = end[1][1];
-              }
-            } else // h0 < 0 and h1 > 0
-              {
-                var z = Math.min(Math.max(h0 / (h0 - h1), 0), 1);
-                var omz = 1 - z;
-                parameters[0] = omz * end[0][0] + z * end[1][0];
-                parameters[1] = omz * end[0][1] + z * end[1][1];
-              }
-          }
-        }
-
-        var seg0Dir = this.p1.clone().sub(this.p0);
-        var seg1Dir = segment.p1.clone().sub(segment.p0);
-        var segDiff = this.p0.clone().sub(segment.p0);
-        var mA = seg0Dir.dot(seg0Dir);
-        var mB = seg0Dir.dot(seg1Dir);
-        var mC = seg1Dir.dot(seg1Dir);
-        var mD = seg0Dir.dot(segDiff);
-        var mE = seg1Dir.dot(segDiff);
-        var mF00 = mD;
-        var mF10 = mF00 + mA;
-        var mF01 = mF00 - mB;
-        var mF11 = mF10 - mB;
-        var mG00 = -mE;
-        var mG10 = mG00 - mB;
-        var mG01 = mG00 + mC;
-        var mG11 = mG10 + mC;
-
-        if (mA > 0 && mC > 0) {
-          var sValue = [];
-          sValue[0] = GetClampedRoot(mA, mF00, mF10);
-          sValue[1] = GetClampedRoot(mA, mF01, mF11);
-          var classify = [];
-
-          for (var i = 0; i < 2; ++i) {
-            if (sValue[i] <= 0) {
-              classify[i] = -1;
-            } else if (sValue[i] >= 1) {
-              classify[i] = +1;
-            } else {
-              classify[i] = 0;
-            }
-          }
-
-          if (classify[0] == -1 && classify[1] == -1) {
-            // The minimum must occur on s = 0 for 0 <= t <= 1.
-            result.parameters[0] = 0;
-            result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
-          } else if (classify[0] == +1 && classify[1] == +1) {
-            // The minimum must occur on s = 1 for 0 <= t <= 1.
-            result.parameters[0] = 1;
-            result.parameters[1] = GetClampedRoot(mC, mG10, mG11);
-          } else {
-            // The line dR/ds = 0 varersects the domain [0,1]^2 in a
-            // nondegenerate segment.  Compute the endpoints of that segment,
-            // end[0] and end[1].  The edge[i] flag tells you on which domain
-            // edge end[i] lives: 0 (s=0), 1 (s=1), 2 (t=0), 3 (t=1).
-            var edge = [];
-            var end = new Array(2);
-
-            for (let i = 0; i < end.length; i++) end[i] = new Array(2);
-
-            ComputevarIntersection(sValue, classify, edge, end); // The directional derivative of R along the segment of
-            // varersection is
-            //   H(z) = (end[1][1]-end[1][0])*dR/dt((1-z)*end[0] + z*end[1])
-            // for z in [0,1].  The formula uses the fact that dR/ds = 0 on
-            // the segment.  Compute the minimum of H on [0,1].
-
-            ComputeMinimumParameters(edge, end, result.parameters);
-          }
-        } else {
-          if (mA > 0) {
-            // The Q-segment is degenerate ( segment.point0 and  segment.p0 are the same point) and
-            // the quadratic is R(s,0) = a*s^2 + 2*d*s + f and has (half)
-            // first derivative F(t) = a*s + d.  The closests P-point is
-            // varerior to the P-segment when F(0) < 0 and F(1) > 0.
-            result.parameters[0] = GetClampedRoot(mA, mF00, mF10);
-            result.parameters[1] = 0;
-          } else if (mC > 0) {
-            // The P-segment is degenerate ( this.point0 and  this.p0 are the same point) and
-            // the quadratic is R(0,t) = c*t^2 - 2*e*t + f and has (half)
-            // first derivative G(t) = c*t - e.  The closests Q-point is
-            // varerior to the Q-segment when G(0) < 0 and G(1) > 0.
-            result.parameters[0] = 0;
-            result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
-          } else {
-            // P-segment and Q-segment are degenerate.
-            result.parameters[0] = 0;
-            result.parameters[1] = 0;
-          }
-        }
-
-        result.closests[0] = this.p0.clone().multiplyScalar(1 - result.parameters[0]).add(this.p1.clone().multiplyScalar(result.parameters[0]));
-        result.closests[1] = segment.p0.clone().multiplyScalar(1 - result.parameters[1]).add(segment.p1.clone().multiplyScalar(result.parameters[1]));
-        var diff = result.closests[0].clone().sub(result.closests[1]);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-       * 射线到射线的距离
-       * @param  {Ray} ray
-       */
-
-
-      distanceRay(ray) {}
-      /**
-       * 线段到直线的距离
-       * @param  {Ray} ray
-       */
-
-
-      distanceLine(line) {} //---Intersect---------------------------------------------------
-
-
-      intersectSegment(segment) {
-        const result = this.distanceSegment(segment);
-        const resultLine = this.distanceLine(segment);
-        result.interserct = false;
-
-        if (!approximateEqual(this.normal.dot(segment.normal), 1, gPrecision)) {
-          // 平行
-          if (resultLine.distance >= gPrecision) ; else {
-            //共线重叠
-            if (this.equals(segment)) {
-              //# 相等
-              result.equals = true;
-            } else if (result.parameters.every(o => o === 0 || o === 1)) ;
-          }
-        } else {
-          if (result.distance > gPrecision) return result;
-          result.interserct = true; //相交
-
-          if (result.parameters.every(o => o === 0 || o === 1)) ; else if (result.parameters[0] === 0 || result.parameters[0] === 1) {
-            // this线段 在端点上
-            result.splitSegs = [[this], [new Segment(segment.p0, result.closests[1]), new Segment(result.closests[1], segment.p1)]];
-          } else if (result.parameters[1] === 0 || result.parameters[1] === 1) {
-            //segment线段在端点上
-            result.splitSegs = [[new Segment(this.p0, result.closests[0]), new Segment(result.closests[0], this.p1)], segment];
-          } else {
-            // 两个都不在端点上
-            result.splitSegs = [[new Segment(this.p0, result.closests[0]), new Segment(result.closests[0], this.p1)], [new Segment(segment.p0, result.closests[1]), new Segment(result.closests[1], segment.p1)]];
-          }
-        }
-
-        return result;
-      } //---Offset------------------------------------------------------
-
-      /**
-       * 线段偏移
-       * @param {Vector3} binormal  偏移平面法线
-       * @param {Vector3} direction 偏移方向
-       * @param {Number} distance 偏移距离
-       */
-
-
-      offset(binormal, direction, distance) {
-        binormal = binormal || new Vector3(0, 1, 0);
-        var direction = p1.clone().sub(p0).normalize();
-        var tandir = direction.clone().cross(binormal).normalize();
-        var result = {};
-        result.arr = [tandir.clone().multiplyScalar(distance).add(p0), tandir.clone().multiplyScalar(distance).add(p1)];
-        result.direction = direction;
-        result.tandir = tandir;
-        return result;
-      } //---方位---------------------
-
-
-      orientationPoint(point, normal = Vector3.UnitY) {
-        var binormal = this.direction.clone().cross(normal);
-        if (this.distanceLine(point).distance < gPrecision) return Orientation.Common;
-        return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
-      }
-
-      orientationSegment(segment, normal = Vector3.UnitY) {
-        var or0 = this.orientationPoint(segment.p0, normal);
-        var or1 = this.orientationPoint(segment.p1, normal);
-        return or0 | or1;
-      }
-
-    }
-    function segment$1(p0, p1) {
-      return new Segment(p0, p1);
-    }
-
-    class Line {
-      constructor(origin, end) {
-        this.origin = origin !== undefined ? origin : v3();
-        this.end = end !== undefined ? end : v3();
-        this.direction = this.end.clone().sub(this.origin).normalize();
-      }
-
-      distancePoint(point) {
-        return point.distanceLine(this);
-      } //---距离-------------
-
-      /**
-       * 直线到直线的距离
-       * 参数与最近点顺序一致
-       * @param  {Line} line
-       */
-
-
-      distanceLine(line) {
-        var result = {
-          parameters: [],
-          closests: []
-        };
-        var diff = this.origin.clone().sub(line.origin);
-        var a01 = -this.direction.dot(line.direction);
-        var b0 = diff.dot(this.direction);
-        var s0, s1;
-
-        if (Math.abs(a01) < 1) {
-          var det = 1 - a01 * a01;
-          var b1 = -diff.dot(line.direction);
-          s0 = (a01 * b1 - b0) / det;
-          s1 = (a01 * b0 - b1) / det;
-        } else {
-          s0 = -b0;
-          s1 = 0;
-        }
-
-        result.parameters[0] = s0;
-        result.parameters[1] = s1;
-        result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-        result.closests[1] = line.direction.clone().multiplyScalar(s1).add(line.origin);
-        diff = result.closests[0].clone().sub(result.closests[1]);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-       * 直线与射线的距离
-       * @param {Ray} ray 
-       */
-
-
-      distanceRay(ray) {
-        const result = {
-          parameters: [],
-          closests: [],
-          sqrDistance: 0,
-          distance: 0
-        };
-        var diff = this.origin.clone().sub(ray.origin);
-        var a01 = -this.direction.dot(ray.direction);
-        var b0 = diff.dot(this.direction);
-        var s0, s1;
-
-        if (Math.abs(a01) < 1) {
-          var b1 = -diff.dot(ray.direction);
-          s1 = a01 * b0 - b1;
-
-          if (s1 >= 0) {
-            //在最近点在射线上，相当于直线与直线最短距离
-            var det = 1 - a01 * a01;
-            s0 = (a01 * b1 - b0) / det;
-            s1 /= det;
-          } else {
-            // 射线的起始点是离直线的最近点
-            s0 = -b0;
-            s1 = 0;
-          }
-        } else {
-          s0 = -b0;
-          s1 = 0;
-        }
-
-        result.parameters[0] = s0;
-        result.parameters[1] = s1;
-        result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-        result.closests[1] = ray.direction.clone().multiplyScalar(s1).add(ray.origin);
-        diff = result.closests[0].clone().sub(result.closests[1]);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-       * 直线与线段的距离
-       * @param  {Segment} segment
-       */
-
-
-      distanceSegment(segment) {
-        var result = {
-          parameters: [],
-          closests: []
-        };
-        var segCenter = segment.center;
-        var segDirection = segment.direction;
-        var segExtent = segment.len * 0.5;
-        var diff = this.origin.clone().sub(segCenter);
-        var a01 = -this.direction.dot(segDirection);
-        var b0 = diff.dot(this.direction);
-        var s0, s1;
-
-        if (Math.abs(a01) < 1) {
-          // 判断是否平行
-          var det = 1 - a01 * a01;
-          var extDet = segExtent * det;
-          var b1 = -diff.dot(segDirection);
-          s1 = a01 * b0 - b1;
-
-          if (s1 >= -extDet) {
-            if (s1 <= extDet) {
-              // Two interior points are closest, one on the this
-              // and one on the segment.
-              s0 = (a01 * b1 - b0) / det;
-              s1 /= det;
-            } else {
-              // The endpoint e1 of the segment and an interior
-              // point of the this are closest.
-              s1 = segExtent;
-              s0 = -(a01 * s1 + b0);
-            }
-          } else {
-            // The endpoint e0 of the segment and an interior point
-            // of the this are closest.
-            s1 = -segExtent;
-            s0 = -(a01 * s1 + b0);
-          }
-        } else {
-          // The this and segment are parallel.  Choose the closest pair
-          // so that one point is at segment origin.
-          s1 = 0;
-          s0 = -b0;
-        }
-
-        result.parameters[0] = s0;
-        result.parameters[1] = s1;
-        result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-        result.closests[1] = segDirection.clone().multiplyScalar(s1).add(segCenter);
-        diff = result.closests[0].clone().sub(result.closests[1]);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-
-      distancePlane(plane) {}
-
-      distanceTriangle(triangle) {
-        function Orthonormalize(numInputs, v, robust = false) {
-          if (v && 1 <= numInputs && numInputs <= 3) {
-            var minLength = v[0].length();
-            v[0].normalize();
-
-            for (var i = 1; i < numInputs; ++i) {
-              for (var j = 0; j < i; ++j) {
-                var dot = v[i].dot(v[j]);
-                v[i].sub(v[j].clone().multiplyScalar(dot));
-              }
-
-              var length = v[i].length();
-              v[i].normalize();
-
-              if (length < minLength) {
-                minLength = length;
-              }
-            }
-
-            return minLength;
-          }
-
-          return 0;
-        }
-
-        function ComputeOrthogonalComplement(numInputs, v, robust = false) {
-          if (numInputs === 1) {
-            if (Math.abs(v[0][0]) > Math.abs(v[0][1])) {
-              v[1] = v3(-v[0].z, 0, +v[0].x);
-            } else {
-              v[1] = v3(0, +v[0].z, -v[0].y);
-            }
-            numInputs = 2;
-          }
-
-          if (numInputs == 2) {
-            v[2] = v[0].clone().cross(v[1]);
-            return Orthonormalize(3, v, robust);
-          }
-
-          return 0;
-        }
-
-        const result = {
-          closests: [],
-          parameters: [],
-          triangleParameter: []
-        }; // Test if line intersects triangle.  If so, the squared distance
-        // is zero. 
-
-        var edge0 = triangle.p1.clone().sub(triangle.p0);
-        var edge1 = triangle.p2.clone().sub(triangle.p0);
-        var normal = edge0.clone().cross(edge1).normalize();
-        var NdD = normal.dot(this.direction);
-
-        if (Math.abs(NdD) >= gPrecision) {
-          // The line and triangle are not parallel, so the line
-          // intersects/ the plane of the triangle.
-          var diff = this.origin.clone().sub(triangle.p0);
-          var basis = new Array(3); // {D, U, V}
-
-          basis[0] = this.direction;
-          ComputeOrthogonalComplement(1, basis);
-          var UdE0 = basis[1].dot(edge0);
-          var UdE1 = basis[1].dot(edge1);
-          var UdDiff = basis[1].dot(diff);
-          var VdE0 = basis[2].dot(edge0);
-          var VdE1 = basis[2].dot(edge1);
-          var VdDiff = basis[2].dot(diff);
-          var invDet = 1 / (UdE0 * VdE1 - UdE1 * VdE0); // Barycentric coordinates for the point of intersection.
-
-          var b1 = (VdE1 * UdDiff - UdE1 * VdDiff) * invDet;
-          var b2 = (UdE0 * VdDiff - VdE0 * UdDiff) * invDet;
-          var b0 = 1 - b1 - b2;
-
-          if (b0 >= 0 && b1 >= 0 && b2 >= 0) {
-            // Line parameter for the point of intersection.
-            var DdE0 = this.direction.dot(edge0);
-            var DdE1 = this.direction.dot(edge1);
-            var DdDiff = this.direction.dot(diff);
-            result.lineParameter = b1 * DdE0 + b2 * DdE1 - DdDiff; // Barycentric coordinates for the point of intersection.
-
-            result.triangleParameter[0] = b0;
-            result.triangleParameter[1] = b1;
-            result.triangleParameter[2] = b2; // The intersection point is inside or on the triangle.
-
-            result.closests[0] = this.direction.clone().multiplyScalar(result.lineParameter).add(this.origin);
-            result.closests[1] = edge0.multiplyScalar(b1).add(edge1.multiplyScalar(b2)).add(triangle.p0);
-            result.distance = 0;
-            result.sqrDistance = 0;
-            return result;
-          }
-        } // Either (1) the line is not parallel to the triangle and the
-        // point of intersection of the line and the plane of the triangle
-        // is outside the triangle or (2) the line and triangle are
-        // parallel.  Regardless, the closest point on the triangle is on
-        // an edge of the triangle.  Compare the line to all three edges
-        // of the triangle.
-
-
-        result.distance = +Infinity;
-        result.sqrDistance = +Infinity;
-
-        for (var i0 = 2, i1 = 0; i1 < 3; i0 = i1++) {
-          var segCenter = triangle[i0].clone().add(triangle[i1]).multiplyScalar(0.5);
-          var segDirection = triangle[i1].clone().sub(triangle[i0]);
-          var segExtent = 0.5 * segDirection.length();
-          segDirection.normalize();
-          var segment = new Segment(triangle[i0], triangle[i1]);
-          var lsResult = this.distanceSegment(segment);
-
-          if (lsResult.sqrDistance < result.sqrDistance) {
-            result.sqrDistance = lsResult.sqrDistance;
-            result.distance = lsResult.distance;
-            result.lineParameter = lsResult.parameters[0];
-            result.triangleParameter[i0] = 0.5 * (1 - lsResult.parameters[0] / segExtent);
-            result.triangleParameter[i1] = 1 - result.triangleParameter[i0];
-            result.triangleParameter[3 - i0 - i1] = 0;
-            result.closests[0] = lsResult.closests[0];
-            result.closests[1] = lsResult.closests[1];
-          }
-        }
-
-        return result;
-      } //---相交-------------
-
-
-      intersectLine(line) {} //---平行-------------
-
-
-      parallelLine(line) {} //---方位---------------------
-
-
-      orientationPoint(point, normal = Vector3$1.UnitY) {
-        var binormal = this.direction.clone().cross(normal);
-        if (this.distancePoint(point).distance < gPrecision) return Orientation.Common;
-        return point.clone().sub(this.origin).dot(binormal) > 0 ? Orientation.Positive : Orientation.Negative;
-      }
-
-      orientationSegment(segment, normal = Vector3$1.UnitY) {
-        var or0 = this.orientationPoint(segment.p0, normal);
-        var or1 = this.orientationPoint(segment.p1, normal);
-        return or0 | or1;
-      }
-
-    }
-    function line(start, end) {
-      return new Line(start, end);
-    }
-
-    class Point extends Vector3$1 {
-      constructor(x, y, z) {
-        super(x, y, z);
-      } //---距离 Distance-----------------------------------------------------------
-
-      /**
-      * 
-      * @param {Point} point
-      */
-
-
-      distancePoint(point) {
-        var result = {
-          closests: [this, point]
-        };
-        result.distanceSqr = this.clone().sub(point).lengthSq();
-        result.distance = Math.sqrt(result.distanceSqr);
-        return result;
-      }
-      /**
-       * Test success
-       * 到直线的距离
-       * @param  {Line} line
-       * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
-       */
-
-
-      distanceLine(line) {
-        var result = {
-          parameters: [],
-          closests: []
-        };
-        var diff = this.clone().sub(line.origin);
-        var lineParameter = line.direction.dot(diff);
-        var lineClosest = line.direction.clone().multiplyScalar(lineParameter).add(line.origin);
-        result.parameters.push(0, lineParameter);
-        result.closests.push(this, lineClosest);
-        diff = result.closests[0].clone().sub(result.closests[1]);
-        result.distanceSqr = diff.dot(diff);
-        result.distance = Math.sqrt(result.distanceSqr);
-        return result;
-      }
-      /**
-       * 返回一个纯粹的距离值
-       * @param {Line} line 
-       */
-
-
-      distanceLinePureSq(line) {
-        var diff = this.clone().sub(line.origin);
-        var lineParameter = line.direction.dot(diff);
-        var lineClosest = line.direction.clone().multiplyScalar(lineParameter).add(line.origin);
-        return this.distanceToSquared(lineClosest);
-      }
-      /**
-      * 返回一个纯粹的距离值
-      * @param {Line} line 
-      */
-
-
-      distanceLinePure(line) {
-        var diff = this.clone().sub(line.origin);
-        var lineParameter = line.direction.dot(diff);
-        var lineClosest = line.direction.clone().multiplyScalar(lineParameter).add(line.origin);
-        return this.distanceTo(lineClosest);
-      }
-      /**
-       * Test success
-       * 到射线的距离
-       * @param  {Line} line
-       * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
-       */
-
-
-      distanceRay(ray) {
-        var result = {
-          parameters: [],
-          closests: []
-        };
-        var diff = this.clone().sub(ray.origin);
-        result.rayParameter = ray.direction.dot(diff);
-
-        if (result.rayParameter > 0) {
-          result.rayClosest = ray.direction.clone().multiplyScalar(result.rayParameter).add(ray.origin);
-        } else {
-          result.rayClosest = ray.origin.clone();
-        }
-
-        result.parameters.push(0, result.rayParameter);
-        result.closests.push(this, result.rayClosest);
-        diff = this.clone().sub(result.rayClosest);
-        result.distanceSqr = diff.dot(diff);
-        result.distance = Math.sqrt(result.distanceSqr);
-        return result;
-      }
-      /**
-       * Test success
-       * 到线段的距离
-       * @param  {Line} line
-       * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
-       */
-
-
-      distanceSegment(segment) {
-        const result = {
-          parameters: [],
-          closests: []
-        };
-        var diff = this.clone().sub(segment.p1);
-        var t = segment.lenDirection.dot(diff);
-
-        if (t >= 0) {
-          result.segmentParameter = 1;
-          result.segmentClosest = segment.p1;
-        } else {
-          diff = this.clone().sub(segment.p0);
-          t = segment.lenDirection.dot(diff);
-
-          if (t <= 0) {
-            result.segmentParameter = 0;
-            result.segmentClosest = segment.p0;
-          } else {
-            var sqrLength = segment.lenSq;
-            if (sqrLength <= 0) sqrLength = 0;
-            t /= sqrLength;
-            result.segmentParameter = t;
-            result.segmentClosest = segment.lenDirection.clone().multiplyScalar(t).add(segment.p0);
-          }
-        }
-
-        result.parameters.push(0, result.segmentParameter);
-        result.closests.push(this, result.segmentClosest);
-        diff = this.clone().sub(result.segmentClosest);
-        result.distanceSqr = diff.dot(diff);
-        result.distance = Math.sqrt(result.distanceSqr);
-        return result;
-      }
-      /**
-       * 点与折线的距离 测试排除法，平均比线性检索(暴力法)要快两倍以上
-       * @param {Polygon} polyline  折线
-       */
-
-
-      distancePolyline(polyline) {
-        var u = +Infinity;
-        var ipos = -1;
-        var tempResult = null;
-        var result = null;
-
-        for (let i = 0; i < polyline.length - 1; i++) {
-          const pti = polyline[i];
-          const ptj = polyline[i + 1];
-          if (Math.abs(pti.x - this.x) > u && Math.abs(ptj.x - this.x) > u && (pti.x - this.x) * (ptj.x - this.x) > 0) continue;
-          if (Math.abs(pti.y - this.y) > u && Math.abs(ptj.y - this.y) > u && (pti.y - this.y) * (ptj.y - this.y) > 0) continue;
-          if (Math.abs(pti.z - this.z) > u && Math.abs(ptj.z - this.z) > u && (pti.z - this.z) * (ptj.z - this.z) > 0) continue;
-          tempResult = this.distanceSegment(new Segment(pti, ptj));
-
-          if (tempResult.distance < u) {
-            u = tempResult.distance;
-            result = tempResult;
-            ipos = i;
-          }
-        }
-
-        result.segmentIndex = ipos;
-        return result;
-      }
-
-      distancePolyline1(polyline) {
-        var u = +Infinity;
-        var ipos = -1;
-        var tempResult = null;
-        var result = null;
-
-        for (let i = 0; i < polyline.length - 1; i++) {
-          const pti = polyline[i];
-          const ptj = polyline[i + 1];
-          tempResult = this.distanceSegment(new Segment(pti, ptj));
-
-          if (u > tempResult.distance) {
-            u = tempResult.distance;
-            result = tempResult;
-            ipos = i;
-          }
-        }
-
-        result.segmentIndex = ipos;
-        return result;
-      }
-
-      distancePlane(plane) {
-        // this.clone().sub(plane.origin).dot(plane.normal);
-        const result = {
-          parameters: [],
-          closests: [],
-          signedDistance: 0,
-          distance: 0,
-          planeClosestPoint: null
-        };
-        result.signedDistance = this.clone().dot(plane.normal) - plane.w;
-        result.distance = Math.abs(result.signedDistance);
-        result.planeClosestPoint = this.clone().sub(plane.normal.clone().multiplyScalar(result.signedDistance));
-        result.closests.push(this, result.planeClosestPoint);
-        return result;
-      }
-      /**
-       * 点与圆圈的距离
-       * @param {*} circle 
-       * @param {*} disk 
-       * @returns {} result
-       */
-
-
-      distanceCircle(circle) {
-        var result = {
-          parameters: [],
-          closests: [],
-          equidistant: false //是否等距
-
-        }; // Projection of P-C onto plane is Q-C = P-C - Dot(N,P-C)*N.
-
-        var PmC = this.clone().sub(circle.center);
-        var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
-        var lengthQmC = QmC.length();
-
-        if (lengthQmC > gPrecision) {
-          result.circleClosest = QmC.clone().multiplyScalar(circle.radius / lengthQmC).add(circle.center);
-          result.equidistant = false;
-        } else {
-          var offsetPoint = circle.center.clone().add(10, 10, 10);
-          var CP = offsetPoint.sub(circle.center);
-          var CQ = CP.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(CP))).normalize(); //在圆圈圆心的法线上，到圆圈上的没一点都相同 
-
-          result.circleClosest = CQ.clone().multiplyScalar(circle.radius).add(circle.center);
-          result.equidistant = true;
-        }
-
-        result.closests.push(this, result.circleClosest);
-        var diff = this.clone().sub(result.circleClosest);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-      * 点与圆盘的距离
-      * @param {*} circle 
-      * @param {*} disk 
-      * @returns {} result
-      */
-
-
-      distanceDisk(disk) {
-        var result = {
-          parameters: [],
-          closests: [],
-          signed: 1,
-          sqrDistance: 0,
-          distance: 0,
-          diskClosest: null
-        };
-        var PmC = this.clone().sub(disk.center);
-        var QmC = PmC.clone().sub(disk.normal.clone().multiplyScalar(disk.normal.dot(PmC)));
-        var lengthQmC = QmC.length();
-        result.signed = sign(this.clone().dot(disk.normal) - disk.w);
-
-        if (lengthQmC > disk.radius) {
-          result.diskClosest = QmC.clone().multiplyScalar(disk.radius / lengthQmC).add(disk.center);
-        } else {
-          var signedDistance = this.clone().dot(disk.normal) - disk.w;
-          result.diskClosest = this.clone().sub(disk.normal.clone().multiplyScalar(signedDistance));
-        }
-
-        result.closests.push(this, result.diskClosest);
-        var diff = this.clone().sub(result.diskClosest);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-       * 
-       * @param {Capsule} capsule 
-       */
-
-
-      distanceCapsule(capsule) {
-        var result = this.distanceSegment(capsule);
-        result.distance = result.distance - capsule.radius;
-        result.closest = this.clone().sub(result.segmentClosest).normalize().multiplyScalar(capsule.radius);
-        result.interior = result.distance < 0;
-        result.closests = [this, result.closest];
-        return result;
-      }
-
-      distanceTriangle(triangle) {
-        function GetMinEdge02(a11, b1, p) {
-          p[0] = 0;
-
-          if (b1 >= 0) {
-            p[1] = 0;
-          } else if (a11 + b1 <= 0) {
-            p[1] = 1;
-          } else {
-            p[1] = -b1 / a11;
-          }
-        }
-
-        function GetMinEdge12(a01, a11, b1, f10, f01, p) {
-          var h0 = a01 + b1 - f10;
-
-          if (h0 >= 0) {
-            p[1] = 0;
-          } else {
-            var h1 = a11 + b1 - f01;
-
-            if (h1 <= 0) {
-              p[1] = 1;
-            } else {
-              p[1] = h0 / (h0 - h1);
-            }
-          }
-
-          p[0] = 1 - p[1];
-        }
-
-        function GetMinInterior(p0, h0, p1, h1, p) {
-          var z = h0 / (h0 - h1);
-          p[0] = (1 - z) * p0[0] + z * p1[0];
-          p[1] = (1 - z) * p0[1] + z * p1[1];
-        }
-
-        var diff = this.clone().sub(triangle.p0);
-        var edge0 = triangle.p1.clone().sub(triangle.p0);
-        var edge1 = triangle.p2.clone().sub(triangle.p0);
-        var a00 = edge0.dot(edge0);
-        var a01 = edge0.dot(edge1);
-        var a11 = edge1.dot(edge1);
-        var b0 = -diff.dot(edge0);
-        var b1 = -diff.dot(edge1);
-        var f00 = b0;
-        var f10 = b0 + a00;
-        var f01 = b0 + a01;
-        var p0 = [0, 0],
-            p1 = [0, 0],
-            p = [0, 0];
-        var dt1, h0, h1;
-
-        if (f00 >= 0) {
-          if (f01 >= 0) {
-            // (1) p0 = (0,0), p1 = (0,1), H(z) = G(L(z))
-            GetMinEdge02(a11, b1, p);
-          } else {
-            // (2) p0 = (0,t10), p1 = (t01,1-t01),
-            // H(z) = (t11 - t10)*G(L(z))
-            p0[0] = 0;
-            p0[1] = f00 / (f00 - f01);
-            p1[0] = f01 / (f01 - f10);
-            p1[1] = 1 - p1[0];
-            dt1 = p1[1] - p0[1];
-            h0 = dt1 * (a11 * p0[1] + b1);
-
-            if (h0 >= 0) {
-              GetMinEdge02(a11, b1, p);
-            } else {
-              h1 = dt1 * (a01 * p1[0] + a11 * p1[1] + b1);
-
-              if (h1 <= 0) {
-                GetMinEdge12(a01, a11, b1, f10, f01, p);
-              } else {
-                GetMinInterior(p0, h0, p1, h1, p);
-              }
-            }
-          }
-        } else if (f01 <= 0) {
-          if (f10 <= 0) {
-            // (3) p0 = (1,0), p1 = (0,1),
-            // H(z) = G(L(z)) - F(L(z))
-            GetMinEdge12(a01, a11, b1, f10, f01, p);
-          } else {
-            // (4) p0 = (t00,0), p1 = (t01,1-t01), H(z) = t11*G(L(z))
-            p0[0] = f00 / (f00 - f10);
-            p0[1] = 0;
-            p1[0] = f01 / (f01 - f10);
-            p1[1] = 1 - p1[0];
-            h0 = p1[1] * (a01 * p0[0] + b1);
-
-            if (h0 >= 0) {
-              p = p0; // GetMinEdge01
-            } else {
-              h1 = p1[1] * (a01 * p1[0] + a11 * p1[1] + b1);
-
-              if (h1 <= 0) {
-                GetMinEdge12(a01, a11, b1, f10, f01, p);
-              } else {
-                GetMinInterior(p0, h0, p1, h1, p);
-              }
-            }
-          }
-        } else if (f10 <= 0) {
-          // (5) p0 = (0,t10), p1 = (t01,1-t01),
-          // H(z) = (t11 - t10)*G(L(z))
-          p0[0] = 0;
-          p0[1] = f00 / (f00 - f01);
-          p1[0] = f01 / (f01 - f10);
-          p1[1] = 1 - p1[0];
-          dt1 = p1[1] - p0[1];
-          h0 = dt1 * (a11 * p0[1] + b1);
-
-          if (h0 >= 0) {
-            GetMinEdge02(a11, b1, p);
-          } else {
-            h1 = dt1 * (a01 * p1[0] + a11 * p1[1] + b1);
-
-            if (h1 <= 0) {
-              GetMinEdge12(a01, a11, b1, f10, f01, p);
-            } else {
-              GetMinInterior(p0, h0, p1, h1, p);
-            }
-          }
-        } else {
-          // (6) p0 = (t00,0), p1 = (0,t11), H(z) = t11*G(L(z))
-          p0[0] = f00 / (f00 - f10);
-          p0[1] = 0;
-          p1[0] = 0;
-          p1[1] = f00 / (f00 - f01);
-          h0 = p1[1] * (a01 * p0[0] + b1);
-
-          if (h0 >= 0) {
-            p = p0; // GetMinEdge01
-          } else {
-            h1 = p1[1] * (a11 * p1[1] + b1);
-
-            if (h1 <= 0) {
-              GetMinEdge02(a11, b1, p);
-            } else {
-              GetMinInterior(p0, h0, p1, h1, p);
-            }
-          }
-        }
-
-        var result = {
-          parameter: [],
-          parameters: [],
-          closests: []
-        };
-        result.parameter[0] = 1 - p[0] - p[1];
-        result.parameter[1] = p[0];
-        result.parameter[2] = p[1];
-        result.closest = triangle.p0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1]));
-        result.parameters.push(0, result.rayParameter);
-        result.closests.push(this, result.closest);
-        diff = this.clone().sub(result.closest);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-       * 点到矩形的距离
-       * @param  {Rectangle} rectangle
-       */
-
-
-      distanceRectangle(rectangle) {
-        var result = {
-          rectangleParameter: [],
-          parameters: [],
-          closests: []
-        };
-        diff = rectangle.center - point;
-        var b0 = diff.dot(rectangle.axis[0]);
-        var b1 = diff.dot(rectangle.axis[1]);
-        var s0 = -b0,
-            s1 = -b1;
-        result.sqrDistance = diff.dot(diff);
-
-        if (s0 < -rectangle.extent[0]) {
-          s0 = -rectangle.extent[0];
-        } else if (s0 > rectangle.extent[0]) {
-          s0 = rectangle.extent[0];
-        }
-
-        result.sqrDistance += s0 * (s0 + 2 * b0);
-
-        if (s1 < -rectangle.extent[1]) {
-          s1 = -rectangle.extent[1];
-        } else if (s1 > rectangle.extent[1]) {
-          s1 = rectangle.extent[1];
-        }
-
-        result.sqrDistance += s1 * (s1 + 2 * b1); // Account for numerical round-off error.
-
-        if (result.sqrDistance < 0) {
-          result.sqrDistance = 0;
-        }
-
-        result.distance = Math.sqrt(result.sqrDistance);
-        result.rectangleParameter[0] = s0;
-        result.rectangleParameter[1] = s1;
-        result.rectangleClosestPoint = rectangle.center;
-
-        for (var i = 0; i < 2; ++i) {
-          result.rectangleClosestPoint.add(rectangle.axis[i].clone().multiplyScalar(result.rectangleParameter[i]));
-        }
-
-        result.closests.push(this, result.rectangleClosestPoint);
-        return result;
-      }
-
-      distancePolygon(Triangle) {}
-
-      distanceSphere(sphere) {
-        const result = {
-          parameters: [],
-          closests: []
-        };
-        result.distance = this.distanceTo(sphere.center) - sphere.radius;
-        result.closest = this.point.clone().sub(sphere.center).normalize().multiplyScalar(sphere.radius);
-        result.closests.push(this, result.closest);
-        return result;
-      } //---包含---------------------------------------------------------------
-
-
-      insideLine() {}
-
-      insideRay() {}
-
-      insideSegment() {}
-
-      insidePlane() {} //方位
-
-
-      orientationLine(lineormal = Vector3$1.UnitY) {}
-
-      orientationPlane() {}
-
-      orientationCircle() {}
-
-    }
-
-    /**
-     * 判断多边是否共线:
-     * 考虑情况点之间的距离应该大于最小容忍值
-     * @param  {...Point} ps 
-     * @returns {boolean} 
-     */
-
-    function pointsCollinear(...ps) {
-      ps.sort(XYZSort);
-      var sedir = ps[ps.length - 1].clone().sub(ps[0]);
-      var selen = ps[ps.length - 1].distanceTo(ps[0]);
-
-      for (let i = 1; i < ps.length - 1; i++) {
-        var ilens = ps[i].distanceTo(ps[0]);
-        var ilene = ps[i].distanceTo(ps[ps.length - 1]);
-
-        if (ilens < ilene) {
-          if (Math.abs(ps[i].clone().sub(ps[0]).dot(sedir) - selen * ilens) > gPrecision) return false;
-        } else {
-          if (Math.abs(ps[i].clone().sub(ps[ps.length - 1]).dot(sedir) - selen * ilene) > gPrecision) return false;
-        }
-      }
-
-      return true;
-    }
-
-    class Circle {
-      /**
-       * 圆圈
-       * @param  {Vector3} center 中心点
-       * @param  {Vector3} normal 法线
-       * @param  {Number} radius 半径
-       */
-      constructor(center, normal, radius) {
-        this.center = center || new Vector3$1();
-        this.normal = normal.normalize();
-        this.radius = radius || 0;
-      }
-
-      area() {
-        return Math.PI * this.radius * this.radius;
-      }
-
-    }
-    /**
-      * 圆圈生成方法
-      * @param  {Vector3} center 中心点
-      * @param  {Vector3} normal 法线
-      * @param  {Number} radius 半径
-      * @returns {Circle} circle 返回一个圆
-      */
-
-    function circle(center, normal, radius) {
-      return new Circle(center, normal, radius);
-    }
-    /**
-     * 三点计算圆 --low --debugging
-     * @param {Point} p0 点1
-     * @param {Point} p1 点2
-     * @param {Point} p2 点3
-     * @returns {Circle} circle 返回一个圆
-     */
-
-    function calcCircleFromThreePoint(p0, p1, p2) {
-      if (pointsCollinear(p1, p2, p3)) {
-        alert("calcCircleFromThreePoint：三点共线或者距离太近");
-      }
-
-      var d1 = p1.clone().sub(p0);
-      var d2 = p2.clone().sub(p0);
-      var d1center = p1.clone().add(p0).multiplyScalar(0.5);
-      var d2center = p2.clone().add(p0).multiplyScalar(0.5);
-      var normal = d1.clone().cross(d2).normalize();
-      d1.applyAxisAngle(normal, Math.PI / 2);
-      d2.applyAxisAngle(normal, Math.PI / 2);
-      var line1 = new Line(d1center, d1center.clone().add(d1));
-      var line2 = new Line(d2center, d2center.clone().add(d2));
-      var center = line1.distanceLine(line2).closestPoint[0];
-      var radius = d1.distanceTo(center);
-      return circle(center, radius);
-    } // vertical
-    // horizontal
-
-    class Disk {
-      constructor(center, normal, radius) {
-        this.center = center || v3();
-        this.normal = normal;
-        this.radius = radius || 0;
-        this.w = this.normal.dot(center);
-      }
-
-      area() {
-        return Math.PI * this.radius * this.radius;
-      }
-
-    }
-    function disk(center, radius) {
-      return new Disk(center, radius);
-    }
-
-    class Plane {
-      constructor(normal = Vector3$1.UnitZ, w = 0) {
-        this.normal = normal;
-        this.w = w;
-        this.origin = this.normal.clone().multiplyScalar(w); // this.w = this.normal.dot(this.origin)
-      }
-
-      setFromThreePoint(p0, p1, p2) {
-        this.normal = p1.clone().sub(p0).cross(p2.clone().sub(p0)).normalize();
-        this.w = p0.dot(this.normal);
-      }
-
-      negate() {
-        this.normal.negate();
-        this.w = -this.w;
-      }
-      /**
-       * 判断一个点在平面的正面或者反面
-       * @param  {Vector3} point
-       * @returns {Number} -1 or 1 or z
-       */
-
-
-      frontback(point) {
-        let value = this.normal.dot(point);
-        if (approximateEqual(value, 0)) return 0;
-        return sign(this.normal.dot(point));
-      }
-
-      distancePoint(point) {
-        return this.normal.dot(point) - this.w;
-      }
-
-      distanceRay(ray) {}
-
-      distanceLine(line) {}
-
-      distanceSegment(segment) {}
-
-      distancePlane(plane) {} //---Split-----------------------------------------
-
-      /**
-       * 切割线段
-       * @param {Segment} segment 
-       */
-
-
-      splitSegment(segment) {
-        const result = {
-          splits: [],
-          orientation: false
-        };
-        let orientation0 = this.orientationPoint(segment.p0);
-        let orientation1 = this.orientationPoint(segment.p1);
-        let orientation = orientation0 | orientation1;
-        result.orientation = orientation;
-
-        switch (orientation) {
-          case Orientation.Negative:
-            result.splits.push(null, segment.clone());
-            break;
-
-          case Orientation.Positive:
-            result.splits.push(segment.clone(), null);
-            break;
-
-          case Orientation.Intersect:
-            this.distanceSegment();
-            break;
-        }
-
-        return result;
-      }
-
-      splitTriangle(triangle) {
-        const result = {
-          splits: [],
-          orientation: false
-        };
-        let orientation0 = this.orientationPoint(segment.p0);
-        let orientation1 = this.orientationPoint(segment.p1);
-        let orientation = orientation0 | orientation1;
-        result.orientation = orientation;
-
-        switch (orientation) {
-          case Orientation.Negative:
-            result.splits.push(null, segment.clone());
-            break;
-
-          case Orientation.Positive:
-            result.splits.push(segment.clone(), null);
-            break;
-
-          case Orientation.Intersect:
-            this.distanceSegment();
-            break;
-        }
-
-        return result;
-      } //---orientation------------------------------
-
-      /**
-       * 点在平面的位置判断
-       * @param {Point} point 
-       * @returns {Orientation} 方位
-       */
-
-
-      orientationPoint(point) {
-        let signDistance = this.normal.clone().dot(point) - this.w;
-        if (Math.abs(signDistance) < gPrecision) return Orientation.Intersect;else if (signDistance < 0) return Orientation.Negative;else if (signDistance > 0) return Orientation.Positive;
-      }
-
-    }
-
-    class ArrayEx extends Array {
-      constructor(...args) {
-        super(...args);
-      }
-
-      get lastElement() {
-        return this.get(-1);
-      }
-
-      get(index) {
-        if (index < 0) index = this.length + index;
-        return this[index];
-      }
-      /**
-       * 深度优先遍历
-       * @param {*} method 
-       */
-
-
-      forall(method) {
-        for (let i = 0; i < this.length; i++) {
-          method(this[i]);
-          if (this[i] instanceof Array) this[i].forall(method);
-        }
-      }
-      /**
-      
-      clone() {
-          var result = new ArrayEx()
-          for (let i = 0; i < this.length; i++)
-          {
-              var ele = this[i];
-              if (ele instanceof Number || ele instanceof String)
-                  result[i] = ele;
-              else if (ele.clone)
-              {
-                  result[i] = ele.clone();
-              }
-              else
-                  throw ("数组有元素不能clone")
-          }
-          return result;
-      }
-      /**
-       * 分类
-       * example:
-       *      var arry = [1,2,3,4,5,6]
-       *      var result = classify(this,(a)={return a%2===0}) 
-       * 
-       * @param {Function} classifyMethod  分类方法
-       */
-
-
-      classify(classifyMethod) {
-        var result = [];
-
-        for (let i = 0; i < this.length; i++) {
-          for (let j = 0; j < result.length; j++) {
-            if (classifyMethod(this[i], result[j][0], result[j])) {
-              result[j].push(this[i]);
-            } else {
-              result.push([this[i]]);
-            }
-          }
-        }
-
-        return result;
-      }
-      /**
-       * 去掉重复元素 
-       * @param {Function} uniqueMethod  去重复
-       * @param {Function} sortMethod 排序
-       */
-
-
-      unique(uniqueMethod, sortMethod) {
-        if (sortMethod) {
-          this.sort(sortMethod);
-
-          for (let i = 0; i < this.length; i++) {
-            for (let j = i + 1; j < this.length; j++) {
-              if (uniqueMethod(this[i], this[j]) === true) {
-                this.splice(j, 1);
-                j--;
-              } else break;
-            }
-          }
-
-          return this;
-        }
-
-        for (let i = 0; i < this.length; i++) {
-          for (let j = i + 1; j < this.length; j++) {
-            if (uniqueMethod(this[i], this[j]) === true) {
-              this.splice(j, 1);
-              j--;
-            }
-          }
-        }
-
-        return this;
-      }
-
-    }
-
-    /**
-     *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
-     */
-
-    class Polyline extends ArrayEx {
-      constructor(vs, normal = v3(0, 1, 0)) {
-        super();
-        this.push(...vs);
-        this.isCoPlanar = true;
-        this.normal = normal;
-      }
-      /**
-       * 偏移
-       * @param {Number} distance  偏移距离  
-       * @param {Vector3} normal  折线所在平面法线
-       */
-
-
-      offset(distance, normal = this.normal) {
-        var offsetSign = sign(distance) > 0 ? Orientation.Positive : Orientation.Negative;
-        var direction = new Vector3$1();
-        var segments = []; //偏移过后的线段
-
-        for (let i = 0; i < this.length - 1; i++) {
-          const point = this[i];
-          const pointNext = this[i + 1];
-          var binormal = direction.sub(pointNext, point).normalize().cross(this.normal).normalize();
-          var offsetVector = binormal.clone().multiplyScalar(distance);
-          segments.push([offsetVector.clone().add(point), offsetVector.add(pointNext)]);
-        } //线段两两相交
-
-
-        for (let i = 0; i < segments.length; i++) {
-          const segi = segments[i];
-
-          for (let j = 0; j < segments.length; j++) {
-            if (i === j) continue;
-            const segj = segments[j];
-            var orien0 = segi.orientationSegment(segj.p0, normal);
-            var orien1 = segi.orientationSegment(segj.fixedPoint1, normal);
-            var orienInfo = orien0 | orien1;
-            var disRes = segi.distanceSegment(segj);
-
-            if (disRes.distance > gPrecision) {
-              if (orienInfo !== offsetSign) {
-                segments.splice(j, 1);
-                j--;
-              }
-            } else {
-              // 出现相交  那么就会有切割
-              var intersectPoit = disRes.closests[0]; //删除不要的部分
-            }
-          }
-        }
-
-        return new Polyline(this);
-      }
-      /**
-       * 圆角   将折线拐点圆角化
-       * @param {Number} useDistance 圆角段距离 
-       * @param {Number} segments 分切割段数
-       */
-
-
-      corner(useDistance, segments = 3, normal = this.normal, threshold = 0.1) {
-        var polyline = new Polyline();
-
-        for (let i = 0; i < this.length - 2; i++) {
-          polyline.push(p0);
-          const p0 = this[i];
-          const p1 = this[i + 1];
-          const p2 = this[i + 2];
-          var fixedPoint0 = p0.distanceTo(p1).length() <= useDistance * 2 ? p0.clone().add(p1).multiplyScalar(0.5) : p0.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
-          var fixedPoint1 = p2.distanceTo(p1).length() <= useDistance * 2 ? p2.clone().add(p1).multiplyScalar(0.5) : p2.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
-          polyline.push(fixedPoint0);
-          var binormal0 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2);
-          var binormal1 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2); //计算圆弧点
-
-          var line0 = new Line(fixedPoint0, binormal0.add(fixedPoint0));
-          var line1 = new Line(fixedPoint1, binormal1.add(fixedPoint1));
-          var center = line0.distanceLine(line1).closests[0]; //圆心
-
-          polyline.push(fixedPoint1);
-        }
-
-        return polyline;
-      }
-
-    }
-
-    /**
-     * 数组深度复制
-     * @param {Array} array 
-     */
-
-    function clone(array) {
-      var result = new Array();
-
-      for (let i = 0; i < array.length; i++) {
-        var ele = array[i];
-        if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
-          result[i] = ele.clone();
-        } else if (ele instanceof Array) result[i] = clone(ele);else throw "数组有元素不能clone";
-      }
-
-      return result;
-    }
-    /**
-     * 遍历多级数组中所有对象
-     * @param {Array} array 
-     * @param {Function} method 
-     */
-
-    function forall(array, method) {
-      for (let i = 0; i < array.length; i++) {
-        const ele = array[i];
-        method(ele);
-        if (Array.isArray(ele)) forall(ele, method);
-      }
-    }
-    /**
-     * 分类
-     * example:
-     *      var arry = [1,2,3,4,5,6]
-     *      var result = classify(array,(a)={return a%2===0})
-     * 
-     * @param {Array} array 
-     * @param {Function} classifyMethod  分类方法
-     */
-
-    function classify(array, classifyMethod) {
-      var result = [];
-
-      for (let i = 0; i < array.length; i++) {
-        for (let j = 0; j < result.length; j++) {
-          if (classifyMethod(array[i], result[j][0], result[j])) {
-            result[j].push(array[i]);
-          } else {
-            result.push([array[i]]);
-          }
-        }
-      }
-
-      return result;
-    }
-    /**
-     * 去掉重复元素
-     * @param {Array} array 
-     * @param {Function} uniqueMethod  去重复
-     * @param {Function} sortMethod 排序
-     */
-
-    function unique(array, uniqueMethod, sortMethod) {
-      if (sortMethod) {
-        array.sort(sortMethod);
-
-        for (let i = 0; i < array.length; i++) {
-          for (let j = i + 1; j < array.length; j++) {
-            if (uniqueMethod(array[i], array[j]) === true) {
-              array.splice(j, 1);
-              j--;
-            } else break;
-          }
-        }
-
-        return array;
-      }
-
-      for (let i = 0; i < array.length; i++) {
-        for (let j = i + 1; j < array.length; j++) {
-          if (uniqueMethod(array[i], array[j]) === true) {
-            array.splice(j, 1);
-            j--;
-          }
-        }
-      }
-
-      return array;
-    }
-
-    /**
-     * 点排序函数
-     * @param {Vector*} a 
-     * @param {Vector*} b
-     */
-
-
-    function vectorCompare(a, b) {
-      if (a.x === b.x) {
-        if (a.z !== undefined && a.y === b.y) return a.z - b.z;else return a.y - b.y;
-      } else return a.x - b.x;
-    }
-    /**
-     * 将向量拆解为数字
-     * @param {Array} points 
-     * @param {String} feature 
-     * @returns {Array<Number>} 数字数组
-     */
-
-    function verctorToNumbers(points, feature = "xyz") {
-      if (!(points instanceof Array)) {
-        console.error("传入参数必须是数组");
-        return;
-      }
-
-      var numbers = [];
-
-      if (points[0].x !== undefined && points[0].y !== undefined && points[0].z !== undefined) {
-        for (var i = 0; i < points.length; i++) {
-          for (let j = 0; j < feature.length; j++) {
-            numbers.push(points[i][feature[j]]);
-          }
-        }
-      } else if (points[0].x !== undefined && points[0].y !== undefined) for (var i = 0; i < points.length; i++) {
-        numbers.push(points[i].x);
-        numbers.push(points[i].y);
-      } else if (points[0] instanceof Array) {
-        for (var i = 0; i < points.length; i++) {
-          numbers = numbers.concat(verctorToNumbers(points[i]));
-        }
-      } else {
-        console.error("数组内部的元素不是向量");
-      }
-
-      return numbers;
-    }
-    /**
-     * 计算包围盒
-     * @param {*} points  点集
-     * @returns {Array[min,max]} 返回最小最大值
-     */
-
-    function boundingBox(points) {
-      this.min = new Vector3$1(+Infinity, +Infinity, +Infinity);
-      this.max = new Vector3$1(-Infinity, -Infinity, -Infinity);
-
-      for (let i = 0; i < points.length; i++) {
-        this.min.min(points[i]);
-        this.max.max(points[i]);
-      }
-
-      return [min, max];
-    }
-    /**
-     * 
-     * @param {*} points 
-     * @param {*} quaternion 
-     * @param {Boolean} ref 是否是引用
-     */
-
-    function applyQuaternion(points, quaternion, ref = true) {
-      if (ref) {
-        points.flat(Infinity).forEach(point => {
-          point.applyQuaternion(quaternion);
-        });
-        return points;
-      }
-
-      return applyQuaternion(clone(points));
-    }
-    /**
-     * 平移
-     * @param {*} points 
-     * @param {*} distance 
-     * @param {*} ref 
-     */
-
-    function translate(points, distance, ref = true) {
-      if (ref) {
-        points.flat(Infinity).forEach(point => {
-          point.add(distance);
-        });
-        return points;
-      }
-
-      return translate(clone(points));
-    }
-    /**
-     * 旋转
-     * @param {*} points 
-     * @param {*} axis 
-     * @param {*} angle 
-     * @param {*} ref 
-     */
-
-    function rotate(points, axis, angle, ref = true) {
-      return applyQuaternion(points, new Quaternion().setFromAxisAngle(axis, angle), ref);
-    }
-    /**
-     * 两个向量之间存在的旋转量来旋转点集
-     * @param {*} points 
-     * @param {*} axis 
-     * @param {*} angle 
-     * @param {*} ref 
-     */
-
-    function rotateByUnitVectors(points, vFrom, vTo, ref = true) {
-      return applyQuaternion(points, new Quaternion().setFromUnitVectors(vFrom, vTo), ref);
-    }
-    /**
-     * 缩放
-     * @param {*} points 
-     * @param {*} axis 
-     * @param {*} angle 
-     * @param {*} ref 
-     */
-
-    function scale(points, scale, ref = true) {
-      if (ref) {
-        points.flat(Infinity).forEach(point => {
-          point.scale.multiply(scale);
-        });
-        return points;
-      }
-
-      return scale(clone(points));
-    }
-    /**
-     * 响应矩阵
-     * @param {*} points 
-     * @param {*} axis 
-     * @param {*} angle 
-     * @param {*} ref 
-     */
-
-    function applyMatrix4(points, matrix, ref = true) {
-      if (ref) {
-        points.flat(Infinity).forEach(point => {
-          point.applyMatrix4(matrix);
-        });
-        return points;
-      }
-
-      return applyMatrix4(clone(points));
-    }
-    /**
-     * 简化点集数组，折线，路径
-     * @param {*} points 点集数组，折线，路径 ,继承Array
-     * @param {*} maxDistance  简化最大距离
-     * @param {*} maxAngle  简化最大角度
-     */
-
-    function simplifyPointList(points, maxDistance = 0.1, maxAngle = Math.PI / 180 * 5) {
-      for (let i = 0; i < points.length; i++) {
-        // 删除小距离
-        const P = points[i];
-        const nextP = points[i + 1];
-
-        if (P.distanceTo(nextP) < maxDistance) {
-          if (i === 0) points.remove(i + 1, 1);else if (i === points.length - 2) points.splice(i, 1);else {
-            points.splice(i, 2, P.clone().add(nextP).multiplyScalar(0.5));
-          }
-          i--;
-        }
-      }
-
-      for (let i = 1; i < points.length - 1; i++) {
-        // 删除小小角度
-        const preP = points[i - 1];
-        const P = points[i];
-        const nextP = points[i + 1];
-
-        if (Math.acos(P.clone().sub(preP).normalize().dot(nextP.clone().sub(P).normalize())) < maxAngle) {
-          points.splice(i, 1);
-          i--;
-        }
-      }
-
-      return points;
-    }
-    /**
-     * 以某个平面生成对称镜像
-     * @param {*} points  点集
-     * @param {*} plane 对称镜像平面
-     */
-
-    function reverseOnPlane(points, plane) {}
-    /**
-     * 投影到平面
-     * @param {*} points 点集
-     * @param {*} plane  投影平面
-     * @param {*} projectDirect  默认是法线的方向
-     */
-
-    function projectOnPlane(points, plane, projectDirect) {
-      return points;
-    }
-    /**
-     * 计算共面点集所在的平面
-     * @param {Array<Vector3|Point>} points 
-     */
-
-    function recognitionPlane(points) {
-      points.sort(vectorCompare);
-      var line = new Line(points[0], points.get(-1));
-      var maxDistance = -Infinity;
-      var ipos = -1;
-
-      for (let i = 1; i < points.length - 1; i++) {
-        const pt = points[i];
-        var distance = line.distancePoint(pt).distance;
-
-        if (distance > maxDistance) {
-          maxDistance = distance;
-          ipos = i;
-        }
-      }
-
-      var plane = new Plane();
-      plane.setFromThreePoint(points[0], points.get(-1), points[ipos]);
-      return plane;
-    }
-    /** 
-     * 判断所有点是否在同一个平面
-     * @param {Array<Vector3|Point>} points 
-     * @param {*} precision 
-     * @returns {Boolean|Plane} 如果在同一个平面返回所在平面，否则返回false 
-     */
-
-    function isInOnePlane(points, precision = gPrecision) {
-      var plane = recognitionPlane(points);
-
-      for (let i = 0; i < points.length; i++) {
-        const pt = points[i];
-        if (plane.distancePoint(pt) >= precision) return false;
-      }
-
-      return plane;
-    } // export function
-
-    class Polygon extends Polyline {
-      constructor() {
-        super();
-      }
-
-      offset() {}
-
-    }
-    /**
-     * robust 识别出点集或者多边形的法线
-     * @param {Polygon|Array<Point|Vector3>} points 
-     * @returns {Vector3} 法线
-     */
-
-    function recognitionPolygonNormal(points) {
-      var len = points.length;
-      var minV = +Infinity;
-      var minVIndex = -1;
-
-      for (let i = 0; i < len + 2; i++) {
-        var p0 = points[i % len];
-        var p1 = points[(i + 1) % len];
-        var p2 = points[(i + 2) % len];
-        var dotv = Math.abs(p1.clone().sub(p0).normalize().dot(p2.clone().sub(p1).normalize()));
-
-        if (minV > dotv) {
-          dotv = minV;
-          minVIndex = i;
-        }
-      }
-
-      var p0 = points[(minVIndex - 1 + len) % len];
-      var p1 = points[minVIndex % len];
-      var p2 = points[(minVIndex + 1) % len];
-      return p1.clone().sub(p0).cross(p2.clone().sub(p1)).normalize(); //
-      // const newPoints = [...points];
-      // newPoints.sort(vectorCompare);
-      // var line = new Line(newPoints[0], newPoints.get(-1));
-      // var point = new Point();
-      // var maxDistance = -Infinity;
-      // var maxDistanceP = null;
-      // for (let i = 0; i < len; i++)
-      // {
-      //     point.copy(points[i]);
-      //     var distance = point.distanceLinePureSq(line);
-      //     if (distance > maxDistance)
-      //     {
-      //         maxDistance = distance;
-      //         maxDistanceP = points[i];
-      //     }
-      // }
-      // var d1 = maxDistanceP.clone().sub(newPoints[0])
-      // var d2 = maxDistanceP.clone().sub(newPoints.get(-1))
-      // var normal = d1.cross(d2);
-    }
-
-    class Ray {
-      constructor(origin, direction) {
-        this.origin = origin;
-        this.direction = direction.normalize();
-      }
-      /**
-       * 射线到射线的距离
-       * @param  {Ray} ray
-       */
-
-
-      distanceRay(ray) {
-        var result = {
-          parameters: [],
-          closests: [],
-          sqrDistance: 0,
-          distance: 0
-        };
-        var diff = this.origin.clone().sub(ray.origin);
-        var a01 = -this.direction.dot(ray.direction);
-        var b0 = diff.dot(this.direction),
-            b1;
-        var s0, s1;
-
-        if (Math.abs(a01) < 1) {
-          // 射线不平行
-          b1 = -diff.dot(ray.direction);
-          s0 = a01 * b1 - b0;
-          s1 = a01 * b0 - b1;
-
-          if (s0 >= 0) {
-            if (s1 >= 0) // region 0 (interior)
-              {
-                // Minimum at two interior points of rays.
-                var det = 1 - a01 * a01;
-                s0 /= det;
-                s1 /= det;
-              } else // region 3 (side)
-              {
-                s1 = 0;
-
-                if (b0 >= 0) {
-                  s0 = 0;
-                } else {
-                  s0 = -b0;
-                }
-              }
-          } else {
-            if (s1 >= 0) // region 1 (side)
-              {
-                s0 = 0;
-
-                if (b1 >= 0) {
-                  s1 = 0;
-                } else {
-                  s1 = -b1;
-                }
-              } else // region 2 (corner)
-              {
-                if (b0 < 0) {
-                  s0 = -b0;
-                  s1 = 0;
-                } else {
-                  s0 = 0;
-
-                  if (b1 >= 0) {
-                    s1 = 0;
-                  } else {
-                    s1 = -b1;
-                  }
-                }
-              }
-          }
-        } else {
-          // Rays are parallel.
-          if (a01 > 0) {
-            // Opposite direction vectors.
-            s1 = 0;
-
-            if (b0 >= 0) {
-              s0 = 0;
-            } else {
-              s0 = -b0;
-            }
-          } else {
-            // Same direction vectors.
-            if (b0 >= 0) {
-              b1 = -diff.dot(ray.direction);
-              s0 = 0;
-              s1 = -b1;
-            } else {
-              s0 = -b0;
-              s1 = 0;
-            }
-          }
-        }
-
-        result.parameters[0] = s0;
-        result.parameters[1] = s1;
-        result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-        result.closests[1] = ray.direction.clone().multiplyScalar(s1).add(ray.origin);
-        diff = result.closests[0].clone().sub(result.closests[1]);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-      /**
-       * 射线与线段的距离
-       * @param {Segment} segment 
-       */
-
-
-      distanceSegment(segment) {
-        const result = {
-          parameters: [],
-          closests: [],
-          sqrDistance: 0,
-          distance: 0
-        }; // segment.GetCenteredForm(segCenter, segDirection, segExtent);
-
-        var segCenter = segment.center;
-        var segDirection = segment.direction;
-        var segExtent = segment.len * 0.5;
-        var diff = this.origin.clone().sub(segCenter);
-        var a01 = -this.direction.dot(segDirection);
-        var b0 = diff.dot(this.direction);
-        var s0, s1;
-
-        if (Math.abs(a01) < 1) {
-          // The ray and segment are not parallel.
-          var det = 1 - a01 * a01;
-          var extDet = segExtent * det;
-          var b1 = -diff.dot(segDirection);
-          s0 = a01 * b1 - b0;
-          s1 = a01 * b0 - b1;
-
-          if (s0 >= 0) {
-            if (s1 >= -extDet) {
-              if (s1 <= extDet) // region 0
-                {
-                  // Minimum at interior points of ray and segment.
-                  s0 /= det;
-                  s1 /= det;
-                } else // region 1
-                {
-                  s1 = segExtent;
-                  s0 = Math.max(-(a01 * s1 + b0), 0);
-                }
-            } else // region 5
-              {
-                s1 = -segExtent;
-                s0 = Math.max(-(a01 * s1 + b0), 0);
-              }
-          } else {
-            if (s1 <= -extDet) // region 4
-              {
-                s0 = -(-a01 * segExtent + b0);
-
-                if (s0 > 0) {
-                  s1 = -segExtent;
-                } else {
-                  s0 = 0;
-                  s1 = -b1;
-
-                  if (s1 < -segExtent) {
-                    s1 = -segExtent;
-                  } else if (s1 > segExtent) {
-                    s1 = segExtent;
-                  }
-                }
-              } else if (s1 <= extDet) // region 3
-              {
-                s0 = 0;
-                s1 = -b1;
-
-                if (s1 < -segExtent) {
-                  s1 = -segExtent;
-                } else if (s1 > segExtent) {
-                  s1 = segExtent;
-                }
-              } else // region 2
-              {
-                s0 = -(a01 * segExtent + b0);
-
-                if (s0 > 0) {
-                  s1 = segExtent;
-                } else {
-                  s0 = 0;
-                  s1 = -b1;
-
-                  if (s1 < -segExtent) {
-                    s1 = -segExtent;
-                  } else if (s1 > segExtent) {
-                    s1 = segExtent;
-                  }
-                }
-              }
-          }
-        } else {
-          // Ray and segment are parallel.
-          if (a01 > 0) {
-            // Opposite direction vectors.
-            s1 = -segExtent;
-          } else {
-            // Same direction vectors.
-            s1 = segExtent;
-          }
-
-          s0 = Math.max(-(a01 * s1 + b0), 0);
-        }
-
-        result.parameters[0] = s0;
-        result.parameters[1] = s1;
-        result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
-        result.closests[1] = segDirection.clone().multiplyScalar(s1).add(segCenter);
-        diff = result.closests[0].clone().sub(result.closests[1]);
-        result.sqrDistance = diff.dot(diff);
-        result.distance = Math.sqrt(result.sqrDistance);
-        return result;
-      }
-
-      distanceTriangle(triangle) {
-        const result = {
-          parameters: [],
-          closests: [],
-          triangleParameter: [],
-          sqrDistance: 0,
-          distance: 0
-        };
-        var line = new Line(this.origin, this.origin.clone().add(this.direction)); // DCPQuery < Real, Line3 < Real >, Triangle3 < Real >> ltQuery;
-
-        var ltResult = line.distanceTriangle(triangle);
-
-        if (ltResult.lineParameter >= 0) {
-          //最近点在直线前半部分部分，涉嫌方向
-          result.distance = ltResult.distance;
-          result.sqrDistance = ltResult.sqrDistance;
-          result.rayParameter = ltResult.lineParameter;
-          result.triangleParameter[0] = ltResult.triangleParameter[0];
-          result.triangleParameter[1] = ltResult.triangleParameter[1];
-          result.triangleParameter[2] = ltResult.triangleParameter[2];
-          result.closests[0] = ltResult.closests[0];
-          result.closests[1] = ltResult.closests[1];
-        } else {
-          var ptResult = new Point().copy(this.origin).distanceTriangle(triangle);
-          result.distance = ptResult.distance;
-          result.sqrDistance = ptResult.sqrDistance;
-          result.rayParameter = 0;
-          result.triangleParameter[0] = ptResult.parameter[0];
-          result.triangleParameter[1] = ptResult.parameter[1];
-          result.triangleParameter[2] = ptResult.parameter[2];
-          result.closests[0] = this.origin;
-          result.closests[1] = ptResult.closest;
-        }
-
-        return result;
-      }
-      /**
-       * 直线到直线的距离
-       * @param  {Ray} ray
-       */
-
-
-      distanceLine(line) {}
-
-    }
-
-    function fromTwoPoint(orgin, point) {
-      return new Ray(orgin, point.sub(orgin));
-    }
-
-    function ray(orgin, direction) {
-      return new Ray(orgin, direction);
-    }
-
-    class Sphere {
-      constructor(center, radius) {
-        this.center = center;
-        this.radius = radius;
-      }
-
-    }
-
-    class Triangle extends ArrayEx {
-      constructor(v0, v1, v2) {
-        super();
-        this.push(v0, v1, v2);
-      }
-
-      get p0() {
-        return this[0];
-      }
-
-      get p1() {
-        return this[1];
-      }
-
-      get p2() {
-        return this[2];
-      }
-
-      distancePoint(point) {}
-
-      distanceLine(line) {}
-
-      distanceRay(ray) {}
-
-      distanceSegment(segment) {}
-
-    }
-
-    class Path extends Polyline {
-      constructor(vs = []) {
-        super(vs);
-        this.init();
-      }
-
-      init() {
-        if (this.length === 0) return;
-        this[0].len = 0;
-        this[0].tlen = 0;
-        this[0].direction = this[1].clone().sub(this[0]).normalize();
-
-        for (let i = 1; i < this.length; i++) {
-          const e = this[i];
-          e.len = this[i].distanceTo(this[i - 1]);
-          e.tlen = this[i - 1].tlen + e.len;
-          this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
-        }
-      }
-
-      get tlen() {
-        if (this.length === 0) return 0;
-        return Math.max(this.get(-1).tlen, this[0].tlen);
-      }
-      /**
-       * 截取一段从from到to的path
-       * @param {Number} from 
-       * @param {Number} to
-       */
-
-
-      splitByFromToDistance(from = 0, to = 0) {
-        if (to <= from) return null;
-        var newPath = new Path([]);
-
-        for (let i = 0; i < this.length - 1; i++) {
-          const pt = this[i];
-          const ptnext = this[i + 1];
-
-          if (pt.tlen <= from && ptnext.tlen >= from) {
-            var v3 = new Vector3$1().lerpVectors(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
-            newPath.add(v3);
-          }
-
-          if (pt.tlen > from && pt.tlen < to) {
-            newPath.add(pt.clone());
-            return data;
-          }
-
-          if (pt.tlen <= to && ptnext.tlen >= to) {
-            var v3 = new Vector3$1().lerpVectors(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
-            newPath.add(v3);
-            return newPath;
-          }
-        }
-
-        return newPath;
-      }
-      /**
-       * 从起点出发到距离等于distance位置  的坐标 二分查找
-       * @param {Number} distance
-       */
-
-
-      getPointByDistance(arg_distance, left = 0, right = this.length - 1) {
-        const distance = clamp(arg_distance, 0, this.get(-1).tlen);
-        if (distance !== arg_distance) return null;
-
-        if (right - left === 1) {
-          return {
-            position: left,
-            isNode: false,
-            //是否在节点上
-            point: new Vector3$1().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
-          };
-        }
-
-        var mid = left + right >> 1;
-        if (this[mid].tlen > distance) return this.getPointByDistanceEx(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistanceEx(distance, mid, right);else return {
-          position: mid,
-          isNode: true,
-          //是否在节点上
-          point: new Vector3$1().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len)
-        };
-      }
-      /**
-       * 从起点出发到距离等于distance位置  的坐标 二分查找
-       * @param {Number} distance 
-       */
-
-
-      getPointByDistancePure(arg_distance, left = 0, right = this.length - 1) {
-        const distance = clamp(arg_distance, 0, this.get(-1).tlen);
-        if (distance !== arg_distance) return null;
-
-        if (right - left === 1) {
-          debugger;
-          return new Vector3$1().lerpVectors(this[left], this[right], (distance - this[left].tlen) / this[right].len);
-        }
-
-        var mid = left + right >> 1;
-        if (this[mid].tlen > distance) return this.getPointByDistanceEx(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistanceEx(distance, mid, right);else return this[mid].clone();
-      }
-      /**
-       * 平均切割为 splitCount 段
-       * @param {Number} splitCount 
-       * @returns {Path} 新的path
-       */
-
-
-      splitAverage(splitCount) {
-        var tlen = this.lastElement.tlen;
-        var perlen = tlen / splitCount;
-        var res = [];
-        var curJ = 0;
-
-        for (var i = 0; i <= splitCount; i++) {
-          var plen = i * perlen;
-
-          for (let j = curJ; j < this.length - 1; j++) {
-            if (this[j].tlen <= plen && this[j + 1].tlen >= plen) {
-              var p = new Vector3$1().lerpVectors(this[j], this[j + 1], (plen - this[j].tlen) / this[j + 1].len);
-              res.push(p);
-              curJ = j;
-              break;
-            }
-          }
-        }
-
-        return new Path(res);
-      }
-      /**
-       * 通过测试
-      * 平均切割为 splitCount 段
-      * @param {Number} splitCount 
-      * @returns {Path} 新的path
-      */
-
-
-      splitAverageLength(splitLength) {
-        var tlen = this.lastElement.tlen;
-        var count = tlen / splitLength;
-        return this.splitAverage(count);
-      }
-      /**
-       * 
-       * @param  {...any} ps 
-       */
-
-
-      add(...ps) {
-        if (this.length == 0) {
-          const firstpt = ps.shift();
-          this.push(firstpt);
-          this[0].len = 0;
-          this[0].tlen = 0;
-        }
-
-        for (let i = 0; i < ps.length; i++) {
-          const pt = ps[i];
-          pt.len = pt.distanceTo(this.get(-1));
-          pt.tlen = this.get(-1).tlen + pt.len;
-          pt.direction = pt.clone().sub(this.get(-1)).normalize();
-          if (!this.get(-1).direction) this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();else this.get(-1).direction.copy(pt.direction);
-          this.push(pt);
-        }
-      }
-
-    }
-
-    function indexable(obj, refIndexInfo = {
-      index: 0
-    }, force = false) {
-      if (obj instanceof Array) {
-        for (var i = 0; i < obj.length; i++) indexable(obj[i], refIndexInfo);
-      } else if (obj instanceof Object) {
-        if (obj.index === undefined) obj.index = refIndexInfo.index++;else if (force) obj.index = refIndexInfo.index++;
-      }
-    }
-    function triangListToBuffer(vertices, triangleList) {
-      indexable(triangleList);
-      var indices = [];
-      triangleList.forall(v => {
-        indices.push(v.index);
-      });
-      return toBuffer(vertices, indices);
-    }
-    /**
-     * 
-     * @param {Array<Verctor3|Number>} vertices 
-     * @param {Array<Number>} indices
-     * @param {Array<Verctor2|Number>} uvs
-     */
-
-    function toBuffer(inVertices, indices, inUvs = []) {
-      var vertices = [];
-
-      if (inVertices[0] instanceof Vector3$1) {
-        for (let i = 0; i < inVertices.length; i++) {
-          const v = inVertices[i];
-          vertices.push(v.x, v.y, v.z);
-        }
-      } else {
-        vertices = inVertices;
-      }
-
-      var uvs = [];
-
-      if (inUvs.length > 0 && inUvs[0] instanceof Vector2) {
-        for (let i = 0; i < inUvs.length; i++) {
-          const uv = inVertices[i];
-          uvs.push(uv.x, uv.y);
-        }
-      } else {
-        uvs = inUvs;
-      }
-
-      var verticesBuffer = new Float32Array(vertices);
-      var uvsBuffer = new Float32Array(uvs.length === 0 ? vertices.length / 3 * 2 : uvs);
-      var indicesBuffer = new (verticesBuffer.length / 3 > 65535 ? Uint32Array : Uint16Array)(indices);
-      return {
-        verticesBuffer,
-        uvsBuffer,
-        indicesBuffer
-      };
-    }
-
-    var earcut_1 = earcut;
-    var default_1 = earcut;
-
-    function earcut(data, holeIndices, dim) {
-
-        dim = dim || 2;
-
-        var hasHoles = holeIndices && holeIndices.length,
-            outerLen = hasHoles ? holeIndices[0] * dim : data.length,
-            outerNode = linkedList(data, 0, outerLen, dim, true),
-            triangles = [];
-
-        if (!outerNode || outerNode.next === outerNode.prev) return triangles;
-
-        var minX, minY, maxX, maxY, x, y, invSize;
-
-        if (hasHoles) outerNode = eliminateHoles(data, holeIndices, outerNode, dim);
-
-        // if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
-        if (data.length > 80 * dim) {
-            minX = maxX = data[0];
-            minY = maxY = data[1];
-
-            for (var i = dim; i < outerLen; i += dim) {
-                x = data[i];
-                y = data[i + 1];
-                if (x < minX) minX = x;
-                if (y < minY) minY = y;
-                if (x > maxX) maxX = x;
-                if (y > maxY) maxY = y;
-            }
-
-            // minX, minY and invSize are later used to transform coords into integers for z-order calculation
-            invSize = Math.max(maxX - minX, maxY - minY);
-            invSize = invSize !== 0 ? 1 / invSize : 0;
-        }
-
-        earcutLinked(outerNode, triangles, dim, minX, minY, invSize);
-
-        return triangles;
-    }
-
-    // create a circular doubly linked list from polygon points in the specified winding order
-    function linkedList(data, start, end, dim, clockwise) {
-        var i, last;
-
-        if (clockwise === (signedArea(data, start, end, dim) > 0)) {
-            for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], last);
-        } else {
-            for (i = end - dim; i >= start; i -= dim) last = insertNode(i, data[i], data[i + 1], last);
-        }
-
-        if (last && equals(last, last.next)) {
-            removeNode(last);
-            last = last.next;
-        }
-
-        return last;
-    }
-
-    // eliminate colinear or duplicate points
-    function filterPoints(start, end) {
-        if (!start) return start;
-        if (!end) end = start;
-
-        var p = start,
-            again;
-        do {
-            again = false;
-
-            if (!p.steiner && (equals(p, p.next) || area(p.prev, p, p.next) === 0)) {
-                removeNode(p);
-                p = end = p.prev;
-                if (p === p.next) break;
-                again = true;
-
-            } else {
-                p = p.next;
-            }
-        } while (again || p !== end);
-
-        return end;
-    }
-
-    // main ear slicing loop which triangulates a polygon (given as a linked list)
-    function earcutLinked(ear, triangles, dim, minX, minY, invSize, pass) {
-        if (!ear) return;
-
-        // interlink polygon nodes in z-order
-        if (!pass && invSize) indexCurve(ear, minX, minY, invSize);
-
-        var stop = ear,
-            prev, next;
-
-        // iterate through ears, slicing them one by one
-        while (ear.prev !== ear.next) {
-            prev = ear.prev;
-            next = ear.next;
-
-            if (invSize ? isEarHashed(ear, minX, minY, invSize) : isEar(ear)) {
-                // cut off the triangle
-                triangles.push(prev.i / dim);
-                triangles.push(ear.i / dim);
-                triangles.push(next.i / dim);
-
-                removeNode(ear);
-
-                // skipping the next vertex leads to less sliver triangles
-                ear = next.next;
-                stop = next.next;
-
-                continue;
-            }
-
-            ear = next;
-
-            // if we looped through the whole remaining polygon and can't find any more ears
-            if (ear === stop) {
-                // try filtering points and slicing again
-                if (!pass) {
-                    earcutLinked(filterPoints(ear), triangles, dim, minX, minY, invSize, 1);
-
-                // if this didn't work, try curing all small self-intersections locally
-                } else if (pass === 1) {
-                    ear = cureLocalIntersections(filterPoints(ear), triangles, dim);
-                    earcutLinked(ear, triangles, dim, minX, minY, invSize, 2);
-
-                // as a last resort, try splitting the remaining polygon into two
-                } else if (pass === 2) {
-                    splitEarcut(ear, triangles, dim, minX, minY, invSize);
-                }
-
-                break;
-            }
-        }
-    }
-
-    // check whether a polygon node forms a valid ear with adjacent nodes
-    function isEar(ear) {
-        var a = ear.prev,
-            b = ear,
-            c = ear.next;
-
-        if (area(a, b, c) >= 0) return false; // reflex, can't be an ear
-
-        // now make sure we don't have other points inside the potential ear
-        var p = ear.next.next;
-
-        while (p !== ear.prev) {
-            if (pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                area(p.prev, p, p.next) >= 0) return false;
-            p = p.next;
-        }
-
-        return true;
-    }
-
-    function isEarHashed(ear, minX, minY, invSize) {
-        var a = ear.prev,
-            b = ear,
-            c = ear.next;
-
-        if (area(a, b, c) >= 0) return false; // reflex, can't be an ear
-
-        // triangle bbox; min & max are calculated like this for speed
-        var minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x),
-            minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y),
-            maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x),
-            maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
-
-        // z-order range for the current triangle bbox;
-        var minZ = zOrder(minTX, minTY, minX, minY, invSize),
-            maxZ = zOrder(maxTX, maxTY, minX, minY, invSize);
-
-        var p = ear.prevZ,
-            n = ear.nextZ;
-
-        // look for points inside the triangle in both directions
-        while (p && p.z >= minZ && n && n.z <= maxZ) {
-            if (p !== ear.prev && p !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                area(p.prev, p, p.next) >= 0) return false;
-            p = p.prevZ;
-
-            if (n !== ear.prev && n !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-                area(n.prev, n, n.next) >= 0) return false;
-            n = n.nextZ;
-        }
-
-        // look for remaining points in decreasing z-order
-        while (p && p.z >= minZ) {
-            if (p !== ear.prev && p !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                area(p.prev, p, p.next) >= 0) return false;
-            p = p.prevZ;
-        }
-
-        // look for remaining points in increasing z-order
-        while (n && n.z <= maxZ) {
-            if (n !== ear.prev && n !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-                area(n.prev, n, n.next) >= 0) return false;
-            n = n.nextZ;
-        }
-
-        return true;
-    }
-
-    // go through all polygon nodes and cure small local self-intersections
-    function cureLocalIntersections(start, triangles, dim) {
-        var p = start;
-        do {
-            var a = p.prev,
-                b = p.next.next;
-
-            if (!equals(a, b) && intersects(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
-
-                triangles.push(a.i / dim);
-                triangles.push(p.i / dim);
-                triangles.push(b.i / dim);
-
-                // remove two nodes involved
-                removeNode(p);
-                removeNode(p.next);
-
-                p = start = b;
-            }
-            p = p.next;
-        } while (p !== start);
-
-        return filterPoints(p);
-    }
-
-    // try splitting polygon into two and triangulate them independently
-    function splitEarcut(start, triangles, dim, minX, minY, invSize) {
-        // look for a valid diagonal that divides the polygon into two
-        var a = start;
-        do {
-            var b = a.next.next;
-            while (b !== a.prev) {
-                if (a.i !== b.i && isValidDiagonal(a, b)) {
-                    // split the polygon in two by the diagonal
-                    var c = splitPolygon(a, b);
-
-                    // filter colinear points around the cuts
-                    a = filterPoints(a, a.next);
-                    c = filterPoints(c, c.next);
-
-                    // run earcut on each half
-                    earcutLinked(a, triangles, dim, minX, minY, invSize);
-                    earcutLinked(c, triangles, dim, minX, minY, invSize);
-                    return;
-                }
-                b = b.next;
-            }
-            a = a.next;
-        } while (a !== start);
-    }
-
-    // link every hole into the outer loop, producing a single-ring polygon without holes
-    function eliminateHoles(data, holeIndices, outerNode, dim) {
-        var queue = [],
-            i, len, start, end, list;
-
-        for (i = 0, len = holeIndices.length; i < len; i++) {
-            start = holeIndices[i] * dim;
-            end = i < len - 1 ? holeIndices[i + 1] * dim : data.length;
-            list = linkedList(data, start, end, dim, false);
-            if (list === list.next) list.steiner = true;
-            queue.push(getLeftmost(list));
-        }
-
-        queue.sort(compareX);
-
-        // process holes from left to right
-        for (i = 0; i < queue.length; i++) {
-            eliminateHole(queue[i], outerNode);
-            outerNode = filterPoints(outerNode, outerNode.next);
-        }
-
-        return outerNode;
-    }
-
-    function compareX(a, b) {
-        return a.x - b.x;
-    }
-
-    // find a bridge between vertices that connects hole with an outer ring and and link it
-    function eliminateHole(hole, outerNode) {
-        outerNode = findHoleBridge(hole, outerNode);
-        if (outerNode) {
-            var b = splitPolygon(outerNode, hole);
-            filterPoints(b, b.next);
-        }
-    }
-
-    // David Eberly's algorithm for finding a bridge between hole and outer polygon
-    function findHoleBridge(hole, outerNode) {
-        var p = outerNode,
-            hx = hole.x,
-            hy = hole.y,
-            qx = -Infinity,
-            m;
-
-        // find a segment intersected by a ray from the hole's leftmost point to the left;
-        // segment's endpoint with lesser x will be potential connection point
-        do {
-            if (hy <= p.y && hy >= p.next.y && p.next.y !== p.y) {
-                var x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
-                if (x <= hx && x > qx) {
-                    qx = x;
-                    if (x === hx) {
-                        if (hy === p.y) return p;
-                        if (hy === p.next.y) return p.next;
-                    }
-                    m = p.x < p.next.x ? p : p.next;
-                }
-            }
-            p = p.next;
-        } while (p !== outerNode);
-
-        if (!m) return null;
-
-        if (hx === qx) return m; // hole touches outer segment; pick leftmost endpoint
-
-        // look for points inside the triangle of hole point, segment intersection and endpoint;
-        // if there are no points found, we have a valid connection;
-        // otherwise choose the point of the minimum angle with the ray as connection point
-
-        var stop = m,
-            mx = m.x,
-            my = m.y,
-            tanMin = Infinity,
-            tan;
-
-        p = m;
-
-        do {
-            if (hx >= p.x && p.x >= mx && hx !== p.x &&
-                    pointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
-
-                tan = Math.abs(hy - p.y) / (hx - p.x); // tangential
-
-                if (locallyInside(p, hole) &&
-                    (tan < tanMin || (tan === tanMin && (p.x > m.x || (p.x === m.x && sectorContainsSector(m, p)))))) {
-                    m = p;
-                    tanMin = tan;
-                }
-            }
-
-            p = p.next;
-        } while (p !== stop);
-
-        return m;
-    }
-
-    // whether sector in vertex m contains sector in vertex p in the same coordinates
-    function sectorContainsSector(m, p) {
-        return area(m.prev, m, p.prev) < 0 && area(p.next, m, m.next) < 0;
-    }
-
-    // interlink polygon nodes in z-order
-    function indexCurve(start, minX, minY, invSize) {
-        var p = start;
-        do {
-            if (p.z === null) p.z = zOrder(p.x, p.y, minX, minY, invSize);
-            p.prevZ = p.prev;
-            p.nextZ = p.next;
-            p = p.next;
-        } while (p !== start);
-
-        p.prevZ.nextZ = null;
-        p.prevZ = null;
-
-        sortLinked(p);
-    }
-
-    // Simon Tatham's linked list merge sort algorithm
-    // http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
-    function sortLinked(list) {
-        var i, p, q, e, tail, numMerges, pSize, qSize,
-            inSize = 1;
-
-        do {
-            p = list;
-            list = null;
-            tail = null;
-            numMerges = 0;
-
-            while (p) {
-                numMerges++;
-                q = p;
-                pSize = 0;
-                for (i = 0; i < inSize; i++) {
-                    pSize++;
-                    q = q.nextZ;
-                    if (!q) break;
-                }
-                qSize = inSize;
-
-                while (pSize > 0 || (qSize > 0 && q)) {
-
-                    if (pSize !== 0 && (qSize === 0 || !q || p.z <= q.z)) {
-                        e = p;
-                        p = p.nextZ;
-                        pSize--;
-                    } else {
-                        e = q;
-                        q = q.nextZ;
-                        qSize--;
-                    }
-
-                    if (tail) tail.nextZ = e;
-                    else list = e;
-
-                    e.prevZ = tail;
-                    tail = e;
-                }
-
-                p = q;
-            }
-
-            tail.nextZ = null;
-            inSize *= 2;
-
-        } while (numMerges > 1);
-
-        return list;
-    }
-
-    // z-order of a point given coords and inverse of the longer side of data bbox
-    function zOrder(x, y, minX, minY, invSize) {
-        // coords are transformed into non-negative 15-bit integer range
-        x = 32767 * (x - minX) * invSize;
-        y = 32767 * (y - minY) * invSize;
-
-        x = (x | (x << 8)) & 0x00FF00FF;
-        x = (x | (x << 4)) & 0x0F0F0F0F;
-        x = (x | (x << 2)) & 0x33333333;
-        x = (x | (x << 1)) & 0x55555555;
-
-        y = (y | (y << 8)) & 0x00FF00FF;
-        y = (y | (y << 4)) & 0x0F0F0F0F;
-        y = (y | (y << 2)) & 0x33333333;
-        y = (y | (y << 1)) & 0x55555555;
-
-        return x | (y << 1);
-    }
-
-    // find the leftmost node of a polygon ring
-    function getLeftmost(start) {
-        var p = start,
-            leftmost = start;
-        do {
-            if (p.x < leftmost.x || (p.x === leftmost.x && p.y < leftmost.y)) leftmost = p;
-            p = p.next;
-        } while (p !== start);
-
-        return leftmost;
-    }
-
-    // check if a point lies within a convex triangle
-    function pointInTriangle(ax, ay, bx, by, cx, cy, px, py) {
-        return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
-               (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
-               (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
-    }
-
-    // check if a diagonal between two polygon nodes is valid (lies in polygon interior)
-    function isValidDiagonal(a, b) {
-        return a.next.i !== b.i && a.prev.i !== b.i && !intersectsPolygon(a, b) && // dones't intersect other edges
-               (locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b) && // locally visible
-                (area(a.prev, a, b.prev) || area(a, b.prev, b)) || // does not create opposite-facing sectors
-                equals(a, b) && area(a.prev, a, a.next) > 0 && area(b.prev, b, b.next) > 0); // special zero-length case
-    }
-
-    // signed area of a triangle
-    function area(p, q, r) {
-        return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-    }
-
-    // check if two points are equal
-    function equals(p1, p2) {
-        return p1.x === p2.x && p1.y === p2.y;
-    }
-
-    // check if two segments intersect
-    function intersects(p1, q1, p2, q2) {
-        var o1 = sign$1(area(p1, q1, p2));
-        var o2 = sign$1(area(p1, q1, q2));
-        var o3 = sign$1(area(p2, q2, p1));
-        var o4 = sign$1(area(p2, q2, q1));
-
-        if (o1 !== o2 && o3 !== o4) return true; // general case
-
-        if (o1 === 0 && onSegment(p1, p2, q1)) return true; // p1, q1 and p2 are collinear and p2 lies on p1q1
-        if (o2 === 0 && onSegment(p1, q2, q1)) return true; // p1, q1 and q2 are collinear and q2 lies on p1q1
-        if (o3 === 0 && onSegment(p2, p1, q2)) return true; // p2, q2 and p1 are collinear and p1 lies on p2q2
-        if (o4 === 0 && onSegment(p2, q1, q2)) return true; // p2, q2 and q1 are collinear and q1 lies on p2q2
-
-        return false;
-    }
-
-    // for collinear points p, q, r, check if point q lies on segment pr
-    function onSegment(p, q, r) {
-        return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) && q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y);
-    }
-
-    function sign$1(num) {
-        return num > 0 ? 1 : num < 0 ? -1 : 0;
-    }
-
-    // check if a polygon diagonal intersects any polygon segments
-    function intersectsPolygon(a, b) {
-        var p = a;
-        do {
-            if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i &&
-                    intersects(p, p.next, a, b)) return true;
-            p = p.next;
-        } while (p !== a);
-
-        return false;
-    }
-
-    // check if a polygon diagonal is locally inside the polygon
-    function locallyInside(a, b) {
-        return area(a.prev, a, a.next) < 0 ?
-            area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 :
-            area(a, b, a.prev) < 0 || area(a, a.next, b) < 0;
-    }
-
-    // check if the middle point of a polygon diagonal is inside the polygon
-    function middleInside(a, b) {
-        var p = a,
-            inside = false,
-            px = (a.x + b.x) / 2,
-            py = (a.y + b.y) / 2;
-        do {
-            if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y &&
-                    (px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x))
-                inside = !inside;
-            p = p.next;
-        } while (p !== a);
-
-        return inside;
-    }
-
-    // link two polygon vertices with a bridge; if the vertices belong to the same ring, it splits polygon into two;
-    // if one belongs to the outer ring and another to a hole, it merges it into a single ring
-    function splitPolygon(a, b) {
-        var a2 = new Node(a.i, a.x, a.y),
-            b2 = new Node(b.i, b.x, b.y),
-            an = a.next,
-            bp = b.prev;
-
-        a.next = b;
-        b.prev = a;
-
-        a2.next = an;
-        an.prev = a2;
-
-        b2.next = a2;
-        a2.prev = b2;
-
-        bp.next = b2;
-        b2.prev = bp;
-
-        return b2;
-    }
-
-    // create a node and optionally link it with previous one (in a circular doubly linked list)
-    function insertNode(i, x, y, last) {
-        var p = new Node(i, x, y);
-
-        if (!last) {
-            p.prev = p;
-            p.next = p;
-
-        } else {
-            p.next = last.next;
-            p.prev = last;
-            last.next.prev = p;
-            last.next = p;
-        }
-        return p;
-    }
-
-    function removeNode(p) {
-        p.next.prev = p.prev;
-        p.prev.next = p.next;
-
-        if (p.prevZ) p.prevZ.nextZ = p.nextZ;
-        if (p.nextZ) p.nextZ.prevZ = p.prevZ;
-    }
-
-    function Node(i, x, y) {
-        // vertex index in coordinates array
-        this.i = i;
-
-        // vertex coordinates
-        this.x = x;
-        this.y = y;
-
-        // previous and next vertex nodes in a polygon ring
-        this.prev = null;
-        this.next = null;
-
-        // z-order curve value
-        this.z = null;
-
-        // previous and next nodes in z-order
-        this.prevZ = null;
-        this.nextZ = null;
-
-        // indicates whether this is a steiner point
-        this.steiner = false;
-    }
-
-    // return a percentage difference between the polygon area and its triangulation area;
-    // used to verify correctness of triangulation
-    earcut.deviation = function (data, holeIndices, dim, triangles) {
-        var hasHoles = holeIndices && holeIndices.length;
-        var outerLen = hasHoles ? holeIndices[0] * dim : data.length;
-
-        var polygonArea = Math.abs(signedArea(data, 0, outerLen, dim));
-        if (hasHoles) {
-            for (var i = 0, len = holeIndices.length; i < len; i++) {
-                var start = holeIndices[i] * dim;
-                var end = i < len - 1 ? holeIndices[i + 1] * dim : data.length;
-                polygonArea -= Math.abs(signedArea(data, start, end, dim));
-            }
-        }
-
-        var trianglesArea = 0;
-        for (i = 0; i < triangles.length; i += 3) {
-            var a = triangles[i] * dim;
-            var b = triangles[i + 1] * dim;
-            var c = triangles[i + 2] * dim;
-            trianglesArea += Math.abs(
-                (data[a] - data[c]) * (data[b + 1] - data[a + 1]) -
-                (data[a] - data[b]) * (data[c + 1] - data[a + 1]));
-        }
-
-        return polygonArea === 0 && trianglesArea === 0 ? 0 :
-            Math.abs((trianglesArea - polygonArea) / polygonArea);
-    };
-
-    function signedArea(data, start, end, dim) {
-        var sum = 0;
-        for (var i = start, j = end - dim; i < end; i += dim) {
-            sum += (data[j] - data[i]) * (data[i + 1] + data[j + 1]);
-            j = i;
-        }
-        return sum;
-    }
-
-    // turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts
-    earcut.flatten = function (data) {
-        var dim = data[0][0].length,
-            result = {vertices: [], holes: [], dimensions: dim},
-            holeIndex = 0;
-
-        for (var i = 0; i < data.length; i++) {
-            for (var j = 0; j < data[i].length; j++) {
-                for (var d = 0; d < dim; d++) result.vertices.push(data[i][j][d]);
-            }
-            if (i > 0) {
-                holeIndex += data[i - 1].length;
-                result.holes.push(holeIndex);
-            }
-        }
-        return result;
-    };
-    earcut_1.default = default_1;
-
-    /** 
-     * 三角剖分  earcut.js
-     * @param {Array} boundary 边界
-     * @param {Array<Array>} holes 洞的数组
-     * @param {options:{feature,dim,normal}} feature 选择平平面 
-     * @returns {Array<Number>} 三角形索引数组
-     */
-
-    function trianglation(inboundary, holes = [], options = {}) {
-      options = {
-        feature: "xyz",
-        dim: 3,
-        ...options
-      };
-      let boundary = null;
-      let feature = options.feature;
-      let dim = options.dim;
-      let normal = options.normal || recognitionPolygonNormal(inboundary);
-
-      if (normal.dot(Vector3$1.UnitZ) < 1 - gPrecision) {
-        boundary = clone(inboundary);
-        rotateByUnitVectors(boundary, normal, Vector3$1.UnitZ);
-      } else {
-        boundary = inboundary;
-      }
-
-      var allV = [...boundary, ...holes.flat(2)];
-      var vertextNumbers = verctorToNumbers(allV, feature);
-      var holesIndex = [];
-      var baseIndex = boundary.length;
-
-      for (let i = -1; i < holes.length - 1; i++) {
-        holesIndex.push(baseIndex);
-        const hole = holes[i + 1];
-        holesIndex.push(baseIndex + hole.length);
-      }
-
-      var result = earcut_1(vertextNumbers, holesIndex, dim);
-      return result;
-    }
-
-    /**
-     *  常用shape几何操作
-     */
-
-    /**
-     * 缝合两个边
-     * @param {Array} side0 
-     * @param {Array} side1 
-     * @param {Boolean} isClosed 
-     * @returns {Array<Vector3>} 三角形数组，每三个为一个三角形 
-     */
-
-    function linkSide(side0, side1, isClosed = false) {
-      if (side0.length !== side1.length) throw "拉伸两边的点数量不一致  linkSide";
-      if (side0.length < 2 || side1.length < 2) return [];
-      var sidelength = side0.length;
-      var orgLen = side0.length;
-      var length = isClosed ? side0.length : side0.length - 1;
-      var triangles = new ArrayEx();
-
-      if (side0[0] instanceof Number) {
-        //索引三角形
-        for (var i = 0; i < length; i++) {
-          var v00 = side0[i];
-          var v01 = side0[(i + 1) % orgLen];
-          var v10 = side1[i];
-          var v11 = side1[(i + 1) % orgLen];
-          triangles.push(v00);
-          triangles.push(v10);
-          triangles.push(v11);
-          triangles.push(v00);
-          triangles.push(v11);
-          triangles.push(v01);
-        }
-      } else {
-        if (side0[0].index !== undefined) {
-          //含索引的顶点
-          for (var i = 0; i < length; i++) {
-            var v00 = side0[i];
-            var v01 = side0[(i + 1) % orgLen];
-            var v10 = side1[i];
-            var v11 = side1[(i + 1) % orgLen];
-            triangles.push(v00.index);
-            triangles.push(v10.index);
-            triangles.push(v11.index);
-            triangles.push(v00.index);
-            triangles.push(v11.index);
-            triangles.push(v01.index);
-          }
-        } else {
-          //三角形顶点
-          for (var i = 0; i < length; i++) {
-            var v00 = side0[i];
-            var v01 = side0[(i + 1) % orgLen];
-            var v10 = side1[i];
-            var v11 = side1[(i + 1) % orgLen];
-            triangles.push(v00);
-            triangles.push(v10);
-            triangles.push(v11);
-            triangles.push(v00);
-            triangles.push(v01);
-            triangles.push(v11);
-          }
-        }
-      }
-
-      return triangles;
-    }
-    /**
-     * 缝合shape集合
-     * @param {Array<Array<Point|Vector3>} shapes  路基 点集的集合， 每个shape的点数量一致
-     * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
-     * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
-     */
-
-    function linkSides(shapes, isClosed = false, isClosed2 = false) {
-      var length = isClosed2 ? shapes.length : shapes.length - 1;
-      var triangles = new ArrayEx();
-
-      for (var i = 0; i < length; i++) {
-        triangles.push(...linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
-      }
-
-      return triangles;
-    }
-    /**
-     * 缝合shape 折线集合
-     * @param {Array} polylines  路基 点集的集合， 
-     * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
-     */
-
-    function linkPolyline(polylines) {
-      return linkSides(polylines, false);
-    }
-    /**
-     * 缝合shape 多边形集合
-     * @param {Array} polygon
-     * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
-     */
-
-    function linkPloygon(polygon) {
-      return linkSides(polygon, false);
-    }
-    /**
-     * 挤压
-     * @param {Polygon|Array<Point|Vector3> }  shape   多边形或顶点数组
-     * @param {Path|Array<Point|Vector3> } path  路径或者或顶点数组
-     * @param {Object} options {  
-     *      isClosed: false,闭合为多边形
-     *      isClosed2: false, 闭合为圈
-     *      textureEnable: true, 计算纹理坐标
-     *      textureScale: new Vector2(1, 1),纹理坐标缩放
-     *      smoothAngle: Math.PI / 180 * 30,大于这个角度则不平滑
-     *      sealStart: true, 是否密封开始面
-     *      sealEnd: true,是否密封结束面}
-     */
-
-    function extrude(shape, arg_path, options = {}) {
-      options = {
-        isClosed: false,
-        isClosed2: false,
-        textureEnable: true,
-        textureScale: new Vector2(1, 1),
-        smoothAngle: Math.PI / 180 * 30,
-        sealStart: true,
-        sealEnd: true,
-        ...options
-      };
-      var normal = options.normal || recognitionPolygonNormal(shape);
-      var startSeal = clone(shape);
-      var shapepath = new Path(shape);
-      var insertNum = 0;
-
-      for (let i = 1; i < shapepath.length - 1; i++) {
-        //大角度插入点
-        if (Math.acos(shapepath[i].direction.dot(shapepath[i + 1].direction)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath[i].clone());
-      }
-
-      if (options.isClosed) {
-        //大角度插入点
-        var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
-        var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
-        if (Math.acos(dir1.dot(dir2)) > options.smoothAngle) ;
-        shape.push(shape.get(-1).clone()); //新加起始点纹理拉伸
-
-        shape.unshift(shape[0].clone());
-      }
-
-      let path = arg_path;
-      if (!(path instanceof Path) && path instanceof Array) path = new Path(arg_path);
-      const shapeArray = [];
-
-      for (let i = 0; i < path.length; i++) {
-        const node = path[i];
-        var dir = node.direction;
-        var newShape = clone(shape);
-        rotateByUnitVectors(newShape, normal, dir);
-        translate(newShape, node);
-        shapeArray.push(newShape);
-      }
-
-      const index = {
-        index: 0
-      };
-      var vertices = shapeArray.flat(2);
-      indexable(vertices, index);
-      var triangles = linkSides(shapeArray, options.isClosed, options.isClosed2);
-      shapepath = new Path(shape);
-      var uvs = [];
-
-      for (let i = 0; i < path.length; i++) {
-        for (let j = 0; j < shapepath.length; j++) {
-          uvs.push(shapepath[j].tlen * options.textureScale.x, path[i].tlen * options.textureScale.y);
-        }
-      }
-
-      var sealUv = clone(startSeal);
-      if (normal.dot(Vector3$1.UnitZ) < 1 - 1e-4) rotateByUnitVectors(sealUv, normal, v3(0, 0, 1));
-      var endSeal = clone(startSeal);
-      rotateByUnitVectors(startSeal, normal, path[0].direction);
-      translate(startSeal, path[0]);
-      rotateByUnitVectors(endSeal, normal, path.get(-1).direction);
-      translate(endSeal, path.get(-1));
-      var sealStartTris = trianglation(sealUv, [], {
-        normal
-      });
-      if (options.sealStart) indexable(startSeal, index);
-      if (options.sealEnd) indexable(endSeal, index);
-      var sealEndTris = [];
-      var hasVLen = vertices.length;
-      if (options.sealStart) for (let i = 0; i < sealStartTris.length; i++) {
-        sealStartTris[i] += hasVLen;
-      }
-      if (options.sealEnd && !options.sealStart) for (let i = 0; i < sealStartTris.length; i++) {
-        sealEndTris[i] = sealStartTris[i] + hasVLen;
-      }
-      if (options.sealEnd && options.sealStart) for (let i = 0; i < sealStartTris.length; i++) {
-        sealEndTris[i] = sealStartTris[i] + startSeal.length;
-      }
-
-      if (options.sealStart) {
-        vertices.push(...startSeal);
-        triangles.push(...sealStartTris);
-
-        for (let i = 0; i < sealUv.length; i++) uvs.push(sealUv[i].x, sealUv[i].y);
-      }
-
-      if (options.sealEnd) {
-        vertices.push(...endSeal);
-        triangles.push(...sealEndTris);
-
-        for (let i = 0; i < sealUv.length; i++) uvs.push(sealUv[i].x, sealUv[i].y);
-      }
-
-      return {
-        vertices,
-        triangles,
-        uvs
-      };
-    }
-
-    class ConvexHull {
-      /**
-       * 
-       * @param {Array<Points>} points  点集
-       * @param {} options  {planeNormal,method}
-       */
-      constructor(points, options = {
-        planeNormal: null,
-        method: 'quick'
-      }) {
-        if (points.length < 3) {
-          throw Error('cannot build a simplex out of <3 points');
-        }
-
-        this._hull = [];
-        this.originPoints = points;
-        var newpoints = clone(points);
-        indexable(newpoints);
-        var planeNormal = options.planeNormal;
-
-        if (!planeNormal) {
-          var plane = isInOnePlane(newpoints);
-          if (plane) planeNormal = plane.normal;
-        }
-
-        this.normal = Vector3$1.UnitZ;
-
-        if (planeNormal) {
-          //在一个平面  2D ConvexHull 
-          if (this.normal.dot(planeNormal) < 0) planeNormal.negate();
-          rotateByUnitVectors(newpoints, planeNormal, this.normal);
-          newpoints.forEach(pt => pt.z = 0); //找出一段在某个轴距离最远点
-
-          var [minPt, maxPt] = this.getMinMax(newpoints);
-          var line0 = new Line(minPt, maxPt);
-          var line1 = new Line(maxPt, minPt);
-          this.addBoundSeg(line0, newpoints);
-          this.addBoundSeg(line1, newpoints);
-        }
-      }
-
-      getMinMax(points) {
-        var maxXp = points[0];
-        var minXp = points[0];
-
-        for (let i = 1; i < points.length; i++) {
-          var point = points[i];
-          if (maxXp.x < point.x) maxXp = point;else if (minXp.x > point.x) minXp = point;
-        }
-
-        return [minXp, maxXp];
-      }
-
-      outerPoints(line, points) {
-        var outerPoint = [];
-
-        for (let i = 0; i < points.length; i++) {
-          const point = points[i];
-          if (line.orientationPoint(point, this.normal) === Orientation.Positive) outerPoint.push(point);
-        }
-
-        return outerPoint;
-      }
-
-      distalPoints(line, points) {
-        var distalPoint = null;
-        var maxDistance = -Infinity;
-
-        for (let i = 0; i < points.length; i++) {
-          const point = points[i];
-          var distance = line.distancePoint(point).distance;
-
-          if (distance > maxDistance) {
-            distalPoint = point;
-            maxDistance = distance;
-          }
-        }
-
-        return distalPoint;
-      }
-
-      addBoundSeg(line, points) {
-        var subPoints = this.outerPoints(line, points);
-        if (subPoints.length === 0) return this._hull.push(line.origin);
-        var distalPt = this.distalPoints(line, subPoints);
-        this.addBoundSeg(new Line(line.origin, distalPt), subPoints);
-        this.addBoundSeg(new Line(distalPt, line.end), subPoints);
-      }
-
-      get hull() {
-        if (!this.__hull) {
-          this.__hull = [];
-          debugger;
-
-          for (let i = 0; i < this._hull.length; i++) {
-            const point = this._hull[i];
-
-            this.__hull.push(this.originPoints[point.index]);
-          }
-        }
-
-        return this.__hull;
-      }
-
-    }
-    function quickHull(points) {
-      var ch = new ConvexHull(points);
-      return ch.hull;
-    }
-
-    if (!Array.prototype.get) Array.prototype.get = function (index) {
-      if (index < 0) index = this.length + index;
-      return this[index];
-    };
-    /**
-     * 深度优先遍历
-     * @param {*} method 
-     */
-
-    if (!Array.prototype.forall) Array.prototype.forall = function (method) {
-      for (let i = 0; i < this.length; i++) {
-        method(this[i]);
-        if (this[i] instanceof Array) this[i].forall(method);
-      }
-    };
-    /**
-     * 分类
-     * example:
-     *      var arry = [1,2,3,4,5,6]
-     *      var result = classify(this,(a)={return a%2===0}) 
-     * 
-     * @param {Function} classifyMethod  分类方法
-     */
-
-    if (!Array.prototype.forall) Array.prototype.classify = function (classifyMethod) {
-      var result = [];
-
-      for (let i = 0; i < this.length; i++) {
-        for (let j = 0; j < result.length; j++) {
-          if (classifyMethod(this[i], result[j][0], result[j])) {
-            result[j].push(this[i]);
-          } else {
-            result.push([this[i]]);
-          }
-        }
-      }
-
-      return result;
-    };
-    /**
-     * 去掉重复元素 
-     * @param {Function} uniqueMethod  去重复
-     * @param {Function} sortMethod 排序
-     */
-
-    if (!Array.prototype.unique) Array.prototype.unique = function (uniqueMethod, sortMethod) {
-      if (sortMethod) {
-        this.sort(sortMethod);
-
-        for (let i = 0; i < this.length; i++) {
-          for (let j = i + 1; j < this.length; j++) {
-            if (uniqueMethod(this[i], this[j]) === true) {
-              this.splice(j, 1);
-              j--;
-            } else break;
-          }
-        }
-
-        return this;
-      }
-
-      for (let i = 0; i < this.length; i++) {
-        for (let j = i + 1; j < this.length; j++) {
-          if (uniqueMethod(this[i], this[j]) === true) {
-            this.splice(j, 1);
-            j--;
-          }
-        }
-      }
-
-      return this;
-    };
-
-    exports.ArrayEx = ArrayEx;
-    exports.Circle = Circle;
-    exports.ConvexHull = ConvexHull;
-    exports.Disk = Disk;
-    exports.Euler = Euler;
-    exports.Line = Line;
-    exports.Matrix3 = Matrix3;
-    exports.Matrix4 = Matrix4;
-    exports.Path = Path;
-    exports.Plane = Plane;
-    exports.Point = Point;
-    exports.Polygon = Polygon;
-    exports.Polyline = Polyline;
-    exports.Quaternion = Quaternion;
-    exports.Ray = Ray;
-    exports.Segment = Segment;
-    exports.Sphere = Sphere;
-    exports.Triangle = Triangle;
-    exports.Vector2 = Vector2;
-    exports.Vector3 = Vector3$1;
-    exports.Vector4 = Vector4;
-    exports.applyMatrix4 = applyMatrix4;
-    exports.applyQuaternion = applyQuaternion;
-    exports.approximateEqual = approximateEqual;
-    exports.boundingBox = boundingBox;
-    exports.calcCircleFromThreePoint = calcCircleFromThreePoint;
-    exports.ceilPowerOfTwo = ceilPowerOfTwo;
-    exports.circle = circle;
-    exports.clamp = clamp;
-    exports.classify = classify;
-    exports.clone = clone;
-    exports.degToRad = degToRad;
-    exports.disk = disk;
-    exports.euler = euler;
-    exports.extrude = extrude;
-    exports.floorPowerOfTwo = floorPowerOfTwo;
-    exports.forall = forall;
-    exports.fromTwoPoint = fromTwoPoint;
-    exports.gPrecision = gPrecision;
-    exports.indexable = indexable;
-    exports.isInOnePlane = isInOnePlane;
-    exports.isPowerOfTwo = isPowerOfTwo;
-    exports.lerp = lerp;
-    exports.line = line;
-    exports.linkPloygon = linkPloygon;
-    exports.linkPolyline = linkPolyline;
-    exports.linkSide = linkSide;
-    exports.linkSides = linkSides;
-    exports.m3 = m3;
-    exports.m4 = m4;
-    exports.projectOnPlane = projectOnPlane;
-    exports.quat = quat;
-    exports.quickHull = quickHull;
-    exports.radToDeg = radToDeg;
-    exports.randFloat = randFloat;
-    exports.randInt = randInt;
-    exports.ray = ray;
-    exports.recognitionPlane = recognitionPlane;
-    exports.recognitionPolygonNormal = recognitionPolygonNormal;
-    exports.reverseOnPlane = reverseOnPlane;
-    exports.rotate = rotate;
-    exports.rotateByUnitVectors = rotateByUnitVectors;
-    exports.scale = scale;
-    exports.segment = segment$1;
-    exports.sign = sign;
-    exports.simplifyPointList = simplifyPointList;
-    exports.smootherstep = smootherstep;
-    exports.smoothstep = smoothstep;
-    exports.toBuffer = toBuffer;
-    exports.toFixed = toFixed;
-    exports.translate = translate;
-    exports.triangListToBuffer = triangListToBuffer;
-    exports.trianglation = trianglation;
-    exports.unique = unique;
-    exports.v2 = v2;
-    exports.v3 = v3;
-    exports.v4 = v4;
-    exports.vectorCompare = vectorCompare;
-    exports.verctorToNumbers = verctorToNumbers;
-
-    return exports;
-
-}({}));
+var cga = (function () {
+	'use strict';
+
+	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+	function unwrapExports (x) {
+		return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+	}
+
+	function createCommonjsModule(fn, module) {
+		return module = { exports: {} }, fn(module, module.exports), module.exports;
+	}
+
+	var _Math = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.toFixed = exports.radToDeg = exports.degToRad = exports.floorPowerOfTwo = exports.ceilPowerOfTwo = exports.isPowerOfTwo = exports.randFloat = exports.randInt = exports.smootherstep = exports.smoothstep = exports.lerp = exports.clamp = exports.approximateEqual = exports.sign = exports.gPrecision = void 0;
+	exports.gPrecision = 1e-4;
+	var DEG2RAD = Math.PI / 180;
+	var RAD2DEG = 180 / Math.PI;
+
+	function sign(value) {
+	  return value >= 0 ? 1 : -1;
+	}
+
+	exports.sign = sign;
+
+	function approximateEqual(v1, v2, precision) {
+	  if (precision === void 0) {
+	    precision = exports.gPrecision;
+	  }
+
+	  return Math.abs(v1 - v2) < precision;
+	}
+
+	exports.approximateEqual = approximateEqual;
+
+	function clamp(value, min, max) {
+	  return Math.max(min, Math.min(max, value));
+	}
+
+	exports.clamp = clamp;
+
+	function lerp(x, y, t) {
+	  return (1 - t) * x + t * y;
+	}
+
+	exports.lerp = lerp;
+
+	function smoothstep(x, min, max) {
+	  if (x <= min) return 0;
+	  if (x >= max) return 1;
+	  x = (x - min) / (max - min);
+	  return x * x * (3 - 2 * x);
+	}
+
+	exports.smoothstep = smoothstep;
+
+	function smootherstep(x, min, max) {
+	  if (x <= min) return 0;
+	  if (x >= max) return 1;
+	  x = (x - min) / (max - min);
+	  return x * x * x * (x * (x * 6 - 15) + 10);
+	}
+
+	exports.smootherstep = smootherstep; // Random integer from <low, high> interval
+
+	function randInt(low, high) {
+	  return low + Math.floor(Math.random() * (high - low + 1));
+	}
+
+	exports.randInt = randInt; // Random float from <low, high> interval
+
+	/**
+	 * 生成一个low~high之间的浮点数
+	 * @param {*} low
+	 * @param {*} high
+	 */
+
+	function randFloat(low, high) {
+	  return low + Math.random() * (high - low);
+	}
+
+	exports.randFloat = randFloat;
+
+	function isPowerOfTwo(value) {
+	  return (value & value - 1) === 0 && value !== 0;
+	}
+
+	exports.isPowerOfTwo = isPowerOfTwo;
+
+	function ceilPowerOfTwo(value) {
+	  return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+	}
+
+	exports.ceilPowerOfTwo = ceilPowerOfTwo;
+
+	function floorPowerOfTwo(value) {
+	  return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+	}
+
+	exports.floorPowerOfTwo = floorPowerOfTwo;
+
+	function degToRad(degrees) {
+	  return degrees * DEG2RAD;
+	}
+
+	exports.degToRad = degToRad;
+
+	function radToDeg(radians) {
+	  return radians * RAD2DEG;
+	}
+
+	exports.radToDeg = radToDeg;
+	/**
+	 * 数字或者向量固定位数
+	 * @param {Object} obj 数字或者向量
+	 * @param {*} fractionDigits
+	 */
+
+	function toFixed(obj, fractionDigits) {
+	  if (obj instanceof Number) return parseFloat(obj.toFixed(fractionDigits));else {
+	    if (obj.x !== undefined) obj.x = parseFloat(obj.x.toFixed(fractionDigits));
+	    if (obj.y !== undefined) obj.y = parseFloat(obj.y.toFixed(fractionDigits));
+	    if (obj.z !== undefined) obj.z = parseFloat(obj.z.toFixed(fractionDigits));
+	  }
+	  return obj;
+	}
+
+	exports.toFixed = toFixed;
+	});
+
+	unwrapExports(_Math);
+	var _Math_1 = _Math.toFixed;
+	var _Math_2 = _Math.radToDeg;
+	var _Math_3 = _Math.degToRad;
+	var _Math_4 = _Math.floorPowerOfTwo;
+	var _Math_5 = _Math.ceilPowerOfTwo;
+	var _Math_6 = _Math.isPowerOfTwo;
+	var _Math_7 = _Math.randFloat;
+	var _Math_8 = _Math.randInt;
+	var _Math_9 = _Math.smootherstep;
+	var _Math_10 = _Math.smoothstep;
+	var _Math_11 = _Math.lerp;
+	var _Math_12 = _Math.clamp;
+	var _Math_13 = _Math.approximateEqual;
+	var _Math_14 = _Math.sign;
+	var _Math_15 = _Math.gPrecision;
+
+	var array = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.unique = exports.classify = exports.flat = exports.forall = exports.toFixed = exports.clone = void 0;
+
+
+
+	Array.prototype.get = function (index) {
+	  if (index < 0) index = this.length + index;
+	  return this[index];
+	};
+
+	Array.prototype.last = function () {
+	  return this.get(-1);
+	};
+	/**
+	 * 数组深度复制
+	 * @param {Array} array
+	 */
+
+
+	function clone(array) {
+	  var result = new Array();
+
+	  for (var i = 0; i < array.length; i++) {
+	    var ele = array[i];
+	    if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
+	      result[i] = ele.clone();
+	    } else if (ele instanceof Array) result[i] = clone(ele);else throw "数组有元素不能clone";
+	  }
+
+	  return result;
+	}
+
+	exports.clone = clone;
+	/**
+	 * 数组中所有数字或者向量固定位数
+	 * @param {Array} array
+	 * @param {Number} precision
+	 */
+
+	function toFixed(array, precision) {
+	  if (precision === void 0) {
+	    precision = _Math.gPrecision;
+	  }
+
+	  for (var i = 0; i < array.length; i++) {
+	    var e = array[i];
+	    if (e instanceof Array) toFixed(e);else array[i] = _Math.toFixed(e, precision);
+	  }
+	}
+
+	exports.toFixed = toFixed;
+	/**
+	 * 遍历多级数组中所有对象
+	 * @param {Array} array
+	 * @param {Function} method
+	 */
+
+	function forall(array, method) {
+	  for (var i = 0; i < array.length; i++) {
+	    var ele = array[i];
+	    method(ele, i, array);
+	    if (Array.isArray(ele)) forall(ele, method);
+	  }
+	}
+
+	exports.forall = forall;
+
+	function flat(array) {
+	  if (array.flat) return array.flat(Infinity);
+	  return array.reduce(function (pre, cur) {
+	    return pre.concat(Array.isArray(cur) ? flat(cur) : cur);
+	  });
+	}
+
+	exports.flat = flat;
+	/**
+	 * 分类
+	 * example:
+	 *      var arry = [1,2,3,4,5,6]
+	 *      var result = classify(array,(a)={return a%2===0})
+	 *
+	 * @param {Array} array
+	 * @param {Function} classifyMethod  分类方法
+	 */
+
+	function classify(array, classifyMethod) {
+	  var result = [];
+
+	  for (var i = 0; i < array.length; i++) {
+	    for (var j = 0; j < result.length; j++) {
+	      if (classifyMethod(array[i], result[j][0], result[j])) {
+	        result[j].push(array[i]);
+	      } else {
+	        result.push([array[i]]);
+	      }
+	    }
+	  }
+
+	  return result;
+	}
+
+	exports.classify = classify;
+	/**
+	 * 去掉重复元素
+	 * @param {Array} array
+	 * @param {Function} uniqueMethod  去重复
+	 * @param {Function} sortMethod 排序
+	 */
+
+	function unique(array, uniqueMethod, sortMethod) {
+	  if (sortMethod) {
+	    array.sort(sortMethod);
+
+	    for (var i = 0; i < array.length; i++) {
+	      for (var j = i + 1; j < array.length; j++) {
+	        if (uniqueMethod(array[i], array[j]) === true) {
+	          array.splice(j, 1);
+	          j--;
+	        } else break;
+	      }
+	    }
+
+	    return array;
+	  }
+
+	  for (var i = 0; i < array.length; i++) {
+	    for (var j = i + 1; j < array.length; j++) {
+	      if (uniqueMethod(array[i], array[j]) === true) {
+	        array.splice(j, 1);
+	        j--;
+	      }
+	    }
+	  }
+
+	  return array;
+	}
+
+	exports.unique = unique;
+	});
+
+	unwrapExports(array);
+	var array_1 = array.unique;
+	var array_2 = array.classify;
+	var array_3 = array.flat;
+	var array_4 = array.forall;
+	var array_5 = array.toFixed;
+	var array_6 = array.clone;
+
+	var eventhandler = createCommonjsModule(function (module, exports) {
+
+	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
+	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+	  return r;
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.EventHandler = void 0;
+
+	var EventHandler =
+	/** @class */
+	function () {
+	  function EventHandler() {
+	    // super();
+	    this._callbacks = {};
+	    this._callbackActive = {};
+	  }
+
+	  EventHandler.prototype._addCallback = function (name, callback, scope, once) {
+	    if (!name || typeof name !== 'string' || !callback) return;
+	    if (!this._callbacks[name]) this._callbacks[name] = [];
+	    if (this._callbackActive[name] && this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
+
+	    this._callbacks[name].push({
+	      callback: callback,
+	      scope: scope || this,
+	      once: once || false
+	    });
+	  };
+	  /**
+	   * @function
+	   * @name EventHandler#on
+	   * @description Attach an event handler to an event.
+	   * @param {string} name - Name of the event to bind the callback to.
+	   * @param {callbacks.HandleEvent} callback - Function that is called when event is fired. Note the callback is limited to 8 arguments.
+	   * @param {object} [scope] - Object to use as 'this' when the event is fired, defaults to current this.
+	   * @returns {EventHandler} Self for chaining.
+	   * @example
+	   * obj.on('test', function (a, b) {
+	   *     console.log(a + b);
+	   * });
+	   * obj.fire('test', 1, 2); // prints 3 to the console
+	   */
+
+
+	  EventHandler.prototype.on = function (name, callback, scope) {
+	    this._addCallback(name, callback, scope, false);
+
+	    return this;
+	  };
+	  /**
+	   * @function
+	   * @name EventHandler#off
+	   * @description Detach an event handler from an event. If callback is not provided then all callbacks are unbound from the event,
+	   * if scope is not provided then all events with the callback will be unbound.
+	   * @param {string} [name] - Name of the event to unbind.
+	   * @param {callbacks.HandleEvent} [callback] - Function to be unbound.
+	   * @param {object} [scope] - Scope that was used as the this when the event is fired.
+	   * @returns {EventHandler} Self for chaining.
+	   * @example
+	   * var handler = function () {
+	   * };
+	   * obj.on('test', handler);
+	   *
+	   * obj.off(); // Removes all events
+	   * obj.off('test'); // Removes all events called 'test'
+	   * obj.off('test', handler); // Removes all handler functions, called 'test'
+	   * obj.off('test', handler, this); // Removes all hander functions, called 'test' with scope this
+	   */
+
+
+	  EventHandler.prototype.off = function (name, callback, scope) {
+	    if (name) {
+	      if (this._callbackActive[name] && this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
+	    } else {
+	      for (var key in this._callbackActive) {
+	        if (!this._callbacks[key]) continue;
+	        if (this._callbacks[key] !== this._callbackActive[key]) continue;
+	        this._callbackActive[key] = this._callbackActive[key].slice();
+	      }
+	    }
+
+	    if (!name) {
+	      this._callbacks = {};
+	    } else if (!callback) {
+	      if (this._callbacks[name]) this._callbacks[name] = [];
+	    } else {
+	      var events = this._callbacks[name];
+	      if (!events) return this;
+	      var count = events.length;
+
+	      for (var i = 0; i < count; i++) {
+	        if (events[i].callback !== callback) continue;
+	        if (scope && events[i].scope !== scope) continue;
+	        events[i--] = events[--count];
+	      }
+
+	      events.length = count;
+	    }
+
+	    return this;
+	  }; // ESLint rule disabled here as documenting arg1, arg2...argN as [...] rest
+	  // arguments is preferable to documenting each one individually.
+
+	  /* eslint-disable valid-jsdoc */
+
+	  /**
+	   * @function
+	   * @name EventHandler#fire
+	   * @description Fire an event, all additional arguments are passed on to the event listener.
+	   * @param {object} name - Name of event to fire.
+	   * @param {*} [args] - arguments that is passed to the event handler.
+	   * obj.fire('test', 'This is the message');
+	   */
+
+	  /* eslint-enable valid-jsdoc */
+
+
+	  EventHandler.prototype.fire = function (name) {
+	    var _a;
+
+	    var args = [];
+
+	    for (var _i = 1; _i < arguments.length; _i++) {
+	      args[_i - 1] = arguments[_i];
+	    }
+
+	    if (!name || !this._callbacks[name]) return this;
+	    var callbacks;
+
+	    if (!this._callbackActive[name]) {
+	      this._callbackActive[name] = this._callbacks[name];
+	    } else {
+	      if (this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
+	      callbacks = this._callbacks[name].slice();
+	    } // TODO: What does callbacks do here?
+	    // In particular this condition check looks wrong: (i < (callbacks || this._callbackActive[name]).length)
+	    // Because callbacks is not an integer
+	    // eslint-disable-next-line no-unmodified-loop-condition
+
+
+	    for (var i = 0; (callbacks || this._callbackActive[name]) && i < (callbacks || this._callbackActive[name]).length; i++) {
+	      var evt = (callbacks || this._callbackActive[name])[i];
+
+	      (_a = evt.callback).call.apply(_a, __spreadArrays([evt.scope], args));
+
+	      if (evt.once) {
+	        var ind = this._callbacks[name].indexOf(evt);
+
+	        if (ind !== -1) {
+	          if (this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
+
+	          this._callbacks[name].splice(ind, 1);
+	        }
+	      }
+	    }
+
+	    if (!callbacks) this._callbackActive[name] = null;
+	    return this;
+	  };
+	  /**
+	   * @function
+	   * @name EventHandler#once
+	   * @description Attach an event handler to an event. This handler will be removed after being fired once.
+	   * @param {string} name - Name of the event to bind the callback to.
+	   * @param {callbacks.HandleEvent} callback - Function that is called when event is fired. Note the callback is limited to 8 arguments.
+	   * @param {object} [scope] - Object to use as 'this' when the event is fired, defaults to current this.
+	   * @returns {EventHandler} Self for chaining.
+	   * @example
+	   * obj.once('test', function (a, b) {
+	   *     console.log(a + b);
+	   * });
+	   * obj.fire('test', 1, 2); // prints 3 to the console
+	   * obj.fire('test', 1, 2); // not going to get handled
+	   */
+
+
+	  EventHandler.prototype.once = function (name, callback, scope) {
+	    this._addCallback(name, callback, scope, true);
+
+	    return this;
+	  };
+	  /**
+	   * @function
+	   * @name EventHandler#hasEvent
+	   * @description Test if there are any handlers bound to an event name.
+	   * @param {string} name - The name of the event to test.
+	   * @returns {boolean} True if the object has handlers bound to the specified event name.
+	   * @example
+	   * obj.on('test', function () { }); // bind an event to 'test'
+	   * obj.hasEvent('test'); // returns true
+	   * obj.hasEvent('hello'); // returns false
+	   */
+
+
+	  EventHandler.prototype.hasEvent = function (name) {
+	    return this._callbacks[name] && this._callbacks[name].length !== 0 || false;
+	  };
+
+	  return EventHandler;
+	}();
+
+	exports.EventHandler = EventHandler;
+	});
+
+	unwrapExports(eventhandler);
+	var eventhandler_1 = eventhandler.EventHandler;
+
+	var rngBrowser = createCommonjsModule(function (module) {
+	// Unique ID creation requires a high quality random # generator.  In the
+	// browser this is a little complicated due to unknown quality of Math.random()
+	// and inconsistent support for the `crypto` API.  We do the best we can via
+	// feature-detection
+
+	// getRandomValues needs to be invoked in a context where "this" is a Crypto
+	// implementation. Also, find the complete implementation of crypto on IE11.
+	var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+	                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
+
+	if (getRandomValues) {
+	  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+	  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+	  module.exports = function whatwgRNG() {
+	    getRandomValues(rnds8);
+	    return rnds8;
+	  };
+	} else {
+	  // Math.random()-based (RNG)
+	  //
+	  // If all else fails, use Math.random().  It's fast, but is of unspecified
+	  // quality.
+	  var rnds = new Array(16);
+
+	  module.exports = function mathRNG() {
+	    for (var i = 0, r; i < 16; i++) {
+	      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+	      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+	    }
+
+	    return rnds;
+	  };
+	}
+	});
+
+	/**
+	 * Convert array of 16 byte values to UUID string format of the form:
+	 * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+	 */
+	var byteToHex = [];
+	for (var i = 0; i < 256; ++i) {
+	  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+	}
+
+	function bytesToUuid(buf, offset) {
+	  var i = offset || 0;
+	  var bth = byteToHex;
+	  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
+	  return ([
+	    bth[buf[i++]], bth[buf[i++]],
+	    bth[buf[i++]], bth[buf[i++]], '-',
+	    bth[buf[i++]], bth[buf[i++]], '-',
+	    bth[buf[i++]], bth[buf[i++]], '-',
+	    bth[buf[i++]], bth[buf[i++]], '-',
+	    bth[buf[i++]], bth[buf[i++]],
+	    bth[buf[i++]], bth[buf[i++]],
+	    bth[buf[i++]], bth[buf[i++]]
+	  ]).join('');
+	}
+
+	var bytesToUuid_1 = bytesToUuid;
+
+	// **`v1()` - Generate time-based UUID**
+	//
+	// Inspired by https://github.com/LiosK/UUID.js
+	// and http://docs.python.org/library/uuid.html
+
+	var _nodeId;
+	var _clockseq;
+
+	// Previous uuid creation time
+	var _lastMSecs = 0;
+	var _lastNSecs = 0;
+
+	// See https://github.com/uuidjs/uuid for API details
+	function v1(options, buf, offset) {
+	  var i = buf && offset || 0;
+	  var b = buf || [];
+
+	  options = options || {};
+	  var node = options.node || _nodeId;
+	  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+	  // node and clockseq need to be initialized to random values if they're not
+	  // specified.  We do this lazily to minimize issues related to insufficient
+	  // system entropy.  See #189
+	  if (node == null || clockseq == null) {
+	    var seedBytes = rngBrowser();
+	    if (node == null) {
+	      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+	      node = _nodeId = [
+	        seedBytes[0] | 0x01,
+	        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
+	      ];
+	    }
+	    if (clockseq == null) {
+	      // Per 4.2.2, randomize (14 bit) clockseq
+	      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+	    }
+	  }
+
+	  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+	  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+	  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+	  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+	  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+	  // Per 4.2.1.2, use count of uuid's generated during the current clock
+	  // cycle to simulate higher resolution clock
+	  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+	  // Time since last uuid creation (in msecs)
+	  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+	  // Per 4.2.1.2, Bump clockseq on clock regression
+	  if (dt < 0 && options.clockseq === undefined) {
+	    clockseq = clockseq + 1 & 0x3fff;
+	  }
+
+	  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+	  // time interval
+	  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+	    nsecs = 0;
+	  }
+
+	  // Per 4.2.1.2 Throw error if too many uuids are requested
+	  if (nsecs >= 10000) {
+	    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+	  }
+
+	  _lastMSecs = msecs;
+	  _lastNSecs = nsecs;
+	  _clockseq = clockseq;
+
+	  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+	  msecs += 12219292800000;
+
+	  // `time_low`
+	  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+	  b[i++] = tl >>> 24 & 0xff;
+	  b[i++] = tl >>> 16 & 0xff;
+	  b[i++] = tl >>> 8 & 0xff;
+	  b[i++] = tl & 0xff;
+
+	  // `time_mid`
+	  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+	  b[i++] = tmh >>> 8 & 0xff;
+	  b[i++] = tmh & 0xff;
+
+	  // `time_high_and_version`
+	  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+	  b[i++] = tmh >>> 16 & 0xff;
+
+	  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+	  b[i++] = clockseq >>> 8 | 0x80;
+
+	  // `clock_seq_low`
+	  b[i++] = clockseq & 0xff;
+
+	  // `node`
+	  for (var n = 0; n < 6; ++n) {
+	    b[i + n] = node[n];
+	  }
+
+	  return buf ? buf : bytesToUuid_1(b);
+	}
+
+	var v1_1 = v1;
+
+	function v4(options, buf, offset) {
+	  var i = buf && offset || 0;
+
+	  if (typeof(options) == 'string') {
+	    buf = options === 'binary' ? new Array(16) : null;
+	    options = null;
+	  }
+	  options = options || {};
+
+	  var rnds = options.random || (options.rng || rngBrowser)();
+
+	  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+	  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+	  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+	  // Copy bytes to buffer, if provided
+	  if (buf) {
+	    for (var ii = 0; ii < 16; ++ii) {
+	      buf[i + ii] = rnds[ii];
+	    }
+	  }
+
+	  return buf || bytesToUuid_1(rnds);
+	}
+
+	var v4_1 = v4;
+
+	var uuid = v4_1;
+	uuid.v1 = v1_1;
+	uuid.v4 = v4_1;
+
+	var _uuid_3_4_0_uuid = uuid;
+
+	var thing = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.buildAccessors = exports.buildAccessor = exports.Thing = void 0;
+
+
+
+
+
+	var Thing =
+	/** @class */
+	function (_super) {
+	  __extends(Thing, _super);
+
+	  function Thing(opts) {
+	    var _this = _super.call(this) || this;
+
+	    _this.cache = {};
+	    opts = opts || {};
+	    _this.uuid = _uuid_3_4_0_uuid.v4();
+	    _this.id = _this.uuid;
+	    _this.name = opts.name || "未命名";
+	    _this.alias = opts.alias;
+	    _this.isThing = true;
+	    _this.parent = null;
+	    _this.children = [];
+	    _this.meta = undefined;
+	    _this.needsUpdate = false;
+	    _this._renderObject = null;
+	    _this._useData = {};
+	    _this.tag = "untagged";
+
+	    _this.on("set", function (name, oldValue, newValue) {
+	      _this.fire("set_" + name, name, oldValue, newValue);
+	    });
+
+	    for (var key in opts) {
+	      if (opts.hasOwnProperty(key)) {
+	        if (!_this[key]) {
+	          _this[key] = opts[key];
+	        }
+	      }
+	    }
+
+	    return _this;
+	  }
+
+	  Thing.prototype.add = function (thing, force) {
+	    if (force === void 0) {
+	      force = false;
+	    }
+
+	    if (arguments.length > 1) {
+	      for (var i = 0; i < arguments.length; i++) {
+	        this.add(arguments[i]);
+	      }
+
+	      return this;
+	    }
+
+	    if (thing === this) {
+	      console.error("Thing.add: 自己不能作为自己的子节点", thing);
+	      return this;
+	    }
+
+	    if (thing && this.isThing) {
+	      if (thing.parent) {
+	        thing.parent.remove(thing);
+	      }
+
+	      thing.parent = this;
+	      this.children.push(thing);
+	    } else if (thing && force) {
+	      if (thing.parent) {
+	        thing.parent.remove(thing);
+	      }
+
+	      thing.parent = this;
+	      this.children.push(thing);
+	    } else {
+	      console.error("Thing.add:不是Thing类型", thing);
+	    }
+
+	    return this;
+	  };
+
+	  Thing.prototype.remove = function (thing) {
+	    if (arguments.length > 1) {
+	      for (var i = 0; i < arguments.length; i++) {
+	        this.remove(arguments[i]);
+	      }
+
+	      return this;
+	    } else {
+	      //自身从父节点移除
+	      this.parent.remove(this);
+	    }
+
+	    var index = this.children.indexOf(thing);
+
+	    if (index !== -1) {
+	      thing.parent = null; // thing.dispatchEvent( { type: 'removed' } );
+
+	      this.children.splice(index, 1);
+	    }
+
+	    return this;
+	  };
+
+	  Thing.prototype.foreach = function (cb) {
+	    cb(this);
+	    var children = this.children;
+
+	    for (var i = 0; i < children.length; i++) {
+	      children[i].foreach(cb);
+	    }
+	  };
+
+	  Thing.prototype.getObjectByProperty = function (name, value) {
+	    if (this[name] === value) return this;
+
+	    for (var i = 0, l = this.children.length; i < l; i++) {
+	      var child = this.children[i];
+	      if (!child.getObjectByProperty) continue;
+	      var object = child.getObjectByProperty(name, value);
+
+	      if (object !== undefined) {
+	        return object;
+	      }
+	    }
+
+	    return undefined;
+	  };
+
+	  Thing.prototype.getObjectById = function (id) {
+	    return this.getObjectByProperty('id', id);
+	  };
+
+	  Thing.prototype.getObjectByName = function (name) {
+	    return this.getObjectByProperty('name', name);
+	  };
+	  /**
+	  * 生成属性的set/get方法
+	  * @param {string} name
+	  * @param {function} setFunc
+	  * @param {boolean} skipEqualsCheck
+	  */
+
+
+	  Thing.prototype.defineProperty = function (name, setFunc, skipEqualsCheck) {
+	    var _this = this;
+
+	    if (skipEqualsCheck === void 0) {
+	      skipEqualsCheck = true;
+	    }
+
+	    Object.defineProperty(this, name, {
+	      get: function () {
+	        return _this._useData[name];
+	      },
+	      set: function (value) {
+	        var data = _this._useData;
+	        var oldValue = data[name];
+	        if (!skipEqualsCheck && oldValue === value) return;
+	        data[name] = value;
+	        if (setFunc) setFunc.call(_this, value, oldValue);
+	      },
+	      configurable: true
+	    });
+	  };
+
+	  Thing.prototype.buildAccessor = function (name, bindObject) {
+	    if (bindObject === void 0) {
+	      bindObject = this;
+	    }
+
+	    if (!bindObject) return;
+	    Object.defineProperty(bindObject, name, {
+	      get: function () {
+	        return bindObject["_" + name];
+	      },
+	      set: function (value) {
+	        var oldValue = bindObject["_" + name];
+	        bindObject["_" + name] = value;
+	        bindObject.fire('set', name, oldValue, value);
+	      },
+	      configurable: true
+	    });
+	  };
+
+	  Thing.prototype.buildAccessors = function (schema, bindObject) {
+	    var _this = this;
+
+	    schema.forEach(function (descriptor) {
+	      _this.buildAccessor(descriptor, bindObject);
+	    });
+	  };
+
+	  return Thing;
+	}(eventhandler.EventHandler);
+
+	exports.Thing = Thing;
+
+	function buildAccessor(name, bindObject) {
+	  if (!bindObject) return;
+	  Object.defineProperty(bindObject, name, {
+	    get: function () {
+	      return bindObject["_" + name];
+	    },
+	    set: function (value) {
+	      var oldValue = bindObject["_" + name];
+	      bindObject["_" + name] = value;
+	      bindObject.fire('set', name, oldValue, value);
+	    },
+	    configurable: true
+	  });
+	}
+
+	exports.buildAccessor = buildAccessor;
+
+	function buildAccessors(schema, bindObject) {
+	  schema.forEach(function (descriptor) {
+	    buildAccessor(descriptor, bindObject);
+	  });
+	}
+
+	exports.buildAccessors = buildAccessors;
+	});
+
+	unwrapExports(thing);
+	var thing_1 = thing.buildAccessors;
+	var thing_2 = thing.buildAccessor;
+	var thing_3 = thing.Thing;
+
+	var Vec2_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.v2 = exports.Vec2 = void 0;
+
+
+
+
+
+	var Vec2 =
+	/** @class */
+	function (_super) {
+	  __extends(Vec2, _super);
+
+	  function Vec2(_x, _y) {
+	    if (_x === void 0) {
+	      _x = 0;
+	    }
+
+	    if (_y === void 0) {
+	      _y = 0;
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    _this._x = _x;
+	    _this._y = _y;
+	    _this.isVec2 = true;
+	    thing.buildAccessors(['x', 'y'], _this);
+	    return _this;
+	  }
+
+	  Vec2.isVec2 = function (v) {
+	    return !isNaN(v.x) && !isNaN(v.y) && isNaN(v.z) && isNaN(v.w);
+	  };
+
+	  Object.defineProperty(Vec2.prototype, "width", {
+	    get: function () {
+	      return this.x;
+	    },
+	    set: function (value) {
+	      this.x = value;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec2.prototype, "height", {
+	    get: function () {
+	      return this.y;
+	    },
+	    set: function (value) {
+	      this.y = value;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec2, "UnitX", {
+	    get: function () {
+	      return new Vec2(1, 0);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec2, "UnitY", {
+	    get: function () {
+	      return new Vec2(0, 1);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Vec2.prototype.set = function (x, y) {
+	    this.x = x;
+	    this.y = y;
+	    return this;
+	  };
+
+	  Vec2.prototype.setScalar = function (scalar) {
+	    this.x = scalar;
+	    this.y = scalar;
+	    return this;
+	  };
+
+	  Vec2.prototype.setX = function (x) {
+	    this.x = x;
+	    return this;
+	  };
+
+	  Vec2.prototype.setY = function (y) {
+	    this.y = y;
+	    return this;
+	  };
+
+	  Vec2.prototype.setComponent = function (index, value) {
+	    switch (index) {
+	      case 0:
+	        this.x = value;
+	        break;
+
+	      case 1:
+	        this.y = value;
+	        break;
+
+	      default:
+	        throw new Error("index is out of range: " + index);
+	    }
+
+	    return this;
+	  };
+
+	  Vec2.prototype.getComponent = function (index) {
+	    switch (index) {
+	      case 0:
+	        return this.x;
+
+	      case 1:
+	        return this.y;
+
+	      default:
+	        throw new Error("index is out of range: " + index);
+	    }
+	  };
+
+	  Vec2.prototype.clone = function () {
+	    return new Vec2(this.x, this.y);
+	  };
+
+	  Vec2.prototype.copy = function (v) {
+	    this.x = v.x;
+	    this.y = v.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.add = function (v, w) {
+	    if (w !== undefined) {
+	      console.warn("Vec2: .add() now only accepts one argument. Use .addVecs( a, b ) instead.");
+	      return this.addVecs(v, w);
+	    }
+
+	    this.x += v.x;
+	    this.y += v.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.addScalar = function (s) {
+	    this.x += s;
+	    this.y += s;
+	    return this;
+	  };
+
+	  Vec2.prototype.addVecs = function (a, b) {
+	    this.x = a.x + b.x;
+	    this.y = a.y + b.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.addScaledVec = function (v, s) {
+	    this.x += v.x * s;
+	    this.y += v.y * s;
+	    return this;
+	  };
+
+	  Vec2.prototype.sub = function (v, w) {
+	    if (w !== undefined) {
+	      console.warn("Vec2: .sub() now only accepts one argument. Use .subVecs( a, b ) instead.");
+	      return this.subVecs(v, w);
+	    }
+
+	    this.x -= v.x;
+	    this.y -= v.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.subScalar = function (s) {
+	    this.x -= s;
+	    this.y -= s;
+	    return this;
+	  };
+
+	  Vec2.prototype.subVecs = function (a, b) {
+	    this.x = a.x - b.x;
+	    this.y = a.y - b.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.multiply = function (v) {
+	    this.x *= v.x;
+	    this.y *= v.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.multiplyScalar = function (scalar) {
+	    this.x *= scalar;
+	    this.y *= scalar;
+	    return this;
+	  };
+
+	  Vec2.prototype.divide = function (v) {
+	    this.x /= v.x;
+	    this.y /= v.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.divideScalar = function (scalar) {
+	    return this.multiplyScalar(1 / scalar);
+	  };
+
+	  Vec2.prototype.applyMat3 = function (m) {
+	    var x = this.x,
+	        y = this.y;
+	    var e = m.elements;
+	    this.x = e[0] * x + e[3] * y + e[6];
+	    this.y = e[1] * x + e[4] * y + e[7];
+	    return this;
+	  };
+
+	  Vec2.prototype.min = function (v) {
+	    this.x = Math.min(this.x, v.x);
+	    this.y = Math.min(this.y, v.y);
+	    return this;
+	  };
+
+	  Vec2.prototype.max = function (v) {
+	    this.x = Math.max(this.x, v.x);
+	    this.y = Math.max(this.y, v.y);
+	    return this;
+	  };
+
+	  Vec2.prototype.clamp = function (min, max) {
+	    // assumes min < max, componentwise
+	    this.x = Math.max(min.x, Math.min(max.x, this.x));
+	    this.y = Math.max(min.y, Math.min(max.y, this.y));
+	    return this;
+	  };
+
+	  Vec2.prototype.clampScalar = function (minVal, maxVal) {
+	    this.x = Math.max(minVal, Math.min(maxVal, this.x));
+	    this.y = Math.max(minVal, Math.min(maxVal, this.y));
+	    return this;
+	  };
+
+	  Vec2.prototype.clampLength = function (min, max) {
+	    var length = this.length();
+	    return this.divideScalar(length || 1).multiplyScalar(Math.max(min, Math.min(max, length)));
+	  };
+
+	  Vec2.prototype.floor = function () {
+	    this.x = Math.floor(this.x);
+	    this.y = Math.floor(this.y);
+	    return this;
+	  };
+
+	  Vec2.prototype.ceil = function () {
+	    this.x = Math.ceil(this.x);
+	    this.y = Math.ceil(this.y);
+	    return this;
+	  };
+
+	  Vec2.prototype.round = function () {
+	    this.x = Math.round(this.x);
+	    this.y = Math.round(this.y);
+	    return this;
+	  };
+
+	  Vec2.prototype.roundToZero = function () {
+	    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
+	    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
+	    return this;
+	  };
+
+	  Vec2.prototype.negate = function () {
+	    this.x = -this.x;
+	    this.y = -this.y;
+	    return this;
+	  };
+
+	  Vec2.prototype.dot = function (v) {
+	    return this.x * v.x + this.y * v.y;
+	  };
+
+	  Vec2.prototype.cross = function (v) {
+	    return this.x * v.y - this.y * v.x;
+	  };
+
+	  Vec2.prototype.lengthSq = function () {
+	    return this.x * this.x + this.y * this.y;
+	  };
+
+	  Vec2.prototype.length = function () {
+	    return Math.sqrt(this.x * this.x + this.y * this.y);
+	  };
+
+	  Vec2.prototype.manhattanLength = function () {
+	    return Math.abs(this.x) + Math.abs(this.y);
+	  };
+
+	  Vec2.prototype.normalize = function () {
+	    return this.divideScalar(this.length() || 1);
+	  };
+
+	  Vec2.prototype.angle = function () {
+	    // computes the angle in radians with respect to the positive x-axis
+	    var angle = Math.atan2(this.y, this.x);
+	    if (angle < 0) angle += 2 * Math.PI;
+	    return angle;
+	  };
+
+	  Vec2.prototype.distanceTo = function (v) {
+	    return Math.sqrt(this.distanceToSquared(v));
+	  };
+
+	  Vec2.prototype.distanceToSquared = function (v) {
+	    var dx = this.x - v.x,
+	        dy = this.y - v.y;
+	    return dx * dx + dy * dy;
+	  };
+
+	  Vec2.prototype.manhattanDistanceTo = function (v) {
+	    return Math.abs(this.x - v.x) + Math.abs(this.y - v.y);
+	  };
+
+	  Vec2.prototype.setLength = function (length) {
+	    return this.normalize().multiplyScalar(length);
+	  };
+
+	  Vec2.prototype.lerp = function (v, alpha) {
+	    this.x += (v.x - this.x) * alpha;
+	    this.y += (v.y - this.y) * alpha;
+	    return this;
+	  };
+
+	  Vec2.prototype.lerpVecs = function (v1, v2, alpha) {
+	    return this.subVecs(v2, v1).multiplyScalar(alpha).add(v1);
+	  };
+
+	  Vec2.prototype.equals = function (v) {
+	    return v.x === this.x && v.y === this.y;
+	  };
+
+	  Vec2.prototype.fromArray = function (array, offset) {
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    this.x = array[offset];
+	    this.y = array[offset + 1];
+	    return this;
+	  };
+
+	  Vec2.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    array[offset] = this.x;
+	    array[offset + 1] = this.y;
+	    return array;
+	  };
+
+	  Vec2.prototype.fromBufferAttribute = function (attribute, index, offset) {
+	    if (offset !== undefined) {
+	      console.warn("Vec2: offset has been removed from .fromBufferAttribute().");
+	    }
+
+	    this.x = attribute.getX(index);
+	    this.y = attribute.getY(index);
+	    return this;
+	  };
+
+	  Vec2.prototype.rotateAround = function (center, angle) {
+	    var c = Math.cos(angle),
+	        s = Math.sin(angle);
+	    var x = this.x - center.x;
+	    var y = this.y - center.y;
+	    this.x = x * c - y * s + center.x;
+	    this.y = x * s + y * c + center.y;
+	    return this;
+	  };
+
+	  return Vec2;
+	}(eventhandler.EventHandler);
+
+	exports.Vec2 = Vec2;
+
+	function v2() {
+	  return new Vec2();
+	}
+
+	exports.v2 = v2;
+	});
+
+	unwrapExports(Vec2_1);
+	var Vec2_2 = Vec2_1.v2;
+	var Vec2_3 = Vec2_1.Vec2;
+
+	var Quat_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.quat = exports.Quat = void 0;
+
+
+
+
+
+
+
+	var Quat =
+	/** @class */
+	function (_super) {
+	  __extends(Quat, _super);
+
+	  function Quat(_x, _y, _z, _w) {
+	    if (_x === void 0) {
+	      _x = 0;
+	    }
+
+	    if (_y === void 0) {
+	      _y = 0;
+	    }
+
+	    if (_z === void 0) {
+	      _z = 0;
+	    }
+
+	    if (_w === void 0) {
+	      _w = 1;
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    _this._x = _x;
+	    _this._y = _y;
+	    _this._z = _z;
+	    _this._w = _w;
+	    _this.isQuat = true;
+	    thing.buildAccessors(['x', 'y', 'z', 'w'], _this);
+	    return _this;
+	  }
+
+	  Quat.slerp = function (qa, qb, qm, t) {
+	    return qm.copy(qa).slerp(qb, t);
+	  };
+
+	  Quat.slerpFlat = function (dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t) {
+	    // fuzz-free, array-based Quat SLERP operation
+	    var x0 = src0[srcOffset0 + 0],
+	        y0 = src0[srcOffset0 + 1],
+	        z0 = src0[srcOffset0 + 2],
+	        w0 = src0[srcOffset0 + 3],
+	        x1 = src1[srcOffset1 + 0],
+	        y1 = src1[srcOffset1 + 1],
+	        z1 = src1[srcOffset1 + 2],
+	        w1 = src1[srcOffset1 + 3];
+
+	    if (w0 !== w1 || x0 !== x1 || y0 !== y1 || z0 !== z1) {
+	      var s = 1 - t,
+	          cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
+	          dir = cos >= 0 ? 1 : -1,
+	          sqrSin = 1 - cos * cos; // Skip the Slerp for tiny steps to avoid numeric problems:
+
+	      if (sqrSin > Number.EPSILON) {
+	        var sin = Math.sqrt(sqrSin),
+	            len = Math.atan2(sin, cos * dir);
+	        s = Math.sin(s * len) / sin;
+	        t = Math.sin(t * len) / sin;
+	      }
+
+	      var tDir = t * dir;
+	      x0 = x0 * s + x1 * tDir;
+	      y0 = y0 * s + y1 * tDir;
+	      z0 = z0 * s + z1 * tDir;
+	      w0 = w0 * s + w1 * tDir; // Normalize in case we just did a lerp:
+
+	      if (s === 1 - t) {
+	        var f = 1 / Math.sqrt(x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0);
+	        x0 *= f;
+	        y0 *= f;
+	        z0 *= f;
+	        w0 *= f;
+	      }
+	    }
+
+	    dst[dstOffset] = x0;
+	    dst[dstOffset + 1] = y0;
+	    dst[dstOffset + 2] = z0;
+	    dst[dstOffset + 3] = w0;
+	  };
+
+	  Quat.multiplyQuatsFlat = function (dst, dstOffset, src0, srcOffset0, src1, srcOffset1) {
+	    var x0 = src0[srcOffset0];
+	    var y0 = src0[srcOffset0 + 1];
+	    var z0 = src0[srcOffset0 + 2];
+	    var w0 = src0[srcOffset0 + 3];
+	    var x1 = src1[srcOffset1];
+	    var y1 = src1[srcOffset1 + 1];
+	    var z1 = src1[srcOffset1 + 2];
+	    var w1 = src1[srcOffset1 + 3];
+	    dst[dstOffset] = x0 * w1 + w0 * x1 + y0 * z1 - z0 * y1;
+	    dst[dstOffset + 1] = y0 * w1 + w0 * y1 + z0 * x1 - x0 * z1;
+	    dst[dstOffset + 2] = z0 * w1 + w0 * z1 + x0 * y1 - y0 * x1;
+	    dst[dstOffset + 3] = w0 * w1 - x0 * x1 - y0 * y1 - z0 * z1;
+	    return dst;
+	  };
+
+	  Quat.prototype.set = function (x, y, z, w) {
+	    this._x = x;
+	    this._y = y;
+	    this._z = z;
+	    this._w = w;
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.clone = function () {
+	    return new Quat(this._x, this._y, this._z, this._w);
+	  };
+
+	  Quat.prototype.copy = function (quat) {
+	    this._x = quat.x;
+	    this._y = quat.y;
+	    this._z = quat.z;
+	    this._w = quat.w;
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.setFromEuler = function (euler, update) {
+	    if (!(euler && euler.isEuler)) {
+	      throw new Error("Quat: .setFromEuler() now expects an Euler rotation rather than a Vec3 and order.");
+	    }
+
+	    var x = euler._x,
+	        y = euler._y,
+	        z = euler._z,
+	        order = euler.order; // http://www.mathworks.com/matlabcentral/fileexchange/
+	    // 	20696-function-to-convert-between-dcm-Euler-angles-Quats-and-Euler-Vecs/
+	    //	content/SpinCalc.m
+
+	    var cos = Math.cos;
+	    var sin = Math.sin;
+	    var c1 = cos(x / 2);
+	    var c2 = cos(y / 2);
+	    var c3 = cos(z / 2);
+	    var s1 = sin(x / 2);
+	    var s2 = sin(y / 2);
+	    var s3 = sin(z / 2);
+
+	    if (order === "XYZ") {
+	      this._x = s1 * c2 * c3 + c1 * s2 * s3;
+	      this._y = c1 * s2 * c3 - s1 * c2 * s3;
+	      this._z = c1 * c2 * s3 + s1 * s2 * c3;
+	      this._w = c1 * c2 * c3 - s1 * s2 * s3;
+	    } else if (order === "YXZ") {
+	      this._x = s1 * c2 * c3 + c1 * s2 * s3;
+	      this._y = c1 * s2 * c3 - s1 * c2 * s3;
+	      this._z = c1 * c2 * s3 - s1 * s2 * c3;
+	      this._w = c1 * c2 * c3 + s1 * s2 * s3;
+	    } else if (order === "ZXY") {
+	      this._x = s1 * c2 * c3 - c1 * s2 * s3;
+	      this._y = c1 * s2 * c3 + s1 * c2 * s3;
+	      this._z = c1 * c2 * s3 + s1 * s2 * c3;
+	      this._w = c1 * c2 * c3 - s1 * s2 * s3;
+	    } else if (order === "ZYX") {
+	      this._x = s1 * c2 * c3 - c1 * s2 * s3;
+	      this._y = c1 * s2 * c3 + s1 * c2 * s3;
+	      this._z = c1 * c2 * s3 - s1 * s2 * c3;
+	      this._w = c1 * c2 * c3 + s1 * s2 * s3;
+	    } else if (order === "YZX") {
+	      this._x = s1 * c2 * c3 + c1 * s2 * s3;
+	      this._y = c1 * s2 * c3 + s1 * c2 * s3;
+	      this._z = c1 * c2 * s3 - s1 * s2 * c3;
+	      this._w = c1 * c2 * c3 - s1 * s2 * s3;
+	    } else if (order === "XZY") {
+	      this._x = s1 * c2 * c3 - c1 * s2 * s3;
+	      this._y = c1 * s2 * c3 - s1 * c2 * s3;
+	      this._z = c1 * c2 * s3 + s1 * s2 * c3;
+	      this._w = c1 * c2 * c3 + s1 * s2 * s3;
+	    }
+
+	    if (update !== false) this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.setFromAxisAngle = function (axis, angle) {
+	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuat/index.htm
+	    // assumes axis is normalized
+	    var halfAngle = angle / 2,
+	        s = Math.sin(halfAngle);
+	    this._x = axis.x * s;
+	    this._y = axis.y * s;
+	    this._z = axis.z * s;
+	    this._w = Math.cos(halfAngle);
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.setFromRotationMatrix = function (m) {
+	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuat/index.htm
+	    // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+	    var te = m.elements,
+	        m11 = te[0],
+	        m12 = te[4],
+	        m13 = te[8],
+	        m21 = te[1],
+	        m22 = te[5],
+	        m23 = te[9],
+	        m31 = te[2],
+	        m32 = te[6],
+	        m33 = te[10],
+	        trace = m11 + m22 + m33,
+	        s;
+
+	    if (trace > 0) {
+	      s = 0.5 / Math.sqrt(trace + 1.0);
+	      this._w = 0.25 / s;
+	      this._x = (m32 - m23) * s;
+	      this._y = (m13 - m31) * s;
+	      this._z = (m21 - m12) * s;
+	    } else if (m11 > m22 && m11 > m33) {
+	      s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
+	      this._w = (m32 - m23) / s;
+	      this._x = 0.25 * s;
+	      this._y = (m12 + m21) / s;
+	      this._z = (m13 + m31) / s;
+	    } else if (m22 > m33) {
+	      s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
+	      this._w = (m13 - m31) / s;
+	      this._x = (m12 + m21) / s;
+	      this._y = 0.25 * s;
+	      this._z = (m23 + m32) / s;
+	    } else {
+	      s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+	      this._w = (m21 - m12) / s;
+	      this._x = (m13 + m31) / s;
+	      this._y = (m23 + m32) / s;
+	      this._z = 0.25 * s;
+	    }
+
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.setFromUnitVecs = function (vFrom, vTo) {
+	    // assumes direction Vecs vFrom and vTo are normalized
+	    var EPS = 0.000001;
+	    var r = vFrom.dot(vTo) + 1;
+
+	    if (r < EPS) {
+	      r = 0;
+
+	      if (Math.abs(vFrom.x) > Math.abs(vFrom.z)) {
+	        this._x = -vFrom.y;
+	        this._y = vFrom.x;
+	        this._z = 0;
+	        this._w = r;
+	      } else {
+	        this._x = 0;
+	        this._y = -vFrom.z;
+	        this._z = vFrom.y;
+	        this._w = r;
+	      }
+	    } else {
+	      // crossVecs( vFrom, vTo ); // inlined to avoid cyclic dependency on Vec3
+	      this._x = vFrom.y * vTo.z - vFrom.z * vTo.y;
+	      this._y = vFrom.z * vTo.x - vFrom.x * vTo.z;
+	      this._z = vFrom.x * vTo.y - vFrom.y * vTo.x;
+	      this._w = r;
+	    }
+
+	    return this.normalize();
+	  };
+
+	  Quat.prototype.angleTo = function (q) {
+	    return 2 * Math.acos(Math.abs(_Math.clamp(this.dot(q), -1, 1)));
+	  };
+
+	  Quat.prototype.rotateTowards = function (q, step) {
+	    var angle = this.angleTo(q);
+	    if (angle === 0) return this;
+	    var t = Math.min(1, step / angle);
+	    this.slerp(q, t);
+	    return this;
+	  };
+
+	  Quat.prototype.inverse = function () {
+	    // Quat is assumed to have unit length
+	    return this.conjugate();
+	  };
+
+	  Quat.prototype.conjugate = function () {
+	    this._x *= -1;
+	    this._y *= -1;
+	    this._z *= -1;
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.dot = function (v) {
+	    return this._x * v._x + this._y * v._y + this._z * v._z + this._w * v._w;
+	  };
+
+	  Quat.prototype.lengthSq = function () {
+	    return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
+	  };
+
+	  Quat.prototype.length = function () {
+	    return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
+	  };
+
+	  Quat.prototype.normalize = function () {
+	    var l = this.length();
+
+	    if (l === 0) {
+	      this._x = 0;
+	      this._y = 0;
+	      this._z = 0;
+	      this._w = 1;
+	    } else {
+	      l = 1 / l;
+	      this._x = this._x * l;
+	      this._y = this._y * l;
+	      this._z = this._z * l;
+	      this._w = this._w * l;
+	    }
+
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.multiply = function (q, p) {
+	    if (p !== undefined) {
+	      return this.multiplyQuats(q, p);
+	    }
+
+	    return this.multiplyQuats(this, q);
+	  };
+
+	  Quat.prototype.premultiply = function (q) {
+	    return this.multiplyQuats(q, this);
+	  };
+
+	  Quat.prototype.multiplyQuats = function (a, b) {
+	    // from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/Quats/code/index.htm
+	    var qax = a._x,
+	        qay = a._y,
+	        qaz = a._z,
+	        qaw = a._w;
+	    var qbx = b._x,
+	        qby = b._y,
+	        qbz = b._z,
+	        qbw = b._w;
+	    this._x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
+	    this._y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
+	    this._z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
+	    this._w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.slerp = function (qb, t) {
+	    if (t === 0) return this;
+	    if (t === 1) return this.copy(qb);
+	    var x = this._x,
+	        y = this._y,
+	        z = this._z,
+	        w = this._w; // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/Quats/slerp/
+
+	    var cosHalfTheta = w * qb._w + x * qb._x + y * qb._y + z * qb._z;
+
+	    if (cosHalfTheta < 0) {
+	      this._w = -qb._w;
+	      this._x = -qb._x;
+	      this._y = -qb._y;
+	      this._z = -qb._z;
+	      cosHalfTheta = -cosHalfTheta;
+	    } else {
+	      this.copy(qb);
+	    }
+
+	    if (cosHalfTheta >= 1.0) {
+	      this._w = w;
+	      this._x = x;
+	      this._y = y;
+	      this._z = z;
+	      return this;
+	    }
+
+	    var sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
+
+	    if (sqrSinHalfTheta <= Number.EPSILON) {
+	      var s = 1 - t;
+	      this._w = s * w + t * this._w;
+	      this._x = s * x + t * this._x;
+	      this._y = s * y + t * this._y;
+	      this._z = s * z + t * this._z;
+	      this.normalize();
+	      this.fire("change", this);
+	      return this;
+	    }
+
+	    var sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
+	    var halfTheta = Math.atan2(sinHalfTheta, cosHalfTheta);
+	    var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta,
+	        ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+	    this._w = w * ratioA + this._w * ratioB;
+	    this._x = x * ratioA + this._x * ratioB;
+	    this._y = y * ratioA + this._y * ratioB;
+	    this._z = z * ratioA + this._z * ratioB;
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.equals = function (quat) {
+	    return quat._x === this._x && quat._y === this._y && quat._z === this._z && quat._w === this._w;
+	  };
+
+	  Quat.prototype.fromArray = function (array, offset) {
+	    if (offset === undefined) offset = 0;
+	    this._x = array[offset];
+	    this._y = array[offset + 1];
+	    this._z = array[offset + 2];
+	    this._w = array[offset + 3];
+	    this.fire("change", this);
+	    return this;
+	  };
+
+	  Quat.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    array[offset] = this._x;
+	    array[offset + 1] = this._y;
+	    array[offset + 2] = this._z;
+	    array[offset + 3] = this._w;
+	    return array;
+	  };
+
+	  return Quat;
+	}(eventhandler.EventHandler);
+
+	exports.Quat = Quat;
+
+	function quat(x, y, z, w) {
+	  return new Quat(x, y, z, w);
+	}
+
+	exports.quat = quat;
+	});
+
+	unwrapExports(Quat_1);
+	var Quat_2 = Quat_1.quat;
+	var Quat_3 = Quat_1.Quat;
+
+	var Segment_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.segment = exports.Segment = void 0;
+
+
+
+	var Segment =
+	/** @class */
+	function (_super) {
+	  __extends(Segment, _super);
+	  /**
+	   * 线段
+	   * @param  {Point|Vec3} p0
+	   * @param  {Point|Vec3} p1
+	   */
+
+
+	  function Segment(_p0, _p1) {
+	    if (_p0 === void 0) {
+	      _p0 = Vec3_1.v3();
+	    }
+
+	    if (_p1 === void 0) {
+	      _p1 = Vec3_1.v3();
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    Object.setPrototypeOf(_this, Segment.prototype);
+
+	    _this.push(_p0, _p1);
+
+	    _this.center = _p0.clone().add(_p1).multiplyScalar(0.5);
+	    _this.extentDirection = _p1.clone().sub(_p0);
+	    _this.extentSqr = _this.extentDirection.lengthSq();
+	    _this.extent = Math.sqrt(_this.extentSqr);
+	    _this.direction = _this.extentDirection.clone().normalize();
+	    return _this;
+	  }
+
+	  Object.defineProperty(Segment.prototype, "p0", {
+	    get: function () {
+	      return this[0];
+	    },
+	    set: function (v) {
+	      this[0].copy(v);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Segment.prototype, "p1", {
+	    get: function () {
+	      return this[1];
+	    },
+	    set: function (v) {
+	      this[1].copy(v);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Segment.prototype.offset = function (distance, normal) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    var vdir = this.direction.clone().applyAxisAngle(normal, Math.PI / 2);
+	    vdir.normalize().multiplyScalar(distance);
+	    this.p0.add(vdir);
+	    this.p1.add(vdir);
+	  };
+	  /**
+	   * 线段到线段的距离
+	   * @param  {Segment} segment
+	   */
+
+
+	  Segment.prototype.distanceSegment = function (segment) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+
+	    function GetClampedRoot(slope, h0, h1) {
+	      var r;
+
+	      if (h0 < 0) {
+	        if (h1 > 0) {
+	          r = -h0 / slope;
+
+	          if (r > 1) {
+	            r = 0.5;
+	          } // The slope is positive and -h0 is positive, so there is no
+	          // need to test for a negative value and clamp it.
+
+	        } else {
+	          r = 1;
+	        }
+	      } else {
+	        r = 0;
+	      }
+
+	      return r;
+	    }
+
+	    function ComputevarIntersection(sValue, classify, edge, end) {
+	      if (classify[0] < 0) {
+	        edge[0] = 0;
+	        end[0][0] = 0;
+	        end[0][1] = mF00 / mB;
+
+	        if (end[0][1] < 0 || end[0][1] > 1) {
+	          end[0][1] = 0.5;
+	        }
+
+	        if (classify[1] == 0) {
+	          edge[1] = 3;
+	          end[1][0] = sValue[1];
+	          end[1][1] = 1;
+	        } else // classify[1] > 0
+	          {
+	            edge[1] = 1;
+	            end[1][0] = 1;
+	            end[1][1] = mF10 / mB;
+
+	            if (end[1][1] < 0 || end[1][1] > 1) {
+	              end[1][1] = 0.5;
+	            }
+	          }
+	      } else if (classify[0] == 0) {
+	        edge[0] = 2;
+	        end[0][0] = sValue[0];
+	        end[0][1] = 0;
+
+	        if (classify[1] < 0) {
+	          edge[1] = 0;
+	          end[1][0] = 0;
+	          end[1][1] = mF00 / mB;
+
+	          if (end[1][1] < 0 || end[1][1] > 1) {
+	            end[1][1] = 0.5;
+	          }
+	        } else if (classify[1] == 0) {
+	          edge[1] = 3;
+	          end[1][0] = sValue[1];
+	          end[1][1] = 1;
+	        } else {
+	          edge[1] = 1;
+	          end[1][0] = 1;
+	          end[1][1] = mF10 / mB;
+
+	          if (end[1][1] < 0 || end[1][1] > 1) {
+	            end[1][1] = 0.5;
+	          }
+	        }
+	      } else // classify[0] > 0
+	        {
+	          edge[0] = 1;
+	          end[0][0] = 1;
+	          end[0][1] = mF10 / mB;
+
+	          if (end[0][1] < 0 || end[0][1] > 1) {
+	            end[0][1] = 0.5;
+	          }
+
+	          if (classify[1] == 0) {
+	            edge[1] = 3;
+	            end[1][0] = sValue[1];
+	            end[1][1] = 1;
+	          } else {
+	            edge[1] = 0;
+	            end[1][0] = 0;
+	            end[1][1] = mF00 / mB;
+
+	            if (end[1][1] < 0 || end[1][1] > 1) {
+	              end[1][1] = 0.5;
+	            }
+	          }
+	        }
+	    }
+
+	    function ComputeMinimumParameters(edge, end, parameters) {
+	      var delta = end[1][1] - end[0][1];
+	      var h0 = delta * (-mB * end[0][0] + mC * end[0][1] - mE);
+
+	      if (h0 >= 0) {
+	        if (edge[0] == 0) {
+	          parameters[0] = 0;
+	          parameters[1] = GetClampedRoot(mC, mG00, mG01);
+	        } else if (edge[0] == 1) {
+	          parameters[0] = 1;
+	          parameters[1] = GetClampedRoot(mC, mG10, mG11);
+	        } else {
+	          parameters[0] = end[0][0];
+	          parameters[1] = end[0][1];
+	        }
+	      } else {
+	        var h1 = delta * (-mB * end[1][0] + mC * end[1][1] - mE);
+
+	        if (h1 <= 0) {
+	          if (edge[1] == 0) {
+	            parameters[0] = 0;
+	            parameters[1] = GetClampedRoot(mC, mG00, mG01);
+	          } else if (edge[1] == 1) {
+	            parameters[0] = 1;
+	            parameters[1] = GetClampedRoot(mC, mG10, mG11);
+	          } else {
+	            parameters[0] = end[1][0];
+	            parameters[1] = end[1][1];
+	          }
+	        } else // h0 < 0 and h1 > 0
+	          {
+	            var z = Math.min(Math.max(h0 / (h0 - h1), 0), 1);
+	            var omz = 1 - z;
+	            parameters[0] = omz * end[0][0] + z * end[1][0];
+	            parameters[1] = omz * end[0][1] + z * end[1][1];
+	          }
+	      }
+	    }
+
+	    var seg0Dir = this.p1.clone().sub(this.p0);
+	    var seg1Dir = segment.p1.clone().sub(segment.p0);
+	    var segDiff = this.p0.clone().sub(segment.p0);
+	    var mA = seg0Dir.dot(seg0Dir);
+	    var mB = seg0Dir.dot(seg1Dir);
+	    var mC = seg1Dir.dot(seg1Dir);
+	    var mD = seg0Dir.dot(segDiff);
+	    var mE = seg1Dir.dot(segDiff);
+	    var mF00 = mD;
+	    var mF10 = mF00 + mA;
+	    var mF01 = mF00 - mB;
+	    var mF11 = mF10 - mB;
+	    var mG00 = -mE;
+	    var mG10 = mG00 - mB;
+	    var mG01 = mG00 + mC;
+	    var mG11 = mG10 + mC;
+
+	    if (mA > 0 && mC > 0) {
+	      var sValue = [];
+	      sValue[0] = GetClampedRoot(mA, mF00, mF10);
+	      sValue[1] = GetClampedRoot(mA, mF01, mF11);
+	      var classify = [];
+
+	      for (var i = 0; i < 2; ++i) {
+	        if (sValue[i] <= 0) {
+	          classify[i] = -1;
+	        } else if (sValue[i] >= 1) {
+	          classify[i] = +1;
+	        } else {
+	          classify[i] = 0;
+	        }
+	      }
+
+	      if (classify[0] == -1 && classify[1] == -1) {
+	        // The minimum must occur on s = 0 for 0 <= t <= 1.
+	        result.parameters[0] = 0;
+	        result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
+	      } else if (classify[0] == +1 && classify[1] == +1) {
+	        // The minimum must occur on s = 1 for 0 <= t <= 1.
+	        result.parameters[0] = 1;
+	        result.parameters[1] = GetClampedRoot(mC, mG10, mG11);
+	      } else {
+	        // The line dR/ds = 0 varersects the domain [0,1]^2 in a
+	        // nondegenerate segment.  Compute the endpoints of that segment,
+	        // end[0] and end[1].  The edge[i] flag tells you on which domain
+	        // edge end[i] lives: 0 (s=0), 1 (s=1), 2 (t=0), 3 (t=1).
+	        var edge = [];
+	        var end = new Array(2);
+
+	        for (var i_1 = 0; i_1 < end.length; i_1++) end[i_1] = new Array(2);
+
+	        ComputevarIntersection(sValue, classify, edge, end); // The directional derivative of R along the segment of
+	        // varersection is
+	        //   H(z) = (end[1][1]-end[1][0])*dR/dt((1-z)*end[0] + z*end[1])
+	        // for z in [0,1].  The formula uses the fact that dR/ds = 0 on
+	        // the segment.  Compute the minimum of H on [0,1].
+
+	        ComputeMinimumParameters(edge, end, result.parameters);
+	      }
+	    } else {
+	      if (mA > 0) {
+	        // The Q-segment is degenerate ( segment.point0 and  segment.p0 are the same point) and
+	        // the quadratic is R(s,0) = a*s^2 + 2*d*s + f and has (half)
+	        // first derivative F(t) = a*s + d.  The closests P-point is
+	        // varerior to the P-segment when F(0) < 0 and F(1) > 0.
+	        result.parameters[0] = GetClampedRoot(mA, mF00, mF10);
+	        result.parameters[1] = 0;
+	      } else if (mC > 0) {
+	        // The P-segment is degenerate ( this.point0 and  this.p0 are the same point) and
+	        // the quadratic is R(0,t) = c*t^2 - 2*e*t + f and has (half)
+	        // first derivative G(t) = c*t - e.  The closests Q-point is
+	        // varerior to the Q-segment when G(0) < 0 and G(1) > 0.
+	        result.parameters[0] = 0;
+	        result.parameters[1] = GetClampedRoot(mC, mG00, mG01);
+	      } else {
+	        // P-segment and Q-segment are degenerate.
+	        result.parameters[0] = 0;
+	        result.parameters[1] = 0;
+	      }
+	    }
+
+	    result.closests[0] = this.p0.clone().multiplyScalar(1 - result.parameters[0]).add(this.p1.clone().multiplyScalar(result.parameters[0]));
+	    result.closests[1] = segment.p0.clone().multiplyScalar(1 - result.parameters[1]).add(segment.p1.clone().multiplyScalar(result.parameters[1]));
+	    var diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distance);
+	    return result;
+	  }; //---Intersect--------------------------------------------------------------------------------------------
+
+
+	  Segment.prototype.intersectSegment = function (segment) {
+	  };
+
+	  return Segment;
+	}(Array);
+
+	exports.Segment = Segment;
+
+	function segment(p0, p1) {
+	  return new Segment(p0, p1);
+	}
+
+	exports.segment = segment;
+	});
+
+	unwrapExports(Segment_1);
+	var Segment_2 = Segment_1.segment;
+	var Segment_3 = Segment_1.Segment;
+
+	var Vec3_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.v3 = exports.Vec3 = void 0;
+
+
+
+
+
+
+
+
+
+
+
+	var Vec3 =
+	/** @class */
+	function (_super) {
+	  __extends(Vec3, _super);
+
+	  function Vec3(_x, _y, _z) {
+	    if (_x === void 0) {
+	      _x = 0;
+	    }
+
+	    if (_y === void 0) {
+	      _y = 0;
+	    }
+
+	    if (_z === void 0) {
+	      _z = 0;
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    _this._x = _x;
+	    _this._y = _y;
+	    _this._z = _z;
+	    thing.buildAccessors(['x', 'y', 'z'], _this);
+	    return _this;
+	  }
+
+	  Vec3.isVec3 = function (v) {
+	    return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && isNaN(v.w);
+	  };
+
+	  Object.defineProperty(Vec3.prototype, "isVec3", {
+	    get: function () {
+	      return true;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3, "Up", {
+	    get: function () {
+	      return new Vec3(0, 1, 0);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3, "Down", {
+	    get: function () {
+	      return new Vec3(0, 1, 0);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3, "UnitX", {
+	    get: function () {
+	      return new Vec3(1, 0, 0);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3, "UnitY", {
+	    get: function () {
+	      return new Vec3(0, 1, 0);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3, "UnitZ", {
+	    get: function () {
+	      return new Vec3(0, 0, 1);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Vec3.prototype.set = function (x, y, z) {
+	    this.x = x;
+	    this.y = y;
+	    this.z = z;
+	    return this;
+	  };
+
+	  Vec3.prototype.setScalar = function (scalar) {
+	    this.x = scalar;
+	    this.y = scalar;
+	    this.z = scalar;
+	    return this;
+	  };
+
+	  Vec3.prototype.setComponent = function (index, value) {
+	    switch (index) {
+	      case 0:
+	        this.x = value;
+	        break;
+
+	      case 1:
+	        this.y = value;
+	        break;
+
+	      case 2:
+	        this.z = value;
+	        break;
+
+	      default:
+	        throw new Error("index is out of range: " + index);
+	    }
+
+	    return this;
+	  };
+
+	  Vec3.prototype.getComponent = function (index) {
+	    switch (index) {
+	      case 0:
+	        return this.x;
+
+	      case 1:
+	        return this.y;
+
+	      case 2:
+	        return this.z;
+
+	      default:
+	        throw new Error("index is out of range: " + index);
+	    }
+	  };
+
+	  Vec3.prototype.clone = function () {
+	    return new Vec3(this.x, this.y, this.z);
+	  };
+
+	  Vec3.prototype.copy = function (v) {
+	    this.x = v.x;
+	    this.y = v.y;
+	    this.z = v.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.add = function (v, w) {
+	    if (w !== undefined) {
+	      console.warn("Vec3: .add() now only accepts one argument. Use .addVecs( a, b ) instead.");
+	      return this.addVecs(v, w);
+	    }
+
+	    this.x += v.x;
+	    this.y += v.y;
+	    this.z += v.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.addScalar = function (s) {
+	    this.x += s;
+	    this.y += s;
+	    this.z += s;
+	    return this;
+	  };
+
+	  Vec3.prototype.addVecs = function (a, b) {
+	    this.x = a.x + b.x;
+	    this.y = a.y + b.y;
+	    this.z = a.z + b.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.addScaledVec = function (v, s) {
+	    this.x += v.x * s;
+	    this.y += v.y * s;
+	    this.z += v.z * s;
+	    return this;
+	  };
+
+	  Vec3.prototype.sub = function (v, w) {
+	    if (w !== undefined) {
+	      console.warn("Vec3: .sub() now only accepts one argument. Use .subVecs( a, b ) instead.");
+	      return this.subVecs(v, w);
+	    }
+
+	    this.x -= v.x;
+	    this.y -= v.y;
+	    this.z -= v.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.subScalar = function (s) {
+	    this.x -= s;
+	    this.y -= s;
+	    this.z -= s;
+	    return this;
+	  };
+
+	  Vec3.prototype.subVecs = function (a, b) {
+	    this.x = a.x - b.x;
+	    this.y = a.y - b.y;
+	    this.z = a.z - b.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.multiply = function (v, w) {
+	    if (w !== undefined) {
+	      return this.multiplyVecs(v, w);
+	    }
+
+	    this.x *= v.x;
+	    this.y *= v.y;
+	    this.z *= v.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.multiplyScalar = function (scalar) {
+	    this.x *= scalar;
+	    this.y *= scalar;
+	    this.z *= scalar;
+	    return this;
+	  };
+
+	  Vec3.prototype.multiplyVecs = function (a, b) {
+	    this.x = a.x * b.x;
+	    this.y = a.y * b.y;
+	    this.z = a.z * b.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.applyEuler = function (euler) {
+	    if (!(euler && euler.isEuler)) {
+	      console.error("Vec3: .applyEuler() now expects an Euler rotation rather than a Vec3 and order.");
+	    }
+
+	    return this.applyQuat(_quat.setFromEuler(euler));
+	  };
+
+	  Vec3.prototype.applyAxisAngle = function (axis, angle) {
+	    return this.applyQuat(_quat.setFromAxisAngle(axis, angle));
+	  };
+
+	  Vec3.prototype.applyMat3 = function (m) {
+	    var x = this.x,
+	        y = this.y,
+	        z = this.z;
+	    var e = m.elements;
+	    this.x = e[0] * x + e[3] * y + e[6] * z;
+	    this.y = e[1] * x + e[4] * y + e[7] * z;
+	    this.z = e[2] * x + e[5] * y + e[8] * z;
+	    return this;
+	  };
+
+	  Vec3.prototype.applyMat4 = function (m) {
+	    var x = this.x,
+	        y = this.y,
+	        z = this.z;
+	    var e = m.elements;
+	    var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+	    this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+	    this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+	    this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+	    return this;
+	  };
+
+	  Vec3.prototype.applyQuat = function (q) {
+	    var x = this.x,
+	        y = this.y,
+	        z = this.z;
+	    var qx = q.x,
+	        qy = q.y,
+	        qz = q.z,
+	        qw = q.w; // calculate Quat * Vec
+
+	    var ix = qw * x + qy * z - qz * y;
+	    var iy = qw * y + qz * x - qx * z;
+	    var iz = qw * z + qx * y - qy * x;
+	    var iw = -qx * x - qy * y - qz * z; // calculate result * inverse Quat
+
+	    this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+	    this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+	    this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+	    return this;
+	  };
+
+	  Vec3.prototype.project = function (camera) {
+	    return this.applyMat4(camera.matrixWorldInverse).applyMat4(camera.projectionMatrix);
+	  };
+
+	  Vec3.prototype.unproject = function (camera) {
+	    return this.applyMat4(camera.projectionMatrixInverse).applyMat4(camera.matrixWorld);
+	  };
+
+	  Vec3.prototype.transformDirection = function (m) {
+	    // input: Mat4 affine matrix
+	    // Vec interpreted as a direction
+	    var x = this.x,
+	        y = this.y,
+	        z = this.z;
+	    var e = m.elements;
+	    this.x = e[0] * x + e[4] * y + e[8] * z;
+	    this.y = e[1] * x + e[5] * y + e[9] * z;
+	    this.z = e[2] * x + e[6] * y + e[10] * z;
+	    return this.normalize();
+	  };
+
+	  Vec3.prototype.divide = function (v) {
+	    this.x /= v.x;
+	    this.y /= v.y;
+	    this.z /= v.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.divideScalar = function (scalar) {
+	    return this.multiplyScalar(1 / scalar);
+	  };
+
+	  Vec3.prototype.min = function (v) {
+	    this.x = Math.min(this.x, v.x);
+	    this.y = Math.min(this.y, v.y);
+	    this.z = Math.min(this.z, v.z);
+	    return this;
+	  };
+
+	  Vec3.prototype.max = function (v) {
+	    this.x = Math.max(this.x, v.x);
+	    this.y = Math.max(this.y, v.y);
+	    this.z = Math.max(this.z, v.z);
+	    return this;
+	  };
+
+	  Vec3.prototype.clamp = function (min, max) {
+	    // assumes min < max, componentwise
+	    this.x = Math.max(min.x, Math.min(max.x, this.x));
+	    this.y = Math.max(min.y, Math.min(max.y, this.y));
+	    this.z = Math.max(min.z, Math.min(max.z, this.z));
+	    return this;
+	  };
+
+	  Vec3.prototype.clampScalar = function (minVal, maxVal) {
+	    this.x = Math.max(minVal, Math.min(maxVal, this.x));
+	    this.y = Math.max(minVal, Math.min(maxVal, this.y));
+	    this.z = Math.max(minVal, Math.min(maxVal, this.z));
+	    return this;
+	  };
+
+	  Vec3.prototype.clampLength = function (min, max) {
+	    var length = this.length();
+	    return this.divideScalar(length || 1).multiplyScalar(Math.max(min, Math.min(max, length)));
+	  };
+
+	  Vec3.prototype.floor = function () {
+	    this.x = Math.floor(this.x);
+	    this.y = Math.floor(this.y);
+	    this.z = Math.floor(this.z);
+	    return this;
+	  };
+
+	  Vec3.prototype.ceil = function () {
+	    this.x = Math.ceil(this.x);
+	    this.y = Math.ceil(this.y);
+	    this.z = Math.ceil(this.z);
+	    return this;
+	  };
+
+	  Vec3.prototype.round = function () {
+	    this.x = Math.round(this.x);
+	    this.y = Math.round(this.y);
+	    this.z = Math.round(this.z);
+	    return this;
+	  };
+
+	  Vec3.prototype.roundToZero = function () {
+	    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
+	    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
+	    this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
+	    return this;
+	  };
+
+	  Vec3.prototype.negate = function () {
+	    this.x = -this.x;
+	    this.y = -this.y;
+	    this.z = -this.z;
+	    return this;
+	  };
+
+	  Vec3.prototype.dot = function (v) {
+	    return this.x * v.x + this.y * v.y + this.z * v.z;
+	  }; // TODO lengthSquared?
+
+
+	  Vec3.prototype.lengthSq = function () {
+	    return this.x * this.x + this.y * this.y + this.z * this.z;
+	  };
+
+	  Vec3.prototype.length = function () {
+	    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+	  };
+
+	  Vec3.prototype.manhattanLength = function () {
+	    return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
+	  };
+
+	  Vec3.prototype.normalize = function (robust) {
+
+	    return this.divideScalar(this.length() || 1); // if (robust)
+	    // {
+	    //   var maxAbsComp = Math.abs(v[0]);
+	    //   for (var i = 1; i < N; ++i)
+	    //   {
+	    //     var absComp = Math.abs(v[i]);
+	    //     if (absComp > maxAbsComp)
+	    //     {
+	    //       maxAbsComp = absComp;
+	    //     }
+	    //   }
+	    //   var length;
+	    //   if (maxAbsComp > 0)
+	    //   {
+	    //     v /= maxAbsComp;
+	    //     length = Math.sqrt(Dot(v, v));
+	    //     v /= length;
+	    //     length *= maxAbsComp;
+	    //   }
+	    //   else
+	    //   {
+	    //     length = 0;
+	    //     for (var i = 0; i < N; ++i)
+	    //     {
+	    //       v[i] = 0;
+	    //     }
+	    //   }
+	    //   return length;
+	    // }
+	    // else
+	    // {
+	    //   var length = this.length();
+	    //   if (length > 0)
+	    //   {
+	    //     v /= length;
+	    //   }
+	    //   else
+	    //   {
+	    //     for (var i = 0; i < N; ++i)
+	    //     {
+	    //       v[i] = 0;
+	    //     }
+	    //   }
+	    // }
+	  };
+
+	  Vec3.prototype.setLength = function (length) {
+	    return this.normalize().multiplyScalar(length);
+	  };
+
+	  Vec3.prototype.lerp = function (v, alpha) {
+	    this.x += (v.x - this.x) * alpha;
+	    this.y += (v.y - this.y) * alpha;
+	    this.z += (v.z - this.z) * alpha;
+	    return this;
+	  };
+
+	  Vec3.prototype.lerpVecs = function (v1, v2, alpha) {
+	    return this.subVecs(v2, v1).multiplyScalar(alpha).add(v1);
+	  };
+
+	  Vec3.prototype.cross = function (v, w) {
+	    if (w !== undefined) {
+	      console.warn("Vec3: .cross() now only accepts one argument. Use .crossVecs( a, b ) instead.");
+	      return this.crossVecs(v, w);
+	    }
+
+	    return this.crossVecs(this, v);
+	  };
+
+	  Vec3.prototype.crossVecs = function (a, b) {
+	    var ax = a.x,
+	        ay = a.y,
+	        az = a.z;
+	    var bx = b.x,
+	        by = b.y,
+	        bz = b.z;
+	    this.x = ay * bz - az * by;
+	    this.y = az * bx - ax * bz;
+	    this.z = ax * by - ay * bx;
+	    return this;
+	  };
+
+	  Vec3.prototype.projectOnVec = function (vec) {
+	    var scalar = vec.dot(this) / vec.lengthSq();
+	    return this.copy(vec).multiplyScalar(scalar);
+	  };
+
+	  Vec3.prototype.projectOnPlane = function (planeNormal) {
+	    _vec.copy(this).projectOnVec(planeNormal);
+
+	    return this.sub(_vec);
+	  };
+
+	  Vec3.prototype.reflect = function (normal) {
+	    // reflect incident Vec off plane orthogonal to normal
+	    // normal is assumed to have unit length
+	    return this.sub(_vec.copy(normal).multiplyScalar(2 * this.dot(normal)));
+	  };
+
+	  Vec3.prototype.angleTo = function (v, normal) {
+	    if (normal) return this.angleToEx(v, normal);
+	    var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq());
+	    return Math.acos(_Math.clamp(theta, -1, 1));
+	  };
+
+	  Vec3.prototype.angleToEx = function (v, normal) {
+	    var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq());
+	    if (this.clone().cross(v).dot(normal) > 0) return Math.acos(_Math.clamp(theta, -1, 1));else return Math.PI * 2 - Math.acos(_Math.clamp(theta, -1, 1));
+	  };
+
+	  Vec3.prototype.distanceTo = function (v) {
+	    return Math.sqrt(this.distanceToSquared(v));
+	  };
+
+	  Vec3.prototype.distanceToSquared = function (v) {
+	    var dx = this.x - v.x,
+	        dy = this.y - v.y,
+	        dz = this.z - v.z;
+	    return dx * dx + dy * dy + dz * dz;
+	  };
+
+	  Vec3.prototype.manhattanDistanceTo = function (v) {
+	    return Math.abs(this.x - v.x) + Math.abs(this.y - v.y) + Math.abs(this.z - v.z);
+	  };
+
+	  Vec3.prototype.setFromSpherical = function (s) {
+	    return this.setFromSphericalCoords(s.radius, s.phi, s.theta);
+	  };
+
+	  Vec3.prototype.setFromSphericalCoords = function (radius, phi, theta) {
+	    var sinPhiRadius = Math.sin(phi) * radius;
+	    this.x = sinPhiRadius * Math.sin(theta);
+	    this.y = Math.cos(phi) * radius;
+	    this.z = sinPhiRadius * Math.cos(theta);
+	    return this;
+	  };
+
+	  Vec3.prototype.setFromCylindrical = function (c) {
+	    return this.setFromCylindricalCoords(c.radius, c.theta, c.y);
+	  };
+
+	  Vec3.prototype.setFromCylindricalCoords = function (radius, theta, y) {
+	    this.x = radius * Math.sin(theta);
+	    this.y = y;
+	    this.z = radius * Math.cos(theta);
+	    return this;
+	  };
+
+	  Vec3.prototype.setFromMatrixPosition = function (m) {
+	    var e = m.elements;
+	    this.x = e[12];
+	    this.y = e[13];
+	    this.z = e[14];
+	    return this;
+	  };
+
+	  Vec3.prototype.setFromMatrixScale = function (m) {
+	    var sx = this.setFromMatrixColumn(m, 0).length();
+	    var sy = this.setFromMatrixColumn(m, 1).length();
+	    var sz = this.setFromMatrixColumn(m, 2).length();
+	    this.x = sx;
+	    this.y = sy;
+	    this.z = sz;
+	    return this;
+	  };
+
+	  Vec3.prototype.setFromMatrixColumn = function (m, index) {
+	    return this.fromArray(m.elements, index * 4);
+	  };
+
+	  Vec3.prototype.equals = function (v) {
+	    return v.x === this.x && v.y === this.y && v.z === this.z;
+	  };
+
+	  Vec3.prototype.fromArray = function (array, offset) {
+	    if (offset === undefined) offset = 0;
+	    this.x = array[offset];
+	    this.y = array[offset + 1];
+	    this.z = array[offset + 2];
+	    return this;
+	  };
+
+	  Vec3.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    array[offset] = this.x;
+	    array[offset + 1] = this.y;
+	    array[offset + 2] = this.z;
+	    return array;
+	  };
+
+	  Vec3.prototype.fromBufferAttribute = function (attribute, index, offset) {
+	    if (offset !== undefined) {
+	      console.warn("Vec3: offset has been removed from .fromBufferAttribute().");
+	    }
+
+	    this.x = attribute.getX(index);
+	    this.y = attribute.getY(index);
+	    this.z = attribute.getZ(index);
+	    return this;
+	  };
+
+	  Vec3.prototype.toFixed = function (fractionDigits) {
+	    if (fractionDigits !== undefined) {
+	      this.x = parseFloat(this.x.toFixed(fractionDigits));
+	      this.y = parseFloat(this.y.toFixed(fractionDigits));
+	      this.z = parseFloat(this.z.toFixed(fractionDigits));
+	    }
+
+	    return this;
+	  }; //---Distance-------------------------------------------------------------------------------
+
+
+	  Vec3.prototype.distancePoint = function (point) {
+	    var result = {};
+	    result.distanceSqr = this.distanceToSquared(point);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+
+	  Vec3.prototype.distanceLine = function (line) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = this.clone().sub(line.origin);
+	    var lineParameter = line.direction.dot(diff);
+	    var lineClosest = line.direction.clone().multiplyScalar(lineParameter).add(line.origin);
+	    result.parameters.push(0, lineParameter);
+	    result.closests.push(this, lineClosest);
+	    diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	  * Test success
+	  * 到射线的距离
+	  * @param  {Line} line
+	  * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
+	  */
+
+
+	  Vec3.prototype.distanceRay = function (ray) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = this.clone().sub(ray.origin);
+	    result.parameters[1] = ray.direction.dot(diff);
+
+	    if (result.parameters[1] > 0) {
+	      result.closests[1] = ray.direction.clone().multiplyScalar(result.parameters[1]).add(ray.origin);
+	    } else {
+	      result.closests[1] = ray.origin.clone();
+	    }
+
+	    diff = this.clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	  * Test success
+	  * 到线段的距离
+	  * @param  {Line} line
+	  * @returns {Object} lineParameter 最近点的参数  lineClosest 最近点  distanceSqr 到最近点距离的平方  distance 到最近点距离
+	  */
+
+
+	  Vec3.prototype.distanceSegment = function (segment) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = this.clone().sub(segment.p1);
+	    var t = segment.extentDirection.dot(diff);
+
+	    if (t >= 0) {
+	      result.parameters[1] = 1;
+	      result.closests[1] = segment.p1;
+	    } else {
+	      diff = this.clone().sub(segment.p0);
+	      t = segment.extentDirection.dot(diff);
+
+	      if (t <= 0) {
+	        result.parameters[1] = 0;
+	        result.closests[1] = segment.p0;
+	      } else {
+	        var sqrLength = segment.extentSqr;
+	        if (sqrLength <= 0) sqrLength = 0;
+	        t /= sqrLength;
+	        result.parameters[1] = t;
+	        result.closests[1] = segment.extentDirection.clone().multiplyScalar(t).add(segment.p0);
+	      }
+	    }
+
+	    result.closests[0] = this;
+	    diff = this.clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	   * 点与线段的距离
+	   * @param plane
+	   */
+
+
+	  Vec3.prototype.distancePlane = function (plane) {
+	    // this.clone().sub(plane.origin).dot(plane.normal);
+	    var result = {
+	      parameters: [],
+	      closests: [],
+	      signedDistance: 0,
+	      distance: 0
+	    };
+	    result.signedDistance = this.clone().dot(plane.normal) - plane.w;
+	    result.distance = Math.abs(result.signedDistance);
+	    result.closests[1] = this.clone().sub(plane.normal.clone().multiplyScalar(result.signedDistance));
+	    return result;
+	  };
+	  /**
+	   * 点与线段的距离
+	   * 点与折线的距离 测试排除法，平均比线性检索(暴力法)要快两倍以上
+	   */
+
+
+	  Vec3.prototype.distancePolyLine = function (polyline) {
+	    var u = +Infinity;
+	    var ipos = -1;
+	    var tempResult;
+	    var result = null;
+
+	    for (var i = 0; i < polyline.length - 1; i++) {
+	      var pti = polyline[i];
+	      var ptj = polyline[i + 1];
+	      if (Math.abs(pti.x - this.x) > u && Math.abs(ptj.x - this.x) > u && (pti.x - this.x) * (ptj.x - this.x) > 0) continue;
+	      if (Math.abs(pti.y - this.y) > u && Math.abs(ptj.y - this.y) > u && (pti.y - this.y) * (ptj.y - this.y) > 0) continue;
+	      if (Math.abs(pti.z - this.z) > u && Math.abs(ptj.z - this.z) > u && (pti.z - this.z) * (ptj.z - this.z) > 0) continue;
+	      tempResult = this.distanceSegment(new Segment_1.Segment(pti, ptj));
+
+	      if (tempResult.distance < u) {
+	        u = tempResult.distance;
+	        result = tempResult;
+	        ipos = i;
+	      }
+	    }
+
+	    result.segmentIndex = ipos;
+	    return result;
+	  };
+
+	  Vec3.prototype.distanceTriangle = function (triangle) {
+	    function GetMinEdge02(a11, b1, p) {
+	      p[0] = 0;
+
+	      if (b1 >= 0) {
+	        p[1] = 0;
+	      } else if (a11 + b1 <= 0) {
+	        p[1] = 1;
+	      } else {
+	        p[1] = -b1 / a11;
+	      }
+	    }
+
+	    function GetMinEdge12(a01, a11, b1, f10, f01, p) {
+	      var h0 = a01 + b1 - f10;
+
+	      if (h0 >= 0) {
+	        p[1] = 0;
+	      } else {
+	        var h1 = a11 + b1 - f01;
+
+	        if (h1 <= 0) {
+	          p[1] = 1;
+	        } else {
+	          p[1] = h0 / (h0 - h1);
+	        }
+	      }
+
+	      p[0] = 1 - p[1];
+	    }
+
+	    function GetMinInterior(p0, h0, p1, h1, p) {
+	      var z = h0 / (h0 - h1);
+	      p[0] = (1 - z) * p0[0] + z * p1[0];
+	      p[1] = (1 - z) * p0[1] + z * p1[1];
+	    }
+
+	    var diff = this.clone().sub(triangle.p0);
+	    var edge0 = triangle.p1.clone().sub(triangle.p0);
+	    var edge1 = triangle.p2.clone().sub(triangle.p0);
+	    var a00 = edge0.dot(edge0);
+	    var a01 = edge0.dot(edge1);
+	    var a11 = edge1.dot(edge1);
+	    var b0 = -diff.dot(edge0);
+	    var b1 = -diff.dot(edge1);
+	    var f00 = b0;
+	    var f10 = b0 + a00;
+	    var f01 = b0 + a01;
+	    var p0 = [0, 0],
+	        p1 = [0, 0],
+	        p = [0, 0];
+	    var dt1, h0, h1;
+
+	    if (f00 >= 0) {
+	      if (f01 >= 0) {
+	        // (1) p0 = (0,0), p1 = (0,1), H(z) = G(L(z))
+	        GetMinEdge02(a11, b1, p);
+	      } else {
+	        // (2) p0 = (0,t10), p1 = (t01,1-t01),
+	        // H(z) = (t11 - t10)*G(L(z))
+	        p0[0] = 0;
+	        p0[1] = f00 / (f00 - f01);
+	        p1[0] = f01 / (f01 - f10);
+	        p1[1] = 1 - p1[0];
+	        dt1 = p1[1] - p0[1];
+	        h0 = dt1 * (a11 * p0[1] + b1);
+
+	        if (h0 >= 0) {
+	          GetMinEdge02(a11, b1, p);
+	        } else {
+	          h1 = dt1 * (a01 * p1[0] + a11 * p1[1] + b1);
+
+	          if (h1 <= 0) {
+	            GetMinEdge12(a01, a11, b1, f10, f01, p);
+	          } else {
+	            GetMinInterior(p0, h0, p1, h1, p);
+	          }
+	        }
+	      }
+	    } else if (f01 <= 0) {
+	      if (f10 <= 0) {
+	        // (3) p0 = (1,0), p1 = (0,1),
+	        // H(z) = G(L(z)) - F(L(z))
+	        GetMinEdge12(a01, a11, b1, f10, f01, p);
+	      } else {
+	        // (4) p0 = (t00,0), p1 = (t01,1-t01), H(z) = t11*G(L(z))
+	        p0[0] = f00 / (f00 - f10);
+	        p0[1] = 0;
+	        p1[0] = f01 / (f01 - f10);
+	        p1[1] = 1 - p1[0];
+	        h0 = p1[1] * (a01 * p0[0] + b1);
+
+	        if (h0 >= 0) {
+	          p = p0; // GetMinEdge01
+	        } else {
+	          h1 = p1[1] * (a01 * p1[0] + a11 * p1[1] + b1);
+
+	          if (h1 <= 0) {
+	            GetMinEdge12(a01, a11, b1, f10, f01, p);
+	          } else {
+	            GetMinInterior(p0, h0, p1, h1, p);
+	          }
+	        }
+	      }
+	    } else if (f10 <= 0) {
+	      // (5) p0 = (0,t10), p1 = (t01,1-t01),
+	      // H(z) = (t11 - t10)*G(L(z))
+	      p0[0] = 0;
+	      p0[1] = f00 / (f00 - f01);
+	      p1[0] = f01 / (f01 - f10);
+	      p1[1] = 1 - p1[0];
+	      dt1 = p1[1] - p0[1];
+	      h0 = dt1 * (a11 * p0[1] + b1);
+
+	      if (h0 >= 0) {
+	        GetMinEdge02(a11, b1, p);
+	      } else {
+	        h1 = dt1 * (a01 * p1[0] + a11 * p1[1] + b1);
+
+	        if (h1 <= 0) {
+	          GetMinEdge12(a01, a11, b1, f10, f01, p);
+	        } else {
+	          GetMinInterior(p0, h0, p1, h1, p);
+	        }
+	      }
+	    } else {
+	      // (6) p0 = (t00,0), p1 = (0,t11), H(z) = t11*G(L(z))
+	      p0[0] = f00 / (f00 - f10);
+	      p0[1] = 0;
+	      p1[0] = 0;
+	      p1[1] = f00 / (f00 - f01);
+	      h0 = p1[1] * (a01 * p0[0] + b1);
+
+	      if (h0 >= 0) {
+	        p = p0; // GetMinEdge01
+	      } else {
+	        h1 = p1[1] * (a11 * p1[1] + b1);
+
+	        if (h1 <= 0) {
+	          GetMinEdge02(a11, b1, p);
+	        } else {
+	          GetMinInterior(p0, h0, p1, h1, p);
+	        }
+	      }
+	    }
+
+	    var result = {
+	      closests: [],
+	      parameters: []
+	    };
+	    result.triangleParameters[0] = 1 - p[0] - p[1];
+	    result.triangleParameters[1] = p[0];
+	    result.triangleParameters[2] = p[1];
+	    result.parameters[0] = this;
+	    result.parameters[1] = result.triangleParameters;
+	    var closest = triangle.p0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1]));
+	    result.parameters.push(0, result.rayParameter);
+	    result.closests.push(this, closest);
+	    diff = this.clone().sub(closest);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	   * 点到矩形的距离
+	   * @param  {Rectangle} rectangle
+	   */
+
+
+	  Vec3.prototype.distanceRectangle = function (rectangle) {
+	    var result = {
+	      rectangleParameters: [],
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = rectangle.center.clone().sub(this);
+	    var b0 = diff.dot(rectangle.axis[0]);
+	    var b1 = diff.dot(rectangle.axis[1]);
+	    var s0 = -b0,
+	        s1 = -b1;
+	    result.distanceSqr = diff.dot(diff);
+
+	    if (s0 < -rectangle.extent[0]) {
+	      s0 = -rectangle.extent[0];
+	    } else if (s0 > rectangle.extent[0]) {
+	      s0 = rectangle.extent[0];
+	    }
+
+	    result.distanceSqr += s0 * (s0 + 2 * b0);
+
+	    if (s1 < -rectangle.extent[1]) {
+	      s1 = -rectangle.extent[1];
+	    } else if (s1 > rectangle.extent[1]) {
+	      s1 = rectangle.extent[1];
+	    }
+
+	    result.distanceSqr += s1 * (s1 + 2 * b1); // Account for numerical round-off error.
+
+	    if (result.distanceSqr < 0) {
+	      result.distanceSqr = 0;
+	    }
+
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    result.rectangleParameters[0] = s0;
+	    result.rectangleParameters[1] = s1;
+	    var rectangleClosestPoint = rectangle.center.clone();
+
+	    for (var i = 0; i < 2; ++i) {
+	      rectangleClosestPoint.add(rectangle.axis[i].multiplyScalar(result.rectangleParameters[i]));
+	    }
+
+	    result.closests[0] = this;
+	    result.closests[1] = rectangleClosestPoint;
+	    return result;
+	  };
+	  /**
+	  *
+	  * @param {Capsule} capsule
+	  */
+
+
+	  Vec3.prototype.distanceCapsule = function (capsule) {
+	    var result = this.distanceSegment(capsule);
+	    result.distance = result.distance - capsule.radius;
+	    var closest = this.clone().sub(result.closests[1]).normalize().multiplyScalar(capsule.radius);
+	    result.interior = result.distance < 0;
+	    result.closests = [this, closest];
+	    return result;
+	  };
+
+	  return Vec3;
+	}(eventhandler.EventHandler);
+
+	exports.Vec3 = Vec3;
+
+	var _vec = v3();
+
+	var _quat = Quat_1.quat();
+
+	function v3(x, y, z) {
+	  return new Vec3(x, y, z);
+	}
+
+	exports.v3 = v3;
+	});
+
+	unwrapExports(Vec3_1);
+	var Vec3_2 = Vec3_1.v3;
+	var Vec3_3 = Vec3_1.Vec3;
+
+	var Vec4_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.v4 = exports.Vec4 = void 0;
+
+
+
+
+
+	var Vec4 =
+	/** @class */
+	function (_super) {
+	  __extends(Vec4, _super);
+
+	  function Vec4(_x, _y, _z, _w) {
+	    if (_x === void 0) {
+	      _x = 0;
+	    }
+
+	    if (_y === void 0) {
+	      _y = 0;
+	    }
+
+	    if (_z === void 0) {
+	      _z = 0;
+	    }
+
+	    if (_w === void 0) {
+	      _w = 1;
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    _this._x = _x;
+	    _this._y = _y;
+	    _this._z = _z;
+	    _this._w = _w;
+	    _this.isVec4 = true;
+	    thing.buildAccessors(['x', 'y', 'z', 'w'], _this);
+	    return _this;
+	  }
+
+	  Vec4.isVec4 = function (v) {
+	    return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && !isNaN(v.w);
+	  };
+
+	  Object.defineProperty(Vec4.prototype, "width", {
+	    get: function () {
+	      return this.z;
+	    },
+	    set: function (value) {
+	      this.z = value;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec4.prototype, "height", {
+	    get: function () {
+	      return this.w;
+	    },
+	    set: function (value) {
+	      this.w = value;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Vec4.prototype.set = function (x, y, z, w) {
+	    this.x = x;
+	    this.y = y;
+	    this.z = z;
+	    this.w = w;
+	    return this;
+	  };
+
+	  Vec4.prototype.setScalar = function (scalar) {
+	    this.x = scalar;
+	    this.y = scalar;
+	    this.z = scalar;
+	    this.w = scalar;
+	    return this;
+	  };
+
+	  Vec4.prototype.setX = function (x) {
+	    this.x = x;
+	    return this;
+	  };
+
+	  Vec4.prototype.setY = function (y) {
+	    this.y = y;
+	    return this;
+	  };
+
+	  Vec4.prototype.setZ = function (z) {
+	    this.z = z;
+	    return this;
+	  };
+
+	  Vec4.prototype.setW = function (w) {
+	    this.w = w;
+	    return this;
+	  };
+
+	  Vec4.prototype.setComponent = function (index, value) {
+	    switch (index) {
+	      case 0:
+	        this.x = value;
+	        break;
+
+	      case 1:
+	        this.y = value;
+	        break;
+
+	      case 2:
+	        this.z = value;
+	        break;
+
+	      case 3:
+	        this.w = value;
+	        break;
+
+	      default:
+	        throw new Error("index is out of range: " + index);
+	    }
+
+	    return this;
+	  };
+
+	  Vec4.prototype.getComponent = function (index) {
+	    switch (index) {
+	      case 0:
+	        return this.x;
+
+	      case 1:
+	        return this.y;
+
+	      case 2:
+	        return this.z;
+
+	      case 3:
+	        return this.w;
+
+	      default:
+	        throw new Error("index is out of range: " + index);
+	    }
+	  };
+
+	  Vec4.prototype.clone = function () {
+	    return new Vec4(this.x, this.y, this.z, this.w);
+	  };
+
+	  Vec4.prototype.copy = function (v) {
+	    this.x = v.x;
+	    this.y = v.y;
+	    this.z = v.z;
+	    this.w = v.w !== undefined ? v.w : 1;
+	    return this;
+	  };
+
+	  Vec4.prototype.add = function (v, w) {
+	    if (w !== undefined) {
+	      console.warn("Vec4: .add() now only accepts one argument. Use .addVecs( a, b ) instead.");
+	      return this.addVecs(v, w);
+	    }
+
+	    this.x += v.x;
+	    this.y += v.y;
+	    this.z += v.z;
+	    this.w += v.w;
+	    return this;
+	  };
+
+	  Vec4.prototype.addScalar = function (s) {
+	    this.x += s;
+	    this.y += s;
+	    this.z += s;
+	    this.w += s;
+	    return this;
+	  };
+
+	  Vec4.prototype.addVecs = function (a, b) {
+	    this.x = a.x + b.x;
+	    this.y = a.y + b.y;
+	    this.z = a.z + b.z;
+	    this.w = a.w + b.w;
+	    return this;
+	  };
+
+	  Vec4.prototype.addScaledVec = function (v, s) {
+	    this.x += v.x * s;
+	    this.y += v.y * s;
+	    this.z += v.z * s;
+	    this.w += v.w * s;
+	    return this;
+	  };
+
+	  Vec4.prototype.sub = function (v, w) {
+	    if (w !== undefined) {
+	      return this.subVecs(v, w);
+	    }
+
+	    this.x -= v.x;
+	    this.y -= v.y;
+	    this.z -= v.z;
+	    this.w -= v.w;
+	    return this;
+	  };
+
+	  Vec4.prototype.subScalar = function (s) {
+	    this.x -= s;
+	    this.y -= s;
+	    this.z -= s;
+	    this.w -= s;
+	    return this;
+	  };
+
+	  Vec4.prototype.subVecs = function (a, b) {
+	    this.x = a.x - b.x;
+	    this.y = a.y - b.y;
+	    this.z = a.z - b.z;
+	    this.w = a.w - b.w;
+	    return this;
+	  };
+
+	  Vec4.prototype.multiplyScalar = function (scalar) {
+	    this.x *= scalar;
+	    this.y *= scalar;
+	    this.z *= scalar;
+	    this.w *= scalar;
+	    return this;
+	  };
+
+	  Vec4.prototype.applyMat4 = function (m) {
+	    var x = this.x,
+	        y = this.y,
+	        z = this.z,
+	        w = this.w;
+	    var e = m.elements;
+	    this.x = e[0] * x + e[4] * y + e[8] * z + e[12] * w;
+	    this.y = e[1] * x + e[5] * y + e[9] * z + e[13] * w;
+	    this.z = e[2] * x + e[6] * y + e[10] * z + e[14] * w;
+	    this.w = e[3] * x + e[7] * y + e[11] * z + e[15] * w;
+	    return this;
+	  };
+
+	  Vec4.prototype.divideScalar = function (scalar) {
+	    return this.multiplyScalar(1 / scalar);
+	  };
+
+	  Vec4.prototype.setAxisAngleFromQuat = function (q) {
+	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/QuatToAngle/index.htm
+	    // q is assumed to be normalized
+	    this.w = 2 * Math.acos(q.w);
+	    var s = Math.sqrt(1 - q.w * q.w);
+
+	    if (s < 0.0001) {
+	      this.x = 1;
+	      this.y = 0;
+	      this.z = 0;
+	    } else {
+	      this.x = q.x / s;
+	      this.y = q.y / s;
+	      this.z = q.z / s;
+	    }
+
+	    return this;
+	  };
+
+	  Vec4.prototype.setAxisAngleFromRotationMatrix = function (m) {
+	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+	    // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+	    var angle,
+	        x,
+	        y,
+	        z,
+	        // variables for result
+	    epsilon = 0.01,
+	        // margin to allow for rounding errors
+	    epsilon2 = 0.1,
+	        // margin to distinguish between 0 and 180 degrees
+	    te = m.elements,
+	        m11 = te[0],
+	        m12 = te[4],
+	        m13 = te[8],
+	        m21 = te[1],
+	        m22 = te[5],
+	        m23 = te[9],
+	        m31 = te[2],
+	        m32 = te[6],
+	        m33 = te[10];
+
+	    if (Math.abs(m12 - m21) < epsilon && Math.abs(m13 - m31) < epsilon && Math.abs(m23 - m32) < epsilon) {
+	      // singularity found
+	      // first check for identity matrix which must have +1 for all terms
+	      // in leading diagonal and zero in other terms
+	      if (Math.abs(m12 + m21) < epsilon2 && Math.abs(m13 + m31) < epsilon2 && Math.abs(m23 + m32) < epsilon2 && Math.abs(m11 + m22 + m33 - 3) < epsilon2) {
+	        // this singularity is identity matrix so angle = 0
+	        this.set(1, 0, 0, 0);
+	        return this; // zero angle, arbitrary axis
+	      } // otherwise this singularity is angle = 180
+
+
+	      angle = Math.PI;
+	      var xx = (m11 + 1) / 2;
+	      var yy = (m22 + 1) / 2;
+	      var zz = (m33 + 1) / 2;
+	      var xy = (m12 + m21) / 4;
+	      var xz = (m13 + m31) / 4;
+	      var yz = (m23 + m32) / 4;
+
+	      if (xx > yy && xx > zz) {
+	        // m11 is the largest diagonal term
+	        if (xx < epsilon) {
+	          x = 0;
+	          y = 0.707106781;
+	          z = 0.707106781;
+	        } else {
+	          x = Math.sqrt(xx);
+	          y = xy / x;
+	          z = xz / x;
+	        }
+	      } else if (yy > zz) {
+	        // m22 is the largest diagonal term
+	        if (yy < epsilon) {
+	          x = 0.707106781;
+	          y = 0;
+	          z = 0.707106781;
+	        } else {
+	          y = Math.sqrt(yy);
+	          x = xy / y;
+	          z = yz / y;
+	        }
+	      } else {
+	        // m33 is the largest diagonal term so base result on this
+	        if (zz < epsilon) {
+	          x = 0.707106781;
+	          y = 0.707106781;
+	          z = 0;
+	        } else {
+	          z = Math.sqrt(zz);
+	          x = xz / z;
+	          y = yz / z;
+	        }
+	      }
+
+	      this.set(x, y, z, angle);
+	      return this; // return 180 deg rotation
+	    } // as we have reached here there are no singularities so we can handle normally
+
+
+	    var s = Math.sqrt((m32 - m23) * (m32 - m23) + (m13 - m31) * (m13 - m31) + (m21 - m12) * (m21 - m12)); // used to normalize
+
+	    if (Math.abs(s) < 0.001) s = 1; // prevent divide by zero, should not happen if matrix is orthogonal and should be
+	    // caught by singularity test above, but I've left it in just in case
+
+	    this.x = (m32 - m23) / s;
+	    this.y = (m13 - m31) / s;
+	    this.z = (m21 - m12) / s;
+	    this.w = Math.acos((m11 + m22 + m33 - 1) / 2);
+	    return this;
+	  };
+
+	  Vec4.prototype.min = function (v) {
+	    this.x = Math.min(this.x, v.x);
+	    this.y = Math.min(this.y, v.y);
+	    this.z = Math.min(this.z, v.z);
+	    this.w = Math.min(this.w, v.w);
+	    return this;
+	  };
+
+	  Vec4.prototype.max = function (v) {
+	    this.x = Math.max(this.x, v.x);
+	    this.y = Math.max(this.y, v.y);
+	    this.z = Math.max(this.z, v.z);
+	    this.w = Math.max(this.w, v.w);
+	    return this;
+	  };
+
+	  Vec4.prototype.clamp = function (min, max) {
+	    // assumes min < max, componentwise
+	    this.x = Math.max(min.x, Math.min(max.x, this.x));
+	    this.y = Math.max(min.y, Math.min(max.y, this.y));
+	    this.z = Math.max(min.z, Math.min(max.z, this.z));
+	    this.w = Math.max(min.w, Math.min(max.w, this.w));
+	    return this;
+	  };
+
+	  Vec4.prototype.clampScalar = function (minVal, maxVal) {
+	    this.x = Math.max(minVal, Math.min(maxVal, this.x));
+	    this.y = Math.max(minVal, Math.min(maxVal, this.y));
+	    this.z = Math.max(minVal, Math.min(maxVal, this.z));
+	    this.w = Math.max(minVal, Math.min(maxVal, this.w));
+	    return this;
+	  };
+
+	  Vec4.prototype.clampLength = function (min, max) {
+	    var length = this.length();
+	    return this.divideScalar(length || 1).multiplyScalar(Math.max(min, Math.min(max, length)));
+	  };
+
+	  Vec4.prototype.floor = function () {
+	    this.x = Math.floor(this.x);
+	    this.y = Math.floor(this.y);
+	    this.z = Math.floor(this.z);
+	    this.w = Math.floor(this.w);
+	    return this;
+	  };
+
+	  Vec4.prototype.ceil = function () {
+	    this.x = Math.ceil(this.x);
+	    this.y = Math.ceil(this.y);
+	    this.z = Math.ceil(this.z);
+	    this.w = Math.ceil(this.w);
+	    return this;
+	  };
+
+	  Vec4.prototype.round = function () {
+	    this.x = Math.round(this.x);
+	    this.y = Math.round(this.y);
+	    this.z = Math.round(this.z);
+	    this.w = Math.round(this.w);
+	    return this;
+	  };
+
+	  Vec4.prototype.roundToZero = function () {
+	    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
+	    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
+	    this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
+	    this.w = this.w < 0 ? Math.ceil(this.w) : Math.floor(this.w);
+	    return this;
+	  };
+
+	  Vec4.prototype.negate = function () {
+	    this.x = -this.x;
+	    this.y = -this.y;
+	    this.z = -this.z;
+	    this.w = -this.w;
+	    return this;
+	  };
+
+	  Vec4.prototype.dot = function (v) {
+	    return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
+	  };
+
+	  Vec4.prototype.lengthSq = function () {
+	    return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+	  };
+
+	  Vec4.prototype.length = function () {
+	    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+	  };
+
+	  Vec4.prototype.manhattanLength = function () {
+	    return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z) + Math.abs(this.w);
+	  };
+
+	  Vec4.prototype.normalize = function () {
+	    return this.divideScalar(this.length() || 1);
+	  };
+
+	  Vec4.prototype.setLength = function (length) {
+	    return this.normalize().multiplyScalar(length);
+	  };
+
+	  Vec4.prototype.lerp = function (v, alpha) {
+	    this.x += (v.x - this.x) * alpha;
+	    this.y += (v.y - this.y) * alpha;
+	    this.z += (v.z - this.z) * alpha;
+	    this.w += (v.w - this.w) * alpha;
+	    return this;
+	  };
+
+	  Vec4.prototype.lerpVecs = function (v1, v2, alpha) {
+	    return this.subVecs(v2, v1).multiplyScalar(alpha).add(v1);
+	  };
+
+	  Vec4.prototype.equals = function (v) {
+	    return v.x === this.x && v.y === this.y && v.z === this.z && v.w === this.w;
+	  };
+
+	  Vec4.prototype.fromArray = function (array, offset) {
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    this.x = array[offset];
+	    this.y = array[offset + 1];
+	    this.z = array[offset + 2];
+	    this.w = array[offset + 3];
+	    return this;
+	  };
+
+	  Vec4.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    array[offset] = this.x;
+	    array[offset + 1] = this.y;
+	    array[offset + 2] = this.z;
+	    array[offset + 3] = this.w;
+	    return array;
+	  };
+
+	  Vec4.prototype.fromBufferAttribute = function (attribute, index, offset) {
+	    if (offset !== undefined) {
+	      console.warn("Vec4: offset has been removed from .fromBufferAttribute().");
+	    }
+
+	    this.x = attribute.getX(index);
+	    this.y = attribute.getY(index);
+	    this.z = attribute.getZ(index);
+	    this.w = attribute.getW(index);
+	    return this;
+	  };
+
+	  return Vec4;
+	}(eventhandler.EventHandler);
+
+	exports.Vec4 = Vec4;
+
+	function v4(x, y, z, w) {
+	  return new Vec4(x, y, z, w);
+	}
+
+	exports.v4 = v4;
+	});
+
+	unwrapExports(Vec4_1);
+	var Vec4_2 = Vec4_1.v4;
+	var Vec4_3 = Vec4_1.Vec4;
+
+	var Mat3_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.m3 = exports.Mat3 = void 0;
+
+
+
+	var _Vec = Vec3_1.v3();
+
+	var Mat3 =
+	/** @class */
+	function () {
+	  function Mat3() {
+	    this.elements = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+	    this.isMat3 = true;
+
+	    if (arguments.length > 0) {
+	      console.error("Mat3: the constructor no longer reads arguments. use .set() instead.");
+	    }
+	  }
+
+	  Mat3.prototype.set = function (n11, n12, n13, n21, n22, n23, n31, n32, n33) {
+	    var te = this.elements;
+	    te[0] = n11;
+	    te[1] = n21;
+	    te[2] = n31;
+	    te[3] = n12;
+	    te[4] = n22;
+	    te[5] = n32;
+	    te[6] = n13;
+	    te[7] = n23;
+	    te[8] = n33;
+	    return this;
+	  };
+
+	  Mat3.prototype.identity = function () {
+	    this.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat3.prototype.clone = function () {
+	    return new Mat3().fromArray(this.elements);
+	  };
+
+	  Mat3.prototype.copy = function (m) {
+	    var te = this.elements;
+	    var me = m.elements;
+	    te[0] = me[0];
+	    te[1] = me[1];
+	    te[2] = me[2];
+	    te[3] = me[3];
+	    te[4] = me[4];
+	    te[5] = me[5];
+	    te[6] = me[6];
+	    te[7] = me[7];
+	    te[8] = me[8];
+	    return this;
+	  };
+
+	  Mat3.prototype.setFromMat4 = function (m) {
+	    var me = m.elements;
+	    this.set(me[0], me[4], me[8], me[1], me[5], me[9], me[2], me[6], me[10]);
+	    return this;
+	  };
+
+	  Mat3.prototype.applyToBufferAttribute = function (attribute) {
+	    for (var i = 0, l = attribute.count; i < l; i++) {
+	      _Vec.x = attribute.getX(i);
+	      _Vec.y = attribute.getY(i);
+	      _Vec.z = attribute.getZ(i);
+
+	      _Vec.applyMat3(this);
+
+	      attribute.setXYZ(i, _Vec.x, _Vec.y, _Vec.z);
+	    }
+
+	    return attribute;
+	  };
+
+	  Mat3.prototype.multiply = function (m) {
+	    return this.multiplyMatrices(this, m);
+	  };
+
+	  Mat3.prototype.premultiply = function (m) {
+	    return this.multiplyMatrices(m, this);
+	  };
+
+	  Mat3.prototype.multiplyMatrices = function (a, b) {
+	    var ae = a.elements;
+	    var be = b.elements;
+	    var te = this.elements;
+	    var a11 = ae[0],
+	        a12 = ae[3],
+	        a13 = ae[6];
+	    var a21 = ae[1],
+	        a22 = ae[4],
+	        a23 = ae[7];
+	    var a31 = ae[2],
+	        a32 = ae[5],
+	        a33 = ae[8];
+	    var b11 = be[0],
+	        b12 = be[3],
+	        b13 = be[6];
+	    var b21 = be[1],
+	        b22 = be[4],
+	        b23 = be[7];
+	    var b31 = be[2],
+	        b32 = be[5],
+	        b33 = be[8];
+	    te[0] = a11 * b11 + a12 * b21 + a13 * b31;
+	    te[3] = a11 * b12 + a12 * b22 + a13 * b32;
+	    te[6] = a11 * b13 + a12 * b23 + a13 * b33;
+	    te[1] = a21 * b11 + a22 * b21 + a23 * b31;
+	    te[4] = a21 * b12 + a22 * b22 + a23 * b32;
+	    te[7] = a21 * b13 + a22 * b23 + a23 * b33;
+	    te[2] = a31 * b11 + a32 * b21 + a33 * b31;
+	    te[5] = a31 * b12 + a32 * b22 + a33 * b32;
+	    te[8] = a31 * b13 + a32 * b23 + a33 * b33;
+	    return this;
+	  };
+
+	  Mat3.prototype.multiplyScalar = function (s) {
+	    var te = this.elements;
+	    te[0] *= s;
+	    te[3] *= s;
+	    te[6] *= s;
+	    te[1] *= s;
+	    te[4] *= s;
+	    te[7] *= s;
+	    te[2] *= s;
+	    te[5] *= s;
+	    te[8] *= s;
+	    return this;
+	  };
+
+	  Mat3.prototype.determinant = function () {
+	    var te = this.elements;
+	    var a = te[0],
+	        b = te[1],
+	        c = te[2],
+	        d = te[3],
+	        e = te[4],
+	        f = te[5],
+	        g = te[6],
+	        h = te[7],
+	        i = te[8];
+	    return a * e * i - a * f * h - b * d * i + b * f * g + c * d * h - c * e * g;
+	  };
+
+	  Mat3.prototype.getInverse = function (matrix, throwOnDegenerate) {
+	    if (throwOnDegenerate === void 0) {
+	      throwOnDegenerate = false;
+	    }
+
+	    if (matrix && matrix.isMat4) {
+	      console.error("Mat3: .getInverse() no longer takes a Mat4 argument.");
+	    }
+
+	    var me = matrix.elements,
+	        te = this.elements,
+	        n11 = me[0],
+	        n21 = me[1],
+	        n31 = me[2],
+	        n12 = me[3],
+	        n22 = me[4],
+	        n32 = me[5],
+	        n13 = me[6],
+	        n23 = me[7],
+	        n33 = me[8],
+	        t11 = n33 * n22 - n32 * n23,
+	        t12 = n32 * n13 - n33 * n12,
+	        t13 = n23 * n12 - n22 * n13,
+	        det = n11 * t11 + n21 * t12 + n31 * t13;
+
+	    if (det === 0) {
+	      var msg = "Mat3: .getInverse() can't invert matrix, determinant is 0";
+
+	      if (throwOnDegenerate === true) {
+	        throw new Error(msg);
+	      } else {
+	        console.warn(msg);
+	      }
+
+	      return this.identity();
+	    }
+
+	    var detInv = 1 / det;
+	    te[0] = t11 * detInv;
+	    te[1] = (n31 * n23 - n33 * n21) * detInv;
+	    te[2] = (n32 * n21 - n31 * n22) * detInv;
+	    te[3] = t12 * detInv;
+	    te[4] = (n33 * n11 - n31 * n13) * detInv;
+	    te[5] = (n31 * n12 - n32 * n11) * detInv;
+	    te[6] = t13 * detInv;
+	    te[7] = (n21 * n13 - n23 * n11) * detInv;
+	    te[8] = (n22 * n11 - n21 * n12) * detInv;
+	    return this;
+	  };
+
+	  Mat3.prototype.transpose = function () {
+	    var tmp,
+	        m = this.elements;
+	    tmp = m[1];
+	    m[1] = m[3];
+	    m[3] = tmp;
+	    tmp = m[2];
+	    m[2] = m[6];
+	    m[6] = tmp;
+	    tmp = m[5];
+	    m[5] = m[7];
+	    m[7] = tmp;
+	    return this;
+	  };
+
+	  Mat3.prototype.getNormalMatrix = function (mat4) {
+	    return this.setFromMat4(mat4).getInverse(this).transpose();
+	  };
+
+	  Mat3.prototype.transposeIntoArray = function (r) {
+	    var m = this.elements;
+	    r[0] = m[0];
+	    r[1] = m[3];
+	    r[2] = m[6];
+	    r[3] = m[1];
+	    r[4] = m[4];
+	    r[5] = m[7];
+	    r[6] = m[2];
+	    r[7] = m[5];
+	    r[8] = m[8];
+	    return this;
+	  };
+
+	  Mat3.prototype.setUvTransform = function (tx, ty, sx, sy, rotation, cx, cy) {
+	    var c = Math.cos(rotation);
+	    var s = Math.sin(rotation);
+	    this.set(sx * c, sx * s, -sx * (c * cx + s * cy) + cx + tx, -sy * s, sy * c, -sy * (-s * cx + c * cy) + cy + ty, 0, 0, 1);
+	  };
+
+	  Mat3.prototype.scale = function (sx, sy) {
+	    var te = this.elements;
+	    te[0] *= sx;
+	    te[3] *= sx;
+	    te[6] *= sx;
+	    te[1] *= sy;
+	    te[4] *= sy;
+	    te[7] *= sy;
+	    return this;
+	  };
+
+	  Mat3.prototype.rotate = function (theta) {
+	    var c = Math.cos(theta);
+	    var s = Math.sin(theta);
+	    var te = this.elements;
+	    var a11 = te[0],
+	        a12 = te[3],
+	        a13 = te[6];
+	    var a21 = te[1],
+	        a22 = te[4],
+	        a23 = te[7];
+	    te[0] = c * a11 + s * a21;
+	    te[3] = c * a12 + s * a22;
+	    te[6] = c * a13 + s * a23;
+	    te[1] = -s * a11 + c * a21;
+	    te[4] = -s * a12 + c * a22;
+	    te[7] = -s * a13 + c * a23;
+	    return this;
+	  };
+
+	  Mat3.prototype.translate = function (tx, ty) {
+	    var te = this.elements;
+	    te[0] += tx * te[2];
+	    te[3] += tx * te[5];
+	    te[6] += tx * te[8];
+	    te[1] += ty * te[2];
+	    te[4] += ty * te[5];
+	    te[7] += ty * te[8];
+	    return this;
+	  };
+
+	  Mat3.prototype.equals = function (matrix) {
+	    var te = this.elements;
+	    var me = matrix.elements;
+
+	    for (var i = 0; i < 9; i++) {
+	      if (te[i] !== me[i]) return false;
+	    }
+
+	    return true;
+	  };
+
+	  Mat3.prototype.fromArray = function (array, offset) {
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    for (var i = 0; i < 9; i++) {
+	      this.elements[i] = array[i + offset];
+	    }
+
+	    return this;
+	  };
+
+	  Mat3.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    var te = this.elements;
+	    array[offset] = te[0];
+	    array[offset + 1] = te[1];
+	    array[offset + 2] = te[2];
+	    array[offset + 3] = te[3];
+	    array[offset + 4] = te[4];
+	    array[offset + 5] = te[5];
+	    array[offset + 6] = te[6];
+	    array[offset + 7] = te[7];
+	    array[offset + 8] = te[8];
+	    return array;
+	  };
+
+	  return Mat3;
+	}();
+
+	exports.Mat3 = Mat3;
+
+	function m3() {
+	  return new Mat3();
+	}
+
+	exports.m3 = m3;
+	});
+
+	unwrapExports(Mat3_1);
+	var Mat3_2 = Mat3_1.m3;
+	var Mat3_3 = Mat3_1.Mat3;
+
+	var Mat4_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.m4 = exports.Mat4 = void 0;
+
+
+
+	var Mat4 =
+	/** @class */
+	function () {
+	  function Mat4() {
+	    this.elements = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+	    this.isMat4 = true;
+
+	    if (arguments.length > 0) {
+	      console.error(" Mat4: the constructor no longer reads arguments. use .set() instead.");
+	    }
+	  }
+
+	  Mat4.prototype.set = function (n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44) {
+	    var te = this.elements;
+	    te[0] = n11;
+	    te[4] = n12;
+	    te[8] = n13;
+	    te[12] = n14;
+	    te[1] = n21;
+	    te[5] = n22;
+	    te[9] = n23;
+	    te[13] = n24;
+	    te[2] = n31;
+	    te[6] = n32;
+	    te[10] = n33;
+	    te[14] = n34;
+	    te[3] = n41;
+	    te[7] = n42;
+	    te[11] = n43;
+	    te[15] = n44;
+	    return this;
+	  };
+
+	  Object.defineProperty(Mat4, "Identity", {
+	    get: function () {
+	      return new Mat4();
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Mat4.prototype.identity = function () {
+	    this.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.clone = function () {
+	    return new Mat4().fromArray(this.elements);
+	  };
+
+	  Mat4.prototype.copy = function (m) {
+	    var te = this.elements;
+	    var me = m.elements;
+	    te[0] = me[0];
+	    te[1] = me[1];
+	    te[2] = me[2];
+	    te[3] = me[3];
+	    te[4] = me[4];
+	    te[5] = me[5];
+	    te[6] = me[6];
+	    te[7] = me[7];
+	    te[8] = me[8];
+	    te[9] = me[9];
+	    te[10] = me[10];
+	    te[11] = me[11];
+	    te[12] = me[12];
+	    te[13] = me[13];
+	    te[14] = me[14];
+	    te[15] = me[15];
+	    return this;
+	  };
+
+	  Mat4.prototype.copyPosition = function (m) {
+	    var te = this.elements,
+	        me = m.elements;
+	    te[12] = me[12];
+	    te[13] = me[13];
+	    te[14] = me[14];
+	    return this;
+	  };
+
+	  Mat4.prototype.extractBasis = function (xAxis, yAxis, zAxis) {
+	    xAxis.setFromMatrixColumn(this, 0);
+	    yAxis.setFromMatrixColumn(this, 1);
+	    zAxis.setFromMatrixColumn(this, 2);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeBasis = function (xAxis, yAxis, zAxis) {
+	    this.set(xAxis.x, yAxis.x, zAxis.x, 0, xAxis.y, yAxis.y, zAxis.y, 0, xAxis.z, yAxis.z, zAxis.z, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.extractRotation = function (m) {
+	    // this method does not support reflection matrices
+	    var te = this.elements;
+	    var me = m.elements;
+
+	    var scaleX = 1 / _v1.setFromMatrixColumn(m, 0).length();
+
+	    var scaleY = 1 / _v1.setFromMatrixColumn(m, 1).length();
+
+	    var scaleZ = 1 / _v1.setFromMatrixColumn(m, 2).length();
+
+	    te[0] = me[0] * scaleX;
+	    te[1] = me[1] * scaleX;
+	    te[2] = me[2] * scaleX;
+	    te[3] = 0;
+	    te[4] = me[4] * scaleY;
+	    te[5] = me[5] * scaleY;
+	    te[6] = me[6] * scaleY;
+	    te[7] = 0;
+	    te[8] = me[8] * scaleZ;
+	    te[9] = me[9] * scaleZ;
+	    te[10] = me[10] * scaleZ;
+	    te[11] = 0;
+	    te[12] = 0;
+	    te[13] = 0;
+	    te[14] = 0;
+	    te[15] = 1;
+	    return this;
+	  };
+
+	  Mat4.prototype.makeRotationFromEuler = function (euler) {
+	    if (!(euler && euler.isEuler)) {
+	      console.error(" Mat4: .makeRotationFromEuler() now expects a Euler rotation rather than a Vec3 and order.");
+	    }
+
+	    var te = this.elements;
+	    var x = euler.x,
+	        y = euler.y,
+	        z = euler.z;
+	    var a = Math.cos(x),
+	        b = Math.sin(x);
+	    var c = Math.cos(y),
+	        d = Math.sin(y);
+	    var e = Math.cos(z),
+	        f = Math.sin(z);
+
+	    if (euler.order === "XYZ") {
+	      var ae = a * e,
+	          af = a * f,
+	          be = b * e,
+	          bf = b * f;
+	      te[0] = c * e;
+	      te[4] = -c * f;
+	      te[8] = d;
+	      te[1] = af + be * d;
+	      te[5] = ae - bf * d;
+	      te[9] = -b * c;
+	      te[2] = bf - ae * d;
+	      te[6] = be + af * d;
+	      te[10] = a * c;
+	    } else if (euler.order === "YXZ") {
+	      var ce = c * e,
+	          cf = c * f,
+	          de = d * e,
+	          df = d * f;
+	      te[0] = ce + df * b;
+	      te[4] = de * b - cf;
+	      te[8] = a * d;
+	      te[1] = a * f;
+	      te[5] = a * e;
+	      te[9] = -b;
+	      te[2] = cf * b - de;
+	      te[6] = df + ce * b;
+	      te[10] = a * c;
+	    } else if (euler.order === "ZXY") {
+	      var ce = c * e,
+	          cf = c * f,
+	          de = d * e,
+	          df = d * f;
+	      te[0] = ce - df * b;
+	      te[4] = -a * f;
+	      te[8] = de + cf * b;
+	      te[1] = cf + de * b;
+	      te[5] = a * e;
+	      te[9] = df - ce * b;
+	      te[2] = -a * d;
+	      te[6] = b;
+	      te[10] = a * c;
+	    } else if (euler.order === "ZYX") {
+	      var ae = a * e,
+	          af = a * f,
+	          be = b * e,
+	          bf = b * f;
+	      te[0] = c * e;
+	      te[4] = be * d - af;
+	      te[8] = ae * d + bf;
+	      te[1] = c * f;
+	      te[5] = bf * d + ae;
+	      te[9] = af * d - be;
+	      te[2] = -d;
+	      te[6] = b * c;
+	      te[10] = a * c;
+	    } else if (euler.order === "YZX") {
+	      var ac = a * c,
+	          ad = a * d,
+	          bc = b * c,
+	          bd = b * d;
+	      te[0] = c * e;
+	      te[4] = bd - ac * f;
+	      te[8] = bc * f + ad;
+	      te[1] = f;
+	      te[5] = a * e;
+	      te[9] = -b * e;
+	      te[2] = -d * e;
+	      te[6] = ad * f + bc;
+	      te[10] = ac - bd * f;
+	    } else if (euler.order === "XZY") {
+	      var ac = a * c,
+	          ad = a * d,
+	          bc = b * c,
+	          bd = b * d;
+	      te[0] = c * e;
+	      te[4] = -f;
+	      te[8] = d * e;
+	      te[1] = ac * f + bd;
+	      te[5] = a * e;
+	      te[9] = ad * f - bc;
+	      te[2] = bc * f - ad;
+	      te[6] = b * e;
+	      te[10] = bd * f + ac;
+	    } // bottom row
+
+
+	    te[3] = 0;
+	    te[7] = 0;
+	    te[11] = 0; // last column
+
+	    te[12] = 0;
+	    te[13] = 0;
+	    te[14] = 0;
+	    te[15] = 1;
+	    return this;
+	  };
+
+	  Mat4.prototype.makeRotationFromQuat = function (q) {
+	    return this.compose(_zero, q, _one);
+	  };
+
+	  Mat4.prototype.lookAt = function (eye, target, up) {
+	    var te = this.elements;
+
+	    _z.subVecs(eye, target);
+
+	    if (_z.lengthSq() === 0) {
+	      // eye and target are in the same position
+	      _z.z = 1;
+	    }
+
+	    _z.normalize();
+
+	    _x.crossVecs(up, _z);
+
+	    if (_x.lengthSq() === 0) {
+	      // up and z are parallel
+	      if (Math.abs(up.z) === 1) {
+	        _z.x += 0.0001;
+	      } else {
+	        _z.z += 0.0001;
+	      }
+
+	      _z.normalize();
+
+	      _x.crossVecs(up, _z);
+	    }
+
+	    _x.normalize();
+
+	    _y.crossVecs(_z, _x);
+
+	    te[0] = _x.x;
+	    te[4] = _y.x;
+	    te[8] = _z.x;
+	    te[1] = _x.y;
+	    te[5] = _y.y;
+	    te[9] = _z.y;
+	    te[2] = _x.z;
+	    te[6] = _y.z;
+	    te[10] = _z.z;
+	    return this;
+	  };
+
+	  Mat4.prototype.multiply = function (m, n) {
+	    if (n !== undefined) {
+	      return this.multiplyMatrices(m, n);
+	    }
+
+	    return this.multiplyMatrices(this, m);
+	  };
+
+	  Mat4.prototype.premultiply = function (m) {
+	    return this.multiplyMatrices(m, this);
+	  };
+
+	  Mat4.prototype.multiplyMatrices = function (a, b) {
+	    var ae = a.elements;
+	    var be = b.elements;
+	    var te = this.elements;
+	    var a11 = ae[0],
+	        a12 = ae[4],
+	        a13 = ae[8],
+	        a14 = ae[12];
+	    var a21 = ae[1],
+	        a22 = ae[5],
+	        a23 = ae[9],
+	        a24 = ae[13];
+	    var a31 = ae[2],
+	        a32 = ae[6],
+	        a33 = ae[10],
+	        a34 = ae[14];
+	    var a41 = ae[3],
+	        a42 = ae[7],
+	        a43 = ae[11],
+	        a44 = ae[15];
+	    var b11 = be[0],
+	        b12 = be[4],
+	        b13 = be[8],
+	        b14 = be[12];
+	    var b21 = be[1],
+	        b22 = be[5],
+	        b23 = be[9],
+	        b24 = be[13];
+	    var b31 = be[2],
+	        b32 = be[6],
+	        b33 = be[10],
+	        b34 = be[14];
+	    var b41 = be[3],
+	        b42 = be[7],
+	        b43 = be[11],
+	        b44 = be[15];
+	    te[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+	    te[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+	    te[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+	    te[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+	    te[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+	    te[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+	    te[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+	    te[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+	    te[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+	    te[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+	    te[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+	    te[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+	    te[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+	    te[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+	    te[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+	    te[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+	    return this;
+	  };
+
+	  Mat4.prototype.multiplyScalar = function (s) {
+	    var te = this.elements;
+	    te[0] *= s;
+	    te[4] *= s;
+	    te[8] *= s;
+	    te[12] *= s;
+	    te[1] *= s;
+	    te[5] *= s;
+	    te[9] *= s;
+	    te[13] *= s;
+	    te[2] *= s;
+	    te[6] *= s;
+	    te[10] *= s;
+	    te[14] *= s;
+	    te[3] *= s;
+	    te[7] *= s;
+	    te[11] *= s;
+	    te[15] *= s;
+	    return this;
+	  };
+
+	  Mat4.prototype.applyToBufferAttribute = function (attribute) {
+	    for (var i = 0, l = attribute.count; i < l; i++) {
+	      _v1.x = attribute.getX(i);
+	      _v1.y = attribute.getY(i);
+	      _v1.z = attribute.getZ(i);
+
+	      _v1.applyMat4(this);
+
+	      attribute.setXYZ(i, _v1.x, _v1.y, _v1.z);
+	    }
+
+	    return attribute;
+	  };
+
+	  Mat4.prototype.determinant = function () {
+	    var te = this.elements;
+	    var n11 = te[0],
+	        n12 = te[4],
+	        n13 = te[8],
+	        n14 = te[12];
+	    var n21 = te[1],
+	        n22 = te[5],
+	        n23 = te[9],
+	        n24 = te[13];
+	    var n31 = te[2],
+	        n32 = te[6],
+	        n33 = te[10],
+	        n34 = te[14];
+	    var n41 = te[3],
+	        n42 = te[7],
+	        n43 = te[11],
+	        n44 = te[15]; //TODO: make this more efficient
+	    //( based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm )
+
+	    return n41 * (+n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34) + n42 * (+n11 * n23 * n34 - n11 * n24 * n33 + n14 * n21 * n33 - n13 * n21 * n34 + n13 * n24 * n31 - n14 * n23 * n31) + n43 * (+n11 * n24 * n32 - n11 * n22 * n34 - n14 * n21 * n32 + n12 * n21 * n34 + n14 * n22 * n31 - n12 * n24 * n31) + n44 * (-n13 * n22 * n31 - n11 * n23 * n32 + n11 * n22 * n33 + n13 * n21 * n32 - n12 * n21 * n33 + n12 * n23 * n31);
+	  };
+
+	  Mat4.prototype.transpose = function () {
+	    var te = this.elements;
+	    var tmp;
+	    tmp = te[1];
+	    te[1] = te[4];
+	    te[4] = tmp;
+	    tmp = te[2];
+	    te[2] = te[8];
+	    te[8] = tmp;
+	    tmp = te[6];
+	    te[6] = te[9];
+	    te[9] = tmp;
+	    tmp = te[3];
+	    te[3] = te[12];
+	    te[12] = tmp;
+	    tmp = te[7];
+	    te[7] = te[13];
+	    te[13] = tmp;
+	    tmp = te[11];
+	    te[11] = te[14];
+	    te[14] = tmp;
+	    return this;
+	  };
+
+	  Mat4.prototype.setPosition = function (x, y, z) {
+	    var te = this.elements;
+
+	    if (x.isVec3) {
+	      te[12] = x.x;
+	      te[13] = x.y;
+	      te[14] = x.z;
+	    } else {
+	      te[12] = x;
+	      te[13] = y;
+	      te[14] = z;
+	    }
+
+	    return this;
+	  };
+
+	  Mat4.prototype.getInverse = function (m, throwOnDegenerate) {
+	    // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+	    var te = this.elements,
+	        me = m.elements,
+	        n11 = me[0],
+	        n21 = me[1],
+	        n31 = me[2],
+	        n41 = me[3],
+	        n12 = me[4],
+	        n22 = me[5],
+	        n32 = me[6],
+	        n42 = me[7],
+	        n13 = me[8],
+	        n23 = me[9],
+	        n33 = me[10],
+	        n43 = me[11],
+	        n14 = me[12],
+	        n24 = me[13],
+	        n34 = me[14],
+	        n44 = me[15],
+	        t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
+	        t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
+	        t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
+	        t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+	    var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
+
+	    if (det === 0) {
+	      var msg = " Mat4: .getInverse() can't invert matrix, determinant is 0";
+
+	      if (throwOnDegenerate === true) {
+	        throw new Error(msg);
+	      } else {
+	        console.warn(msg);
+	      }
+
+	      return this.identity();
+	    }
+
+	    var detInv = 1 / det;
+	    te[0] = t11 * detInv;
+	    te[1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * detInv;
+	    te[2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * detInv;
+	    te[3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * detInv;
+	    te[4] = t12 * detInv;
+	    te[5] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * detInv;
+	    te[6] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * detInv;
+	    te[7] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * detInv;
+	    te[8] = t13 * detInv;
+	    te[9] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * detInv;
+	    te[10] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * detInv;
+	    te[11] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * detInv;
+	    te[12] = t14 * detInv;
+	    te[13] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * detInv;
+	    te[14] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * detInv;
+	    te[15] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * detInv;
+	    return this;
+	  };
+
+	  Mat4.prototype.scale = function (v) {
+	    var te = this.elements;
+	    var x = v.x,
+	        y = v.y,
+	        z = v.z;
+	    te[0] *= x;
+	    te[4] *= y;
+	    te[8] *= z;
+	    te[1] *= x;
+	    te[5] *= y;
+	    te[9] *= z;
+	    te[2] *= x;
+	    te[6] *= y;
+	    te[10] *= z;
+	    te[3] *= x;
+	    te[7] *= y;
+	    te[11] *= z;
+	    return this;
+	  };
+
+	  Mat4.prototype.getMaxScaleOnAxis = function () {
+	    var te = this.elements;
+	    var scaleXSq = te[0] * te[0] + te[1] * te[1] + te[2] * te[2];
+	    var scaleYSq = te[4] * te[4] + te[5] * te[5] + te[6] * te[6];
+	    var scaleZSq = te[8] * te[8] + te[9] * te[9] + te[10] * te[10];
+	    return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
+	  };
+
+	  Mat4.prototype.makeTranslation = function (x, y, z) {
+	    this.set(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeRotationX = function (theta) {
+	    var c = Math.cos(theta),
+	        s = Math.sin(theta);
+	    this.set(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeRotationY = function (theta) {
+	    var c = Math.cos(theta),
+	        s = Math.sin(theta);
+	    this.set(c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeRotationZ = function (theta) {
+	    var c = Math.cos(theta),
+	        s = Math.sin(theta);
+	    this.set(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeRotationAxis = function (axis, angle) {
+	    // Based on http://www.gamedev.net/reference/articles/article1199.asp
+	    var c = Math.cos(angle);
+	    var s = Math.sin(angle);
+	    var t = 1 - c;
+	    var x = axis.x,
+	        y = axis.y,
+	        z = axis.z;
+	    var tx = t * x,
+	        ty = t * y;
+	    this.set(tx * x + c, tx * y - s * z, tx * z + s * y, 0, tx * y + s * z, ty * y + c, ty * z - s * x, 0, tx * z - s * y, ty * z + s * x, t * z * z + c, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeScale = function (x, y, z) {
+	    this.set(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.makeShear = function (x, y, z) {
+	    this.set(1, y, z, 0, x, 1, z, 0, x, y, 1, 0, 0, 0, 0, 1);
+	    return this;
+	  };
+
+	  Mat4.prototype.compose = function (position, Quat, scale) {
+	    var te = this.elements;
+	    var x = Quat._x,
+	        y = Quat._y,
+	        z = Quat._z,
+	        w = Quat._w;
+	    var x2 = x + x,
+	        y2 = y + y,
+	        z2 = z + z;
+	    var xx = x * x2,
+	        xy = x * y2,
+	        xz = x * z2;
+	    var yy = y * y2,
+	        yz = y * z2,
+	        zz = z * z2;
+	    var wx = w * x2,
+	        wy = w * y2,
+	        wz = w * z2;
+	    var sx = scale.x,
+	        sy = scale.y,
+	        sz = scale.z;
+	    te[0] = (1 - (yy + zz)) * sx;
+	    te[1] = (xy + wz) * sx;
+	    te[2] = (xz - wy) * sx;
+	    te[3] = 0;
+	    te[4] = (xy - wz) * sy;
+	    te[5] = (1 - (xx + zz)) * sy;
+	    te[6] = (yz + wx) * sy;
+	    te[7] = 0;
+	    te[8] = (xz + wy) * sz;
+	    te[9] = (yz - wx) * sz;
+	    te[10] = (1 - (xx + yy)) * sz;
+	    te[11] = 0;
+	    te[12] = position.x;
+	    te[13] = position.y;
+	    te[14] = position.z;
+	    te[15] = 1;
+	    return this;
+	  };
+
+	  Mat4.prototype.decompose = function (position, Quat, scale) {
+	    var te = this.elements;
+
+	    var sx = _v1.set(te[0], te[1], te[2]).length();
+
+	    var sy = _v1.set(te[4], te[5], te[6]).length();
+
+	    var sz = _v1.set(te[8], te[9], te[10]).length(); // if determine is negative, we need to invert one scale
+
+
+	    var det = this.determinant();
+	    if (det < 0) sx = -sx;
+	    position.x = te[12];
+	    position.y = te[13];
+	    position.z = te[14]; // scale the rotation part
+
+	    _m1.copy(this);
+
+	    var invSX = 1 / sx;
+	    var invSY = 1 / sy;
+	    var invSZ = 1 / sz;
+	    _m1.elements[0] *= invSX;
+	    _m1.elements[1] *= invSX;
+	    _m1.elements[2] *= invSX;
+	    _m1.elements[4] *= invSY;
+	    _m1.elements[5] *= invSY;
+	    _m1.elements[6] *= invSY;
+	    _m1.elements[8] *= invSZ;
+	    _m1.elements[9] *= invSZ;
+	    _m1.elements[10] *= invSZ;
+	    Quat.setFromRotationMatrix(_m1);
+	    scale.x = sx;
+	    scale.y = sy;
+	    scale.z = sz;
+	    return this;
+	  };
+
+	  Mat4.prototype.makePerspective = function (left, right, top, bottom, near, far) {
+	    if (far === undefined) {
+	      console.warn(" Mat4: .makePerspective() has been redefined and has a new signature. Please check the docs.");
+	    }
+
+	    var te = this.elements;
+	    var x = 2 * near / (right - left);
+	    var y = 2 * near / (top - bottom);
+	    var a = (right + left) / (right - left);
+	    var b = (top + bottom) / (top - bottom);
+	    var c = -(far + near) / (far - near);
+	    var d = -2 * far * near / (far - near);
+	    te[0] = x;
+	    te[4] = 0;
+	    te[8] = a;
+	    te[12] = 0;
+	    te[1] = 0;
+	    te[5] = y;
+	    te[9] = b;
+	    te[13] = 0;
+	    te[2] = 0;
+	    te[6] = 0;
+	    te[10] = c;
+	    te[14] = d;
+	    te[3] = 0;
+	    te[7] = 0;
+	    te[11] = -1;
+	    te[15] = 0;
+	    return this;
+	  };
+
+	  Mat4.prototype.makeOrthographic = function (left, right, top, bottom, near, far) {
+	    var te = this.elements;
+	    var w = 1.0 / (right - left);
+	    var h = 1.0 / (top - bottom);
+	    var p = 1.0 / (far - near);
+	    var x = (right + left) * w;
+	    var y = (top + bottom) * h;
+	    var z = (far + near) * p;
+	    te[0] = 2 * w;
+	    te[4] = 0;
+	    te[8] = 0;
+	    te[12] = -x;
+	    te[1] = 0;
+	    te[5] = 2 * h;
+	    te[9] = 0;
+	    te[13] = -y;
+	    te[2] = 0;
+	    te[6] = 0;
+	    te[10] = -2 * p;
+	    te[14] = -z;
+	    te[3] = 0;
+	    te[7] = 0;
+	    te[11] = 0;
+	    te[15] = 1;
+	    return this;
+	  };
+
+	  Mat4.prototype.equals = function (matrix) {
+	    var te = this.elements;
+	    var me = matrix.elements;
+
+	    for (var i = 0; i < 16; i++) {
+	      if (te[i] !== me[i]) return false;
+	    }
+
+	    return true;
+	  };
+
+	  Mat4.prototype.fromArray = function (array, offset) {
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    for (var i = 0; i < 16; i++) {
+	      this.elements[i] = array[i + offset];
+	    }
+
+	    return this;
+	  };
+
+	  Mat4.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    var te = this.elements;
+	    array[offset] = te[0];
+	    array[offset + 1] = te[1];
+	    array[offset + 2] = te[2];
+	    array[offset + 3] = te[3];
+	    array[offset + 4] = te[4];
+	    array[offset + 5] = te[5];
+	    array[offset + 6] = te[6];
+	    array[offset + 7] = te[7];
+	    array[offset + 8] = te[8];
+	    array[offset + 9] = te[9];
+	    array[offset + 10] = te[10];
+	    array[offset + 11] = te[11];
+	    array[offset + 12] = te[12];
+	    array[offset + 13] = te[13];
+	    array[offset + 14] = te[14];
+	    array[offset + 15] = te[15];
+	    return array;
+	  };
+
+	  return Mat4;
+	}();
+
+	exports.Mat4 = Mat4;
+
+	var _v1 = Vec3_1.v3();
+
+	var _m1 = m4();
+
+	var _zero = Vec3_1.v3(0, 0, 0);
+
+	var _one = Vec3_1.v3(1, 1, 1);
+
+	var _x = Vec3_1.v3();
+
+	var _y = Vec3_1.v3();
+
+	var _z = Vec3_1.v3();
+
+	function m4() {
+	  return new Mat4();
+	}
+
+	exports.m4 = m4;
+	});
+
+	unwrapExports(Mat4_1);
+	var Mat4_2 = Mat4_1.m4;
+	var Mat4_3 = Mat4_1.Mat4;
+
+	var Euler_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.euler = exports.Euler = void 0;
+
+
+
+
+
+
+
+
+
+	var _matrix = Mat4_1.m4();
+
+	var _Quat = Quat_1.quat();
+	var DefaultOrder = "XYZ";
+
+	var Euler =
+	/** @class */
+	function () {
+	  function Euler(_x, _y, _z, _order) {
+	    if (_x === void 0) {
+	      _x = 0;
+	    }
+
+	    if (_y === void 0) {
+	      _y = 0;
+	    }
+
+	    if (_z === void 0) {
+	      _z = 0;
+	    }
+
+	    if (_order === void 0) {
+	      _order = DefaultOrder;
+	    }
+
+	    this._x = _x;
+	    this._y = _y;
+	    this._z = _z;
+	    this._order = _order;
+	    this.isEuler = true;
+	  }
+
+	  Object.defineProperty(Euler.prototype, "x", {
+	    get: function () {
+	      return this._x;
+	    },
+	    set: function (value) {
+	      this._x = value;
+
+	      this._onChangeCallback();
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Euler.prototype, "y", {
+	    get: function () {
+	      return this._y;
+	    },
+	    set: function (value) {
+	      this._y = value;
+
+	      this._onChangeCallback();
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Euler.prototype, "z", {
+	    get: function () {
+	      return this._z;
+	    },
+	    set: function (value) {
+	      this._z = value;
+
+	      this._onChangeCallback();
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Euler.prototype, "order", {
+	    get: function () {
+	      return this._order;
+	    },
+	    set: function (value) {
+	      this._order = value;
+
+	      this._onChangeCallback();
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Euler.prototype.set = function (x, y, z, order) {
+	    this._x = x;
+	    this._y = y;
+	    this._z = z;
+	    this._order = order || this._order;
+
+	    this._onChangeCallback();
+
+	    return this;
+	  };
+
+	  Euler.prototype.clone = function () {
+	    return new Euler(this._x, this._y, this._z, this._order);
+	  };
+
+	  Euler.prototype.copy = function (Euler) {
+	    this._x = Euler._x;
+	    this._y = Euler._y;
+	    this._z = Euler._z;
+	    this._order = Euler._order;
+
+	    this._onChangeCallback();
+
+	    return this;
+	  };
+
+	  Euler.prototype.setFromRotationMatrix = function (m, order, update) {
+	    // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+	    var te = m.elements;
+	    var m11 = te[0],
+	        m12 = te[4],
+	        m13 = te[8];
+	    var m21 = te[1],
+	        m22 = te[5],
+	        m23 = te[9];
+	    var m31 = te[2],
+	        m32 = te[6],
+	        m33 = te[10];
+	    order = order || this._order;
+
+	    if (order === "XYZ") {
+	      this._y = Math.asin(_Math.clamp(m13, -1, 1));
+
+	      if (Math.abs(m13) < 0.9999999) {
+	        this._x = Math.atan2(-m23, m33);
+	        this._z = Math.atan2(-m12, m11);
+	      } else {
+	        this._x = Math.atan2(m32, m22);
+	        this._z = 0;
+	      }
+	    } else if (order === "YXZ") {
+	      this._x = Math.asin(-_Math.clamp(m23, -1, 1));
+
+	      if (Math.abs(m23) < 0.9999999) {
+	        this._y = Math.atan2(m13, m33);
+	        this._z = Math.atan2(m21, m22);
+	      } else {
+	        this._y = Math.atan2(-m31, m11);
+	        this._z = 0;
+	      }
+	    } else if (order === "ZXY") {
+	      this._x = Math.asin(_Math.clamp(m32, -1, 1));
+
+	      if (Math.abs(m32) < 0.9999999) {
+	        this._y = Math.atan2(-m31, m33);
+	        this._z = Math.atan2(-m12, m22);
+	      } else {
+	        this._y = 0;
+	        this._z = Math.atan2(m21, m11);
+	      }
+	    } else if (order === "ZYX") {
+	      this._y = Math.asin(-_Math.clamp(m31, -1, 1));
+
+	      if (Math.abs(m31) < 0.9999999) {
+	        this._x = Math.atan2(m32, m33);
+	        this._z = Math.atan2(m21, m11);
+	      } else {
+	        this._x = 0;
+	        this._z = Math.atan2(-m12, m22);
+	      }
+	    } else if (order === "YZX") {
+	      this._z = Math.asin(_Math.clamp(m21, -1, 1));
+
+	      if (Math.abs(m21) < 0.9999999) {
+	        this._x = Math.atan2(-m23, m22);
+	        this._y = Math.atan2(-m31, m11);
+	      } else {
+	        this._x = 0;
+	        this._y = Math.atan2(m13, m33);
+	      }
+	    } else if (order === "XZY") {
+	      this._z = Math.asin(-_Math.clamp(m12, -1, 1));
+
+	      if (Math.abs(m12) < 0.9999999) {
+	        this._x = Math.atan2(m32, m22);
+	        this._y = Math.atan2(m13, m11);
+	      } else {
+	        this._x = Math.atan2(-m23, m33);
+	        this._y = 0;
+	      }
+	    } else {
+	      console.warn("Euler: .setFromRotationMatrix() given unsupported order: " + order);
+	    }
+
+	    this._order = order;
+	    if (update !== false) this._onChangeCallback();
+	    return this;
+	  };
+
+	  Euler.prototype.setFromQuat = function (q, order, update) {
+	    _matrix.makeRotationFromQuat(q);
+
+	    return this.setFromRotationMatrix(_matrix, order, update);
+	  };
+
+	  Euler.prototype.setFromVec3 = function (v, order) {
+	    return this.set(v.x, v.y, v.z, order || this._order);
+	  };
+
+	  Euler.prototype.reorder = function (newOrder) {
+	    // WARNING: this discards revolution information -bhouston
+	    _Quat.setFromEuler(this);
+
+	    return this.setFromQuat(_Quat, newOrder);
+	  };
+
+	  Euler.prototype.equals = function (Euler) {
+	    return Euler._x === this._x && Euler._y === this._y && Euler._z === this._z && Euler._order === this._order;
+	  };
+
+	  Euler.prototype.fromArray = function (array) {
+	    this._x = array[0];
+	    this._y = array[1];
+	    this._z = array[2];
+	    if (array[3] !== undefined) this._order = array[3];
+
+	    this._onChangeCallback();
+
+	    return this;
+	  };
+
+	  Euler.prototype.toArray = function (array, offset) {
+	    if (array === void 0) {
+	      array = [];
+	    }
+
+	    if (offset === void 0) {
+	      offset = 0;
+	    }
+
+	    array[offset] = this._x;
+	    array[offset + 1] = this._y;
+	    array[offset + 2] = this._z;
+	    array[offset + 3] = this._order;
+	    return array;
+	  };
+
+	  Euler.prototype.toVec3 = function (optionalResult) {
+	    if (optionalResult) {
+	      return optionalResult.set(this._x, this._y, this._z);
+	    } else {
+	      return Vec3_1.v3(this._x, this._y, this._z);
+	    }
+	  };
+
+	  Euler.prototype._onChange = function (callback) {
+	    this._onChangeCallback = callback;
+	    return this;
+	  };
+
+	  Euler.prototype._onChangeCallback = function () {};
+
+	  return Euler;
+	}();
+
+	exports.Euler = Euler;
+
+	function euler(x, y, z) {
+	  return new Euler(x, y, z);
+	}
+
+	exports.euler = euler;
+	});
+
+	unwrapExports(Euler_1);
+	var Euler_2 = Euler_1.euler;
+	var Euler_3 = Euler_1.Euler;
+
+	var Line_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.line = exports.Line = void 0;
+
+
+
+
+
+
+
+	var Line =
+	/** @class */
+	function () {
+	  function Line(origin, end) {
+	    if (origin === void 0) {
+	      origin = Vec3_1.v3();
+	    }
+
+	    if (end === void 0) {
+	      end = Vec3_1.v3();
+	    }
+
+	    this.origin = origin;
+	    this.end = end;
+	    this.direction = this.end.clone().sub(this.origin).normalize();
+	  }
+
+	  Line.prototype.distancePoint = function (pt) {
+	    var res = pt.distanceLine(this); // res.closests?.reverse();
+	    // res.parameters?.reverse();
+
+	    return res;
+	  };
+
+	  Line.prototype.distanceSegment = function (segment) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var segCenter = segment.center;
+	    var segDirection = segment.direction;
+	    var segExtent = segment.extent * 0.5;
+	    var diff = this.origin.clone().sub(segCenter);
+	    var a01 = -this.direction.dot(segDirection);
+	    var b0 = diff.dot(this.direction);
+	    var s0, s1;
+
+	    if (Math.abs(a01) < 1) {
+	      // 判断是否平行
+	      var det = 1 - a01 * a01;
+	      var extDet = segExtent * det;
+	      var b1 = -diff.dot(segDirection);
+	      s1 = a01 * b0 - b1;
+
+	      if (s1 >= -extDet) {
+	        if (s1 <= extDet) {
+	          // Two interior points are closest, one on the this
+	          // and one on the segment.
+	          s0 = (a01 * b1 - b0) / det;
+	          s1 /= det;
+	        } else {
+	          // The endpoint e1 of the segment and an interior
+	          // point of the this are closest.
+	          s1 = segExtent;
+	          s0 = -(a01 * s1 + b0);
+	        }
+	      } else {
+	        // The endpoint e0 of the segment and an interior point
+	        // of the this are closest.
+	        s1 = -segExtent;
+	        s0 = -(a01 * s1 + b0);
+	      }
+	    } else {
+	      // The this and segment are parallel.  Choose the closest pair
+	      // so that one point is at segment origin.
+	      s1 = 0;
+	      s0 = -b0;
+	    }
+
+	    result.parameters[0] = s0;
+	    result.parameters[1] = s1;
+	    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+	    result.closests[1] = segDirection.clone().multiplyScalar(s1).add(segCenter);
+	    diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  }; //---距离-------------
+
+	  /**
+	   * 直线到直线的距离
+	   * 参数与最近点顺序一致
+	   * @param  {Line} line
+	   */
+
+
+	  Line.prototype.distanceLine = function (line) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = this.origin.clone().sub(line.origin);
+	    var a01 = -this.direction.dot(line.direction);
+	    var b0 = diff.dot(this.direction);
+	    var s0, s1;
+
+	    if (Math.abs(a01) < 1) {
+	      var det = 1 - a01 * a01;
+	      var b1 = -diff.dot(line.direction);
+	      s0 = (a01 * b1 - b0) / det;
+	      s1 = (a01 * b0 - b1) / det;
+	    } else {
+	      s0 = -b0;
+	      s1 = 0;
+	    }
+
+	    result.parameters[0] = s0;
+	    result.parameters[1] = s1;
+	    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+	    result.closests[1] = line.direction.clone().multiplyScalar(s1).add(line.origin);
+	    diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	   * 直线与射线的距离
+	   * @param {Ray} ray
+	   */
+
+
+	  Line.prototype.distanceRay = function (ray) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = this.origin.clone().sub(ray.origin);
+	    var a01 = -this.direction.dot(ray.direction);
+	    var b0 = diff.dot(this.direction);
+	    var s0, s1;
+
+	    if (Math.abs(a01) < 1) {
+	      var b1 = -diff.dot(ray.direction);
+	      s1 = a01 * b0 - b1;
+
+	      if (s1 >= 0) {
+	        //在最近点在射线上，相当于直线与直线最短距离
+	        var det = 1 - a01 * a01;
+	        s0 = (a01 * b1 - b0) / det;
+	        s1 /= det;
+	      } else {
+	        // 射线的起始点是离直线的最近点
+	        s0 = -b0;
+	        s1 = 0;
+	      }
+	    } else {
+	      s0 = -b0;
+	      s1 = 0;
+	    }
+
+	    result.parameters[0] = s0;
+	    result.parameters[1] = s1;
+	    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+	    result.closests[1] = ray.direction.clone().multiplyScalar(s1).add(ray.origin);
+	    diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	   *
+	   * @param triangle
+	   */
+
+
+	  Line.prototype.distanceTriangle = function (triangle) {
+	    function Orthonormalize(numInputs, v, robust) {
+
+	      if (v && 1 <= numInputs && numInputs <= 3) {
+	        var minLength = v[0].length();
+	        v[0].normalize();
+
+	        for (var i = 1; i < numInputs; ++i) {
+	          for (var j = 0; j < i; ++j) {
+	            var dot = v[i].dot(v[j]);
+	            v[i].sub(v[j].clone().multiplyScalar(dot));
+	          }
+
+	          var length = v[i].length();
+	          v[i].normalize();
+
+	          if (length < minLength) {
+	            minLength = length;
+	          }
+	        }
+
+	        return minLength;
+	      }
+
+	      return 0;
+	    }
+
+	    function ComputeOrthogonalComplement(numInputs, v, robust) {
+
+	      if (numInputs === 1) {
+	        if (Math.abs(v[0][0]) > Math.abs(v[0][1])) {
+	          v[1] = Vec3_1.v3(-v[0].z, 0, +v[0].x);
+	        } else {
+	          v[1] = Vec3_1.v3(0, +v[0].z, -v[0].y);
+	        }
+	        numInputs = 2;
+	      }
+
+	      if (numInputs == 2) {
+	        v[2] = v[0].clone().cross(v[1]);
+	        return Orthonormalize(3, v);
+	      }
+
+	      return 0;
+	    }
+
+	    var result = {
+	      closests: [],
+	      parameters: [],
+	      triangleParameters: []
+	    }; // Test if line intersects triangle.  If so, the squared distance
+	    // is zero. 
+
+	    var edge0 = triangle.p1.clone().sub(triangle.p0);
+	    var edge1 = triangle.p2.clone().sub(triangle.p0);
+	    var normal = edge0.clone().cross(edge1).normalize();
+	    var NdD = normal.dot(this.direction);
+
+	    if (Math.abs(NdD) >= _Math.gPrecision) {
+	      // The line and triangle are not parallel, so the line
+	      // intersects/ the plane of the triangle.
+	      var diff = this.origin.clone().sub(triangle.p0);
+	      var basis = new Array(3); // {D, U, V}
+
+	      basis[0] = this.direction;
+	      ComputeOrthogonalComplement(1, basis);
+	      var UdE0 = basis[1].dot(edge0);
+	      var UdE1 = basis[1].dot(edge1);
+	      var UdDiff = basis[1].dot(diff);
+	      var VdE0 = basis[2].dot(edge0);
+	      var VdE1 = basis[2].dot(edge1);
+	      var VdDiff = basis[2].dot(diff);
+	      var invDet = 1 / (UdE0 * VdE1 - UdE1 * VdE0); // Barycentric coordinates for the point of intersection.
+
+	      var b1 = (VdE1 * UdDiff - UdE1 * VdDiff) * invDet;
+	      var b2 = (UdE0 * VdDiff - VdE0 * UdDiff) * invDet;
+	      var b0 = 1 - b1 - b2;
+
+	      if (b0 >= 0 && b1 >= 0 && b2 >= 0) {
+	        // Line parameter for the point of intersection.
+	        var DdE0 = this.direction.dot(edge0);
+	        var DdE1 = this.direction.dot(edge1);
+	        var DdDiff = this.direction.dot(diff);
+	        result.lineParameter = b1 * DdE0 + b2 * DdE1 - DdDiff; // Barycentric coordinates for the point of intersection.
+
+	        result.triangleParameters[0] = b0;
+	        result.triangleParameters[1] = b1;
+	        result.triangleParameters[2] = b2; // The intersection point is inside or on the triangle.
+
+	        result.closests[0] = this.direction.clone().multiplyScalar(result.lineParameter).add(this.origin);
+	        result.closests[1] = edge0.multiplyScalar(b1).add(edge1.multiplyScalar(b2)).add(triangle.p0);
+	        result.distance = 0;
+	        result.distanceSqr = 0;
+	        return result;
+	      }
+	    } // Either (1) the line is not parallel to the triangle and the
+	    // point of intersection of the line and the plane of the triangle
+	    // is outside the triangle or (2) the line and triangle are
+	    // parallel.  Regardless, the closest point on the triangle is on
+	    // an edge of the triangle.  Compare the line to all three edges
+	    // of the triangle.
+
+
+	    result.distance = +Infinity;
+	    result.distanceSqr = +Infinity;
+
+	    for (var i0 = 2, i1 = 0; i1 < 3; i0 = i1++) {
+	      var segCenter = triangle[i0].clone().add(triangle[i1]).multiplyScalar(0.5);
+	      var segDirection = triangle[i1].clone().sub(triangle[i0]);
+	      var segExtent = 0.5 * segDirection.length();
+	      segDirection.normalize();
+	      var segment = new Segment_1.Segment(triangle[i0], triangle[i1]);
+	      var lsResult = this.distanceSegment(segment);
+
+	      if (lsResult.distanceSqr < result.distanceSqr) {
+	        result.distanceSqr = lsResult.distanceSqr;
+	        result.distance = lsResult.distance;
+	        result.lineParameter = lsResult.parameters[0];
+	        result.triangleParameters[i0] = 0.5 * (1 - lsResult.parameters[0] / segExtent);
+	        result.triangleParameters[i1] = 1 - result.triangleParameters[i0];
+	        result.triangleParameters[3 - i0 - i1] = 0;
+	        result.closests[0] = lsResult.closests[0];
+	        result.closests[1] = lsResult.closests[1];
+	      }
+	    }
+
+	    return result;
+	  };
+
+	  Line.prototype.distancePolyline = function (polyline) {
+	    var result = null;
+	    var maodian = -1;
+
+	    for (var i = 0; i < polyline.length - 1; i++) {
+	      var segment = new Segment_1.Segment(polyline[i], polyline[i + 1]);
+	      var oneres = this.distanceSegment(segment);
+
+	      if (!result || result.distance < oneres.distance) {
+	        result = oneres;
+	      }
+
+	      if (result.distance < _Math.gPrecision) {
+	        maodian = i;
+	        break;
+	      }
+	    }
+
+	    return {
+	      distance: result === null || result === void 0 ? void 0 : result.distance,
+	      distanceSqr: result === null || result === void 0 ? void 0 : result.distanceSqr,
+	      parameters: result === null || result === void 0 ? void 0 : result.parameters,
+	      closests: result === null || result === void 0 ? void 0 : result.closests,
+	      segmentIndex: maodian
+	    };
+	  };
+
+	  return Line;
+	}();
+
+	exports.Line = Line;
+
+	function line(start, end) {
+	  return new Line(start, end);
+	}
+
+	exports.line = line;
+	});
+
+	unwrapExports(Line_1);
+	var Line_2 = Line_1.line;
+	var Line_3 = Line_1.Line;
+
+	var Circle_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.circle = exports.Circle = void 0;
+
+
+
+
+
+
+
+	var Circle =
+	/** @class */
+	function () {
+	  /**
+	   * 圆圈
+	   * @param  {Vec3} center 中心点
+	   * @param  {Vec3} normal 法线
+	   * @param  {Number} radius 半径
+	   */
+	  function Circle(center, radius, normal) {
+	    if (center === void 0) {
+	      center = new Vec3_1.Vec3();
+	    }
+
+	    if (radius === void 0) {
+	      radius = 0;
+	    }
+
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    this.center = center;
+	    this.radius = radius;
+	    this.normal = normal;
+	    this.startAngle = 0;
+	    this.endAngle = Math.PI * 2;
+	    this.radiusSqr = 0;
+	  }
+
+	  Circle.prototype.area = function () {
+	    return Math.PI * this.radius * this.radius;
+	  };
+	  /**
+	   * 两个点
+	   * @param fixp0
+	   * @param fixp1
+	   * @param movep
+	   * @param normal
+	   */
+
+
+	  Circle.prototype.arc1 = function (fixp0, fixp1, movep, normal) {
+	    this.setFrom3Points(fixp0, fixp1, movep);
+	    this.startAngle = 0;
+	    this.endAngle = common.angle(fixp0.clone().sub(this.center).normalize(), fixp1.clone().sub(this.center).normalize(), this.normal || normal);
+	  };
+	  /**
+	   * 全两个点确定半径，后面点确定 弧度 ,只需要检测鼠标移动时鼠标是否跨过第一条半径即可确定顺逆时针
+	   * @param fixp0
+	   * @param fixp1
+	   * @param movep
+	   */
+
+
+	  Circle.prototype.arc2 = function (center, fixp1, movep, ccw, normal) {
+
+	    this.radius = fixp1.distanceTo(center);
+	    this.center.copy(center);
+	    var v2 = movep.clone().sub(center);
+	    var v1 = fixp1.clone().sub(center);
+	    var jd = common.angle(v1, v2);
+	  };
+
+	  Circle.prototype.setFrom3Points = function (p0, p1, p2, normal) {
+	    // if (pointsCollinear(p0, p1, p2))
+	    //     throw ("calcCircleFromThreePoint：三点共线或者距离太近");
+	    var d1 = p1.clone().sub(p0);
+	    var d2 = p2.clone().sub(p0);
+	    var d1center = p1.clone().add(p0).multiplyScalar(0.5);
+	    var d2center = p2.clone().add(p0).multiplyScalar(0.5);
+	    normal = normal || d1.clone().cross(d2).normalize();
+	    d1.applyAxisAngle(normal, Math.PI / 2);
+	    d2.applyAxisAngle(normal, Math.PI / 2);
+	    var line1 = new Line_1.Line(d1center, d1center.clone().add(d1));
+	    var line2 = new Line_1.Line(d2center, d2center.clone().add(d2));
+	    var center = line1.distanceLine(line2).closests[0];
+	    var radiusSqr = p0.distanceToSquared(center);
+	    this.center = center;
+	    this.radiusSqr = radiusSqr;
+	    this.radius = Math.sqrt(radiusSqr);
+	    this.normal = normal;
+	    return this;
+	  };
+
+	  return Circle;
+	}();
+
+	exports.Circle = Circle;
+
+	function circle(center, radius, normal) {
+	  return new Circle(center, radius, normal);
+	}
+
+	exports.circle = circle;
+	});
+
+	unwrapExports(Circle_1);
+	var Circle_2 = Circle_1.circle;
+	var Circle_3 = Circle_1.Circle;
+
+	var Plane_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Plane = void 0;
+
+
+
+
+
+	var Plane =
+	/** @class */
+	function () {
+	  function Plane(normal, w) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitZ;
+	    }
+
+	    if (w === void 0) {
+	      w = 0;
+	    }
+
+	    this.normal = normal;
+	    this.w = w;
+	    this.origin = this.normal.clone().multiplyScalar(w); // this.w = this.normal.dot(this.origin)
+	  }
+
+	  Plane.prototype.setFromThreePoint = function (p0, p1, p2) {
+	    this.normal = p1.clone().sub(p0).cross(p2.clone().sub(p0)).normalize();
+	    this.w = p0.dot(this.normal);
+	  };
+
+	  Plane.prototype.negate = function () {
+	    this.normal.negate();
+	    this.w = -this.w;
+	  };
+	  /**
+	   * 判断一个点在平面的正面或者反面
+	   * @param  {Vec3} point
+	   * @returns {Number} -1 or 1 or z
+	   */
+
+
+	  Plane.prototype.frontback = function (point) {
+	    var value = this.normal.dot(point);
+	    if (_Math.approximateEqual(value, 0)) return 0;
+	    return _Math.sign(this.normal.dot(point));
+	  }; //---Distance-------------------------------------------------------------------------------
+
+
+	  Plane.prototype.distancePoint = function (point) {
+	    return this.normal.dot(point) - this.w;
+	  };
+
+	  Plane.prototype.distanceRay = function (ray) {};
+
+	  Plane.prototype.distanceLine = function (line) {};
+
+	  Plane.prototype.distanceSegment = function (segment) {};
+
+	  Plane.prototype.distancePlane = function (plane) {}; //---Intersection-----------------------------------
+
+	  /**
+	   * 只返回交点
+	   * Lw --Lightweight
+	   * @param {Segment|Array<Vec3>} segment
+	   */
+
+
+	  Plane.prototype.intersectSegmentLw = function (segment) {
+	    var orientation0 = this.orientationPoint(segment[0]);
+	    return null;
+	  }; //---Split-----------------------------------------
+
+	  /**
+	   * 切割线段 代码完成  等待测试
+	   * @param {Segment} segment
+	   * @returns {
+	   *       positive: [], //正面点
+	   *       negative: [],// 反面位置点
+	   *       common: [], 在平面上的点
+	   *       orientation: Orientation.None 线段的总体位置
+	   *   };
+	   */
+
+
+	  Plane.prototype.splitSegment = function (segment) {};
+	  /**
+	   * 切割三角形 编码完成  等待测试
+	   * @param {Triangle} triangle
+	   */
+
+
+	  Plane.prototype.splitTriangle = function (triangle) {}; //---orientation------------------------------
+
+	  /**
+	   * 点在平面的位置判断
+	   * @param {Point} point
+	   * @returns {Orientation} 方位
+	   */
+
+
+	  Plane.prototype.orientationPoint = function (point) {};
+
+	  return Plane;
+	}();
+
+	exports.Plane = Plane;
+	});
+
+	unwrapExports(Plane_1);
+	var Plane_2 = Plane_1.Plane;
+
+	var common = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.angle = exports.calcCircleFromThreePoint = exports.pointsCollinear = exports.isInOnePlane = exports.recognitionPlane = exports.projectOnPlane = exports.reverseOnPlane = exports.simplifyPointList = exports.applyMatrix4 = exports.scale = exports.rotateByUnitVectors = exports.rotate = exports.translate = exports.applyQuat = exports.boundingBox = exports.verctorToNumbers = exports.vectorCompare = exports.clone = void 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+	var XYZSort = function (e1, e2) {
+	  if (e1.x !== e2.x) return e1.x - e2.x;else if (e1.y !== e2.y) return e1.y - e2.y;else return e1.z - e2.z;
+	};
+
+	var _vector = Vec3_1.v3();
+
+	function clone(array) {
+	  var result = new Array();
+
+	  for (var i = 0; i < array.length; i++) {
+	    var ele = array[i];
+	    if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
+	      result[i] = ele.clone();
+	    } else if (ele instanceof Array) result[i] = clone(ele);else throw "数组有元素不能clone";
+	  }
+
+	  return result;
+	}
+
+	exports.clone = clone;
+	/**
+	 * 点排序函数
+	 * @param {Vector*} a
+	 * @param {Vector*} b
+	 */
+
+	function vectorCompare(a, b) {
+	  if (a.x === b.x) {
+	    if (a.z !== undefined && a.y === b.y) return a.z - b.z;else return a.y - b.y;
+	  } else return a.x - b.x;
+	}
+
+	exports.vectorCompare = vectorCompare;
+	/**
+	 * 将向量拆解为数字
+	 * @param {Array} points
+	 * @param {String} feature
+	 * @returns {Array<Number>} 数字数组
+	 */
+
+	function verctorToNumbers(points, feature) {
+	  if (feature === void 0) {
+	    feature = "xyz";
+	  }
+
+	  if (!(points instanceof Array)) {
+	    console.error("传入参数必须是数组");
+	    return;
+	  }
+
+	  var numbers = [];
+
+	  if (points[0].x !== undefined && points[0].y !== undefined && points[0].z !== undefined) {
+	    for (var i = 0; i < points.length; i++) {
+	      for (var j = 0; j < feature.length; j++) {
+	        numbers.push(points[i][feature[j]]);
+	      }
+	    }
+	  } else if (points[0].x !== undefined && points[0].y !== undefined) for (var i = 0; i < points.length; i++) {
+	    numbers.push(points[i].x);
+	    numbers.push(points[i].y);
+	  } else if (points[0] instanceof Array) {
+	    for (var i = 0; i < points.length; i++) {
+	      numbers = numbers.concat(verctorToNumbers(points[i]));
+	    }
+	  } else {
+	    console.error("数组内部的元素不是向量");
+	  }
+
+	  return numbers;
+	}
+
+	exports.verctorToNumbers = verctorToNumbers;
+	/**
+	 * 计算包围盒
+	 * @param {*} points  点集
+	 * @returns {Array[min,max]} 返回最小最大值
+	 */
+
+	function boundingBox(points) {
+	  var min = new Vec3_1.Vec3(+Infinity, +Infinity, +Infinity);
+	  var max = new Vec3_1.Vec3(-Infinity, -Infinity, -Infinity);
+
+	  for (var i = 0; i < points.length; i++) {
+	    min.min(points[i]);
+	    max.max(points[i]);
+	  }
+
+	  return [min, max];
+	}
+
+	exports.boundingBox = boundingBox;
+	/**
+	 *
+	 * @param {*} points
+	 * @param {*} Quat
+	 * @param {Boolean} ref 是否是引用
+	 */
+
+	function applyQuat(points, Quat, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.applyQuat(Quat);
+	    });
+	    return points;
+	  }
+
+	  return applyQuat(clone(points), Quat);
+	}
+
+	exports.applyQuat = applyQuat;
+	/**
+	 * 平移
+	 * @param {*} points
+	 * @param {*} distance
+	 * @param {*} ref
+	 */
+
+	function translate(points, distance, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.add(distance);
+	    });
+	    return points;
+	  }
+
+	  return translate(clone(points), distance);
+	}
+
+	exports.translate = translate;
+	/**
+	 * 旋转
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function rotate(points, axis, angle, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  return applyQuat(points, new Quat_1.Quat().setFromAxisAngle(axis, angle), ref);
+	}
+
+	exports.rotate = rotate;
+	/**
+	 * 两个向量之间存在的旋转量来旋转点集
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function rotateByUnitVectors(points, vFrom, vTo, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  return applyQuat(points, new Quat_1.Quat().setFromUnitVecs(vFrom, vTo), ref);
+	}
+
+	exports.rotateByUnitVectors = rotateByUnitVectors;
+	/**
+	 * 缩放
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function scale(points, _scale, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.scale.multiply(_scale);
+	    });
+	    return points;
+	  }
+
+	  return scale(clone(points), _scale);
+	}
+
+	exports.scale = scale;
+	/**
+	 * 响应矩阵
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function applyMatrix4(points, matrix, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.applyMatrix4(matrix);
+	    });
+	    return points;
+	  }
+
+	  return applyMatrix4(clone(points), matrix);
+	}
+
+	exports.applyMatrix4 = applyMatrix4;
+	/**
+	 * 简化点集数组，折线，路径
+	 * @param {*} points 点集数组，折线，路径 ,继承Array
+	 * @param {*} maxDistance  简化最大距离
+	 * @param {*} maxAngle  简化最大角度
+	 */
+
+	function simplifyPointList(points, maxDistance, maxAngle) {
+	  if (maxDistance === void 0) {
+	    maxDistance = 0.1;
+	  }
+
+	  if (maxAngle === void 0) {
+	    maxAngle = Math.PI / 180 * 5;
+	  }
+
+	  for (var i = 0; i < points.length; i++) {
+	    // 删除小距离
+	    var P = points[i];
+	    var nextP = points[i + 1];
+
+	    if (P.distanceTo(nextP) < maxDistance) {
+	      if (i === 0) points.remove(i + 1, 1);else if (i === points.length - 2) points.splice(i, 1);else {
+	        points.splice(i, 2, P.clone().add(nextP).multiplyScalar(0.5));
+	      }
+	      i--;
+	    }
+	  }
+
+	  for (var i = 1; i < points.length - 1; i++) {
+	    // 删除小小角度
+	    var preP = points[i - 1];
+	    var P = points[i];
+	    var nextP = points[i + 1];
+
+	    if (Math.acos(P.clone().sub(preP).normalize().dot(nextP.clone().sub(P).normalize())) < maxAngle) {
+	      points.splice(i, 1);
+	      i--;
+	    }
+	  }
+
+	  return points;
+	}
+
+	exports.simplifyPointList = simplifyPointList;
+	/**
+	 * 以某个平面生成对称镜像
+	 * @param {*} points  点集
+	 * @param {*} plane 对称镜像平面
+	 */
+
+	function reverseOnPlane(points, plane) {}
+
+	exports.reverseOnPlane = reverseOnPlane;
+	/**
+	 * 投影到平面
+	 * @param {*} points 点集
+	 * @param {*} plane  投影平面
+	 * @param {*} projectDirect  默认是法线的方向
+	 */
+
+	function projectOnPlane(points, plane, projectDirect) {
+	  return points;
+	}
+
+	exports.projectOnPlane = projectOnPlane;
+	/**
+	 * 计算共面点集所在的平面
+	 * @param {Array<Vec3|Point>} points
+	 */
+
+	function recognitionPlane(points) {
+	  points.sort(vectorCompare);
+	  var line = new Line_1.Line(points[0], points.get(-1));
+	  var maxDistance = -Infinity;
+	  var ipos = -1;
+
+	  for (var i = 1; i < points.length - 1; i++) {
+	    var pt = points[i];
+	    var distance = line.distancePoint(pt).distance;
+
+	    if (distance > maxDistance) {
+	      maxDistance = distance;
+	      ipos = i;
+	    }
+	  }
+
+	  var plane = new Plane_1.Plane();
+	  plane.setFromThreePoint(points[0], points.get(-1), points[ipos]);
+	  return plane;
+	}
+
+	exports.recognitionPlane = recognitionPlane;
+	/**
+	 * 判断所有点是否在同一个平面
+	 * @param {Array<Vec3|Point>} points
+	 * @param {*} precision
+	 * @returns {Boolean|Plane} 如果在同一个平面返回所在平面，否则返回false
+	 */
+
+	function isInOnePlane(points, precision) {
+	  if (precision === void 0) {
+	    precision = _Math.gPrecision;
+	  }
+
+	  var plane = recognitionPlane(points);
+
+	  for (var i = 0; i < points.length; i++) {
+	    var pt = points[i];
+	    if (plane.distancePoint(pt) >= precision) return false;
+	  }
+
+	  return plane;
+	}
+
+	exports.isInOnePlane = isInOnePlane;
+	/**
+	 * 判断多边是否共线:
+	 * 考虑情况点之间的距离应该大于最小容忍值
+	 * @param  {...Vec3[]} ps
+	 */
+
+	function pointsCollinear() {
+	  var ps = [];
+
+	  for (var _i = 0; _i < arguments.length; _i++) {
+	    ps[_i] = arguments[_i];
+	  }
+
+	  ps.sort(XYZSort);
+	  var sedir = ps[ps.length - 1].clone().sub(ps[0]);
+	  var selen = ps[ps.length - 1].distanceTo(ps[0]);
+
+	  for (var i = 1; i < ps.length - 1; i++) {
+	    var ilens = ps[i].distanceTo(ps[0]);
+	    var ilene = ps[i].distanceTo(ps[ps.length - 1]);
+
+	    if (ilens < ilene) {
+	      if (Math.abs(ps[i].clone().sub(ps[0]).dot(sedir) - selen * ilens) > _Math.gPrecision) return false;
+	    } else {
+	      if (Math.abs(ps[i].clone().sub(ps[ps.length - 1]).dot(sedir) - selen * ilene) > _Math.gPrecision) return false;
+	    }
+	  }
+
+	  return true;
+	}
+
+	exports.pointsCollinear = pointsCollinear;
+	/**
+	 * 三点计算圆
+	 * @param p0
+	 * @param p1
+	 * @param p2
+	 */
+
+	function calcCircleFromThreePoint(p0, p1, p2) {
+	  return new Circle_1.Circle().setFrom3Points(p0, p1, p2);
+	}
+
+	exports.calcCircleFromThreePoint = calcCircleFromThreePoint;
+
+	function angle(v0, v1, normal) {
+	  return v0.angleTo(v1, normal);
+	}
+
+	exports.angle = angle;
+	});
+
+	unwrapExports(common);
+	var common_1 = common.angle;
+	var common_2 = common.calcCircleFromThreePoint;
+	var common_3 = common.pointsCollinear;
+	var common_4 = common.isInOnePlane;
+	var common_5 = common.recognitionPlane;
+	var common_6 = common.projectOnPlane;
+	var common_7 = common.reverseOnPlane;
+	var common_8 = common.simplifyPointList;
+	var common_9 = common.applyMatrix4;
+	var common_10 = common.scale;
+	var common_11 = common.rotateByUnitVectors;
+	var common_12 = common.rotate;
+	var common_13 = common.translate;
+	var common_14 = common.applyQuat;
+	var common_15 = common.boundingBox;
+	var common_16 = common.verctorToNumbers;
+	var common_17 = common.vectorCompare;
+	var common_18 = common.clone;
+
+	var result = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	});
+
+	unwrapExports(result);
+
+	var ArrayEx_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.ArrayEx = void 0;
+
+	var ArrayEx =
+	/** @class */
+	function (_super) {
+	  __extends(ArrayEx, _super);
+
+	  function ArrayEx() {
+	    var args = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      args[_i] = arguments[_i];
+	    }
+
+	    return _super.apply(this, args) || this;
+	  }
+
+	  Object.defineProperty(ArrayEx.prototype, "last", {
+	    get: function () {
+	      return this.get(-1);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  ArrayEx.prototype.get = function (index) {
+	    if (index < 0) index = this.length + index;
+	    return this[index];
+	  };
+	  /**
+	   * 深度优先遍历
+	   * @param {*} method
+	   */
+
+
+	  ArrayEx.prototype.forall = function (method) {
+	    for (var i = 0; i < this.length; i++) {
+	      method(this[i]);
+	      if (this[i] instanceof Array) this[i].forall(method);
+	    }
+	  };
+	  /**
+	   *
+	  */
+
+
+	  ArrayEx.prototype.clone = function () {
+	    var result = new ArrayEx();
+
+	    for (var i = 0; i < this.length; i++) {
+	      var ele = this[i];
+	      if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
+	        result[i] = ele.clone();
+	      } else throw "数组有元素不能clone";
+	    }
+
+	    return result;
+	  };
+	  /**
+	   * 分类
+	   * example:
+	   *      var arry = [1,2,3,4,5,6]
+	   *      var result = classify(this,(a)={return a%2===0})
+	   *
+	   * @param {Function} classifyMethod  分类方法
+	   */
+
+
+	  ArrayEx.prototype.classify = function (classifyMethod) {
+	    var result = [];
+
+	    for (var i = 0; i < this.length; i++) {
+	      for (var j = 0; j < result.length; j++) {
+	        if (classifyMethod(this[i], result[j][0], result[j])) {
+	          result[j].push(this[i]);
+	        } else {
+	          result.push([this[i]]);
+	        }
+	      }
+	    }
+
+	    return result;
+	  };
+	  /**
+	   * 去掉重复元素
+	   * @param {Function} uniqueMethod  去重复
+	   * @param {Function} sortMethod 排序
+	   */
+
+
+	  ArrayEx.prototype.unique = function (uniqueMethod, sortMethod) {
+	    if (sortMethod) {
+	      this.sort(sortMethod);
+
+	      for (var i = 0; i < this.length; i++) {
+	        for (var j = i + 1; j < this.length; j++) {
+	          if (uniqueMethod(this[i], this[j]) === true) {
+	            this.splice(j, 1);
+	            j--;
+	          } else break;
+	        }
+	      }
+
+	      return this;
+	    }
+
+	    for (var i = 0; i < this.length; i++) {
+	      for (var j = i + 1; j < this.length; j++) {
+	        if (uniqueMethod(this[i], this[j]) === true) {
+	          this.splice(j, 1);
+	          j--;
+	        }
+	      }
+	    }
+
+	    return this;
+	  };
+
+	  return ArrayEx;
+	}(Array);
+
+	exports.ArrayEx = ArrayEx;
+	});
+
+	unwrapExports(ArrayEx_1);
+	var ArrayEx_2 = ArrayEx_1.ArrayEx;
+
+	var PolyLine = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Polyline = void 0;
+
+
+
+
+
+
+	/**
+	 *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
+	 */
+
+
+	var Polyline =
+	/** @class */
+	function (_super) {
+	  __extends(Polyline, _super);
+
+	  function Polyline(vs, normal) {
+	    if (vs === void 0) {
+	      vs = [];
+	    }
+
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    _this.normal = normal;
+	    Object.setPrototypeOf(_this, Polyline.prototype);
+
+	    _this.push.apply(_this, vs);
+
+	    _this.isCoPlanar = true;
+	    return _this;
+	  }
+	  /**
+	   * 偏移
+	   * @param {Number} distance  偏移距离
+	   * @param {Vector3} normal  折线所在平面法线
+	   */
+
+
+	  Polyline.prototype.offset = function (distance, normal) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    for (var i = 0; i < this.length; i++) {}
+
+	    return new Polyline(this);
+	  };
+	  /**
+	   * 圆角   将折线拐点圆角化
+	   * @param {Number} useDistance 圆角段距离
+	   * @param {Number} segments 分切割段数
+	   */
+
+
+	  Polyline.prototype.corner = function (useDistance, normal) {
+	    if (normal === void 0) {
+	      normal = this.normal;
+	    }
+
+	    var polyline = new Polyline();
+
+	    for (var i = 0; i < this.length - 2; i++) {
+	      var p0 = this[i];
+	      var p1 = this[i + 1];
+	      var p2 = this[i + 2];
+	      polyline.push(p0);
+	      var fixedPoint0 = p0.distanceTo(p1) <= useDistance * 2 ? p0.clone().add(p1).multiplyScalar(0.5) : p0.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+	      var fixedPoint1 = p2.distanceTo(p1) <= useDistance * 2 ? p2.clone().add(p1).multiplyScalar(0.5) : p2.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+	      polyline.push(fixedPoint0);
+	      var binormal0 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2);
+	      var binormal1 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2); //计算圆弧点
+
+	      var line0 = new Line_1.Line(fixedPoint0, binormal0.add(fixedPoint0));
+	      var line1 = new Line_1.Line(fixedPoint1, binormal1.add(fixedPoint1));
+	      polyline.push(fixedPoint1);
+	    }
+
+	    return polyline;
+	  };
+
+	  return Polyline;
+	}(ArrayEx_1.ArrayEx);
+
+	exports.Polyline = Polyline;
+	});
+
+	unwrapExports(PolyLine);
+	var PolyLine_1 = PolyLine.Polyline;
+
+	var Path_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Path = void 0;
+
+
+
+
+
+
+
+	var Path =
+	/** @class */
+	function (_super) {
+	  __extends(Path, _super);
+
+	  function Path(vs) {
+	    var _this = _super.call(this, vs) || this;
+
+	    Object.setPrototypeOf(_this, Path.prototype);
+	    _this._closed = false;
+
+	    _this.init();
+
+	    return _this;
+	  }
+
+	  Object.defineProperty(Path.prototype, "closed", {
+	    get: function () {
+	      return this._closed;
+	    },
+	    set: function (val) {
+	      this._closed = val;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Path.prototype.init = function () {
+	    if (this.length === 0) return;
+	    this[0].len = 0;
+	    this[0].tlen = 0;
+	    this[0].direction = this[1].clone().sub(this[0]).normalize();
+
+	    for (var i = 1; i < this.length; i++) {
+	      var e = this[i];
+	      e.len = this[i].distanceTo(this[i - 1]);
+	      e.tlen = this[i - 1].tlen + e.len;
+	      this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
+	    }
+
+	    if (this._closed) {
+	      this.get(-1).direction.copy(this[0]).sub(this.get(-1)).normalize();
+	    }
+
+	    for (var i = 0; i < this.length + 2; i++) {
+	      // this[i % this.length].tangent = this[i % this.length].direction.clone()
+	      //     .add(this[(i + 1) % this.length]).normalize();
+	      this[i % this.length].tangent = this[i % this.length].direction.clone();
+	    }
+
+	    if (!this._closed) {
+	      this[0].tangent.copy(this[0].direction);
+	      this.get(-1).tangent.copy(this.get(-1).direction);
+	    }
+	  };
+
+	  Object.defineProperty(Path.prototype, "tlen", {
+	    get: function () {
+	      if (this.length === 0) return 0;
+	      return Math.max(this.get(-1).tlen, this[0].tlen);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  /**
+	   * 截取一段从from到to的path
+	   * @param {Number} from
+	   * @param {Number} to
+	   */
+
+	  Path.prototype.splitByFromToDistance = function (from, to) {
+	    if (from === void 0) {
+	      from = 0;
+	    }
+
+	    if (to === void 0) {
+	      to = 0;
+	    }
+
+	    if (to <= from) return null;
+	    var newPath = new Path([]);
+
+	    for (var i = 0; i < this.length - 1; i++) {
+	      var pt = this[i];
+	      var ptnext = this[i + 1];
+
+	      if (pt.tlen <= from && ptnext.tlen >= from) {
+	        var v3 = new Vec3_1.Vec3().lerpVecs(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
+	        newPath.add(v3);
+	      }
+
+	      if (pt.tlen > from && pt.tlen < to) {
+	        newPath.add(pt.clone());
+	      }
+
+	      if (pt.tlen <= to && ptnext.tlen >= to) {
+	        var v3 = new Vec3_1.Vec3().lerpVecs(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
+	        newPath.add(v3);
+	        return newPath;
+	      }
+	    }
+
+	    return newPath;
+	  };
+	  /**
+	   * 从起点出发到距离等于distance位置  的坐标 二分查找
+	   * @param {Number} distance
+	   */
+
+
+	  Path.prototype.getPointByDistance = function (arg_distance, left, right) {
+	    if (left === void 0) {
+	      left = 0;
+	    }
+
+	    if (right === void 0) {
+	      right = this.length - 1;
+	    }
+
+	    var distance = _Math.clamp(arg_distance, 0, this.get(-1).tlen);
+	    if (distance !== arg_distance) return null;
+
+	    if (right - left === 1) {
+	      return {
+	        isNode: false,
+	        point: new Vec3_1.Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+	      };
+	    }
+
+	    var mid = left + right >> 1;
+	    if (this[mid].tlen > distance) return this.getPointByDistance(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistance(distance, mid, right);else return {
+	      isNode: true,
+	      point: new Vec3_1.Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+	    };
+	  };
+	  /**
+	   * 从起点出发到距离等于distance位置  的坐标 二分查找
+	   * @param {Number} distance
+	   */
+
+
+	  Path.prototype.getPointByDistancePure = function (arg_distance, left, right) {
+	    if (left === void 0) {
+	      left = 0;
+	    }
+
+	    if (right === void 0) {
+	      right = this.length - 1;
+	    }
+
+	    var distance = _Math.clamp(arg_distance, 0, this.get(-1).tlen);
+	    if (distance !== arg_distance) return null;
+
+	    if (right - left === 1) {
+	      return new Vec3_1.Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+	    }
+
+	    var mid = left + right >> 1;
+	    if (this[mid].tlen > distance) return this.getPointByDistancePure(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistancePure(distance, mid, right);else return this[mid].clone();
+	  };
+	  /**
+	   * 平均切割为 splitCount 段
+	   * @param {Number} splitCount
+	   * @returns {Path} 新的path
+	   */
+
+
+	  Path.prototype.splitAverage = function (splitCount) {
+	    var tlen = this.last.tlen;
+	    var perlen = tlen / splitCount;
+	    var res = [];
+	    var curJ = 0;
+
+	    for (var i = 0; i <= splitCount; i++) {
+	      var plen = i * perlen;
+
+	      for (var j = curJ; j < this.length - 1; j++) {
+	        if (this[j].tlen <= plen && this[j + 1].tlen >= plen) {
+	          var p = new Vec3_1.Vec3().lerpVecs(this[j], this[j + 1], (plen - this[j].tlen) / this[j + 1].len);
+	          res.push(p);
+	          curJ = j;
+	          break;
+	        }
+	      }
+	    }
+
+	    return new Path(res);
+	  };
+	  /**
+	   * 通过测试
+	  * 平均切割为 splitCount 段
+	  * @param {Number} splitCount
+	  * @param {Boolean} integer 是否取整
+	  * @returns {Path} 新的path
+	  */
+
+
+	  Path.prototype.splitAverageLength = function (splitLength, integer) {
+	    if (integer === void 0) {
+	      integer = true;
+	    }
+
+	    var tlen = this.last.tlen;
+	    var count = tlen / splitLength;
+	    if (integer) count = Math.round(count);
+	    return this.splitAverage(count);
+	  };
+	  /**
+	   *
+	   * @param  {...any} ps
+	   */
+
+
+	  Path.prototype.add = function () {
+	    var ps = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      ps[_i] = arguments[_i];
+	    }
+
+	    if (this.length == 0) {
+	      var firstpt = ps.shift();
+	      this.push(firstpt);
+	      this[0].len = 0;
+	      this[0].tlen = 0;
+	    }
+
+	    for (var i = 0; i < ps.length; i++) {
+	      var pt = ps[i];
+	      pt.len = pt.distanceTo(this.get(-1));
+	      pt.tlen = this.get(-1).tlen + pt.len;
+	      pt.direction = pt.clone().sub(this.get(-1)).normalize();
+	      if (!this.get(-1).direction) this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();else this.get(-1).direction.copy(pt.direction);
+	      this.push(pt);
+	    }
+	  };
+
+	  return Path;
+	}(PolyLine.Polyline);
+
+	exports.Path = Path;
+	});
+
+	unwrapExports(Path_1);
+	var Path_2 = Path_1.Path;
+
+	var pointset = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.isInOnePlane = exports.recognitionPlane = exports.projectOnPlane = exports.reverseOnPlane = exports.simplifyPointList = exports.applyMat4 = exports.scale = exports.rotateByUnitVecs = exports.rotate = exports.translate = exports.applyQuat = exports.boundingBox = exports.verctorToNumbers = exports.VecCompare = void 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+	var _Vec = Vec3_1.v3();
+	/**
+	 * 点排序函数
+	 * @param {Vec*} a
+	 * @param {Vec*} b
+	 */
+
+
+	function VecCompare(a, b) {
+	  if (a.x === b.x) {
+	    if (a.z !== undefined && a.y === b.y) return a.z - b.z;else return a.y - b.y;
+	  } else return a.x - b.x;
+	}
+
+	exports.VecCompare = VecCompare;
+	/**
+	 * 将向量拆解为数字
+	 * @param {Array} points
+	 * @param {String} feature
+	 * @returns {Array<Number>} 数字数组
+	 */
+
+	function verctorToNumbers(points, feature) {
+	  if (feature === void 0) {
+	    feature = "xyz";
+	  }
+
+	  if (!(points instanceof Array)) {
+	    console.error("传入参数必须是数组");
+	    return;
+	  }
+
+	  var numbers = [];
+
+	  if (points[0].x !== undefined && points[0].y !== undefined && points[0].z !== undefined) {
+	    for (var i = 0; i < points.length; i++) {
+	      for (var j = 0; j < feature.length; j++) {
+	        numbers.push(points[i][feature[j]]);
+	      }
+	    }
+	  } else if (points[0].x !== undefined && points[0].y !== undefined) for (var i = 0; i < points.length; i++) {
+	    numbers.push(points[i].x);
+	    numbers.push(points[i].y);
+	  } else if (points[0] instanceof Array) {
+	    for (var i = 0; i < points.length; i++) {
+	      numbers = numbers.concat(verctorToNumbers(points[i]));
+	    }
+	  } else {
+	    console.error("数组内部的元素不是向量");
+	  }
+
+	  return numbers;
+	}
+
+	exports.verctorToNumbers = verctorToNumbers;
+	/**
+	 * 计算包围盒
+	 * @param {*} points  点集
+	 * @returns {Array[min,max]} 返回最小最大值
+	 */
+
+	function boundingBox(points) {
+	  var min = new Vec3_1.Vec3(+Infinity, +Infinity, +Infinity);
+	  var max = new Vec3_1.Vec3(-Infinity, -Infinity, -Infinity);
+
+	  for (var i = 0; i < points.length; i++) {
+	    min.min(points[i]);
+	    max.max(points[i]);
+	  }
+
+	  return [min, max];
+	}
+
+	exports.boundingBox = boundingBox;
+	/**
+	 * 点集响应矩阵
+	 * @param {*} points
+	 * @param {*} Quat
+	 * @param {Boolean} ref 是否是引用
+	 */
+
+	function applyQuat(points, quat, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.applyQuat(quat);
+	    });
+	    return points;
+	  }
+
+	  return applyQuat(array.clone(points), quat);
+	}
+
+	exports.applyQuat = applyQuat;
+	/**
+	 * 平移
+	 * @param {*} points
+	 * @param {*} distance
+	 * @param {*} ref
+	 */
+
+	function translate(points, distance, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.add(distance);
+	    });
+	    return points;
+	  }
+
+	  return translate(array.clone(points));
+	}
+
+	exports.translate = translate;
+	/**
+	 * 旋转
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function rotate(points, axis, angle, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  return applyQuat(points, new Quat_1.Quat().setFromAxisAngle(axis, angle), ref);
+	}
+
+	exports.rotate = rotate;
+	/**
+	 * 两个向量之间存在的旋转量来旋转点集
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function rotateByUnitVecs(points, vFrom, vTo, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  return applyQuat(points, new Quat_1.Quat().setFromUnitVecs(vFrom, vTo), ref);
+	}
+
+	exports.rotateByUnitVecs = rotateByUnitVecs;
+	/**
+	 * 缩放
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function scale(points, scale, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.scale.multiply(scale);
+	    });
+	    return points;
+	  }
+
+	  return scale(array.clone(points));
+	}
+
+	exports.scale = scale;
+	/**
+	 * 响应矩阵
+	 * @param {*} points
+	 * @param {*} axis
+	 * @param {*} angle
+	 * @param {*} ref
+	 */
+
+	function applyMat4(points, mat4, ref) {
+	  if (ref === void 0) {
+	    ref = true;
+	  }
+
+	  if (ref) {
+	    points.flat(Infinity).forEach(function (point) {
+	      point.applyMat4(mat4);
+	    });
+	    return points;
+	  }
+
+	  return applyMat4(array.clone(points), mat4);
+	}
+
+	exports.applyMat4 = applyMat4;
+	/**
+	 * 简化点集数组，折线，路径
+	 * @param {*} points 点集数组，折线，路径 ,继承Array
+	 * @param {*} maxDistance  简化最大距离
+	 * @param {*} maxAngle  简化最大角度
+	 */
+
+	function simplifyPointList(points, maxDistance, maxAngle) {
+	  if (maxDistance === void 0) {
+	    maxDistance = 0.1;
+	  }
+
+	  if (maxAngle === void 0) {
+	    maxAngle = Math.PI / 180 * 5;
+	  }
+
+	  for (var i = 0; i < points.length; i++) {
+	    // 删除小距离
+	    var P = points[i];
+	    var nextP = points[i + 1];
+
+	    if (P.distanceTo(nextP) < maxDistance) {
+	      if (i === 0) points.remove(i + 1, 1);else if (i === points.length - 2) points.splice(i, 1);else {
+	        points.splice(i, 2, P.clone().add(nextP).multiplyScalar(0.5));
+	      }
+	      i--;
+	    }
+	  }
+
+	  for (var i = 1; i < points.length - 1; i++) {
+	    // 删除小小角度
+	    var preP = points[i - 1];
+	    var P = points[i];
+	    var nextP = points[i + 1];
+
+	    if (Math.acos(P.clone().sub(preP).normalize().dot(nextP.clone().sub(P).normalize())) < maxAngle) {
+	      points.splice(i, 1);
+	      i--;
+	    }
+	  }
+
+	  return points;
+	}
+
+	exports.simplifyPointList = simplifyPointList;
+	/**
+	 * 以某个平面生成对称镜像
+	 * @param {*} points  点集
+	 * @param {*} plane 对称镜像平面
+	 */
+
+	function reverseOnPlane(points, plane) {}
+
+	exports.reverseOnPlane = reverseOnPlane;
+	/**
+	 * 投影到平面
+	 * @param {*} points 点集
+	 * @param {*} plane  投影平面
+	 * @param {*} projectDirect  默认是法线的方向
+	 */
+
+	function projectOnPlane(points, plane, projectDirect) {
+	  return points;
+	}
+
+	exports.projectOnPlane = projectOnPlane;
+	/**
+	 * 计算共面点集所在的平面
+	 * @param {Array<Vec3|Point>} points
+	 */
+
+	function recognitionPlane(points) {
+	  points.sort(VecCompare);
+	  var line = new Line_1.Line(points[0], points.get(-1));
+	  var maxDistance = -Infinity;
+	  var ipos = -1;
+
+	  for (var i = 1; i < points.length - 1; i++) {
+	    var pt = points[i];
+	    var distance = line.distancePoint(pt).distance;
+
+	    if (distance > maxDistance) {
+	      maxDistance = distance;
+	      ipos = i;
+	    }
+	  }
+
+	  var plane = new Plane_1.Plane();
+	  plane.setFromThreePoint(points[0], points.get(-1), points[ipos]);
+	  return plane;
+	}
+
+	exports.recognitionPlane = recognitionPlane;
+	/**
+	 * 判断所有点是否在同一个平面
+	 * @param {Array<Vec3|Point>} points
+	 * @param {*} precision
+	 * @returns {Boolean|Plane} 如果在同一个平面返回所在平面，否则返回false
+	 */
+
+	function isInOnePlane(points, precision) {
+	  if (precision === void 0) {
+	    precision = _Math.gPrecision;
+	  }
+
+	  var plane = recognitionPlane(points);
+
+	  for (var i = 0; i < points.length; i++) {
+	    var pt = points[i];
+	    if (plane.distancePoint(pt) >= precision) return false;
+	  }
+
+	  return plane;
+	}
+
+	exports.isInOnePlane = isInOnePlane; // export function
+	});
+
+	unwrapExports(pointset);
+	var pointset_1 = pointset.isInOnePlane;
+	var pointset_2 = pointset.recognitionPlane;
+	var pointset_3 = pointset.projectOnPlane;
+	var pointset_4 = pointset.reverseOnPlane;
+	var pointset_5 = pointset.simplifyPointList;
+	var pointset_6 = pointset.applyMat4;
+	var pointset_7 = pointset.scale;
+	var pointset_8 = pointset.rotateByUnitVecs;
+	var pointset_9 = pointset.rotate;
+	var pointset_10 = pointset.translate;
+	var pointset_11 = pointset.applyQuat;
+	var pointset_12 = pointset.boundingBox;
+	var pointset_13 = pointset.verctorToNumbers;
+	var pointset_14 = pointset.VecCompare;
+
+	var mesh = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.toBuffer = exports.triangListToBuffer = exports.indexable = void 0;
+
+
+
+
+
+
+
+	function indexable(obj, refIndexInfo, force) {
+	  if (refIndexInfo === void 0) {
+	    refIndexInfo = {
+	      index: 0
+	    };
+	  }
+
+	  if (force === void 0) {
+	    force = false;
+	  }
+
+	  if (obj instanceof Array) {
+	    for (var i = 0; i < obj.length; i++) indexable(obj[i], refIndexInfo);
+	  } else if (obj instanceof Object) {
+	    if (obj.index === undefined) obj.index = refIndexInfo.index++;else if (force) obj.index = refIndexInfo.index++;
+	  }
+	}
+
+	exports.indexable = indexable;
+
+	function triangListToBuffer(vertices, triangleList) {
+	  indexable(triangleList);
+	  var indices = [];
+	  array.forall(triangleList, function (v) {
+	    indices.push(v.index);
+	  });
+	  return toBuffer(vertices, indices);
+	}
+
+	exports.triangListToBuffer = triangListToBuffer;
+	/**
+	 * 顶点纹理坐标所以转化为buffer数据
+	 * @param {Array<Verctor3|Number>} vertices
+	 * @param {Array<Number>} indices
+	 * @param {Array<Verctor2|Number>} uvs
+	 */
+
+	function toBuffer(inVertices, indices, inUvs) {
+	  if (inUvs === void 0) {
+	    inUvs = [];
+	  }
+
+	  var vertices = [];
+
+	  if (Vec3_1.Vec3.isVec3(inVertices[0])) {
+	    for (var i = 0; i < inVertices.length; i++) {
+	      var v = inVertices[i];
+	      vertices.push(v.x, v.y, v.z);
+	    }
+	  } else {
+	    vertices = inVertices;
+	  }
+
+	  var uvs = [];
+
+	  if (inUvs.length > 0 && Vec2_1.Vec2.isVec2(inUvs[0])) {
+	    for (var i = 0; i < inUvs.length; i++) {
+	      var uv = inUvs[i];
+	      uvs.push(uv.x, uv.y);
+	    }
+	  } else {
+	    uvs = inUvs;
+	  }
+
+	  var verticesBuffer = new Float32Array(vertices);
+	  var uvsBuffer = uvs.length === 0 ? new Float32Array(vertices.length / 3 * 2) : new Float32Array(uvs);
+	  var indicesBuffer;
+	  if (indices instanceof Uint32Array || indices instanceof Uint16Array) indicesBuffer = indices;else indicesBuffer = new (verticesBuffer.length / 3 > 65535 ? Uint32Array : Uint16Array)(indices);
+	  return {
+	    vertices: verticesBuffer,
+	    uvs: uvsBuffer,
+	    indices: indicesBuffer
+	  };
+	}
+
+	exports.toBuffer = toBuffer;
+	});
+
+	unwrapExports(mesh);
+	var mesh_1 = mesh.toBuffer;
+	var mesh_2 = mesh.triangListToBuffer;
+	var mesh_3 = mesh.indexable;
+
+	var earcut_1 = earcut;
+	var default_1 = earcut;
+
+	function earcut(data, holeIndices, dim) {
+
+	    dim = dim || 2;
+
+	    var hasHoles = holeIndices && holeIndices.length,
+	        outerLen = hasHoles ? holeIndices[0] * dim : data.length,
+	        outerNode = linkedList(data, 0, outerLen, dim, true),
+	        triangles = [];
+
+	    if (!outerNode || outerNode.next === outerNode.prev) return triangles;
+
+	    var minX, minY, maxX, maxY, x, y, invSize;
+
+	    if (hasHoles) outerNode = eliminateHoles(data, holeIndices, outerNode, dim);
+
+	    // if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
+	    if (data.length > 80 * dim) {
+	        minX = maxX = data[0];
+	        minY = maxY = data[1];
+
+	        for (var i = dim; i < outerLen; i += dim) {
+	            x = data[i];
+	            y = data[i + 1];
+	            if (x < minX) minX = x;
+	            if (y < minY) minY = y;
+	            if (x > maxX) maxX = x;
+	            if (y > maxY) maxY = y;
+	        }
+
+	        // minX, minY and invSize are later used to transform coords into integers for z-order calculation
+	        invSize = Math.max(maxX - minX, maxY - minY);
+	        invSize = invSize !== 0 ? 1 / invSize : 0;
+	    }
+
+	    earcutLinked(outerNode, triangles, dim, minX, minY, invSize);
+
+	    return triangles;
+	}
+
+	// create a circular doubly linked list from polygon points in the specified winding order
+	function linkedList(data, start, end, dim, clockwise) {
+	    var i, last;
+
+	    if (clockwise === (signedArea(data, start, end, dim) > 0)) {
+	        for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], last);
+	    } else {
+	        for (i = end - dim; i >= start; i -= dim) last = insertNode(i, data[i], data[i + 1], last);
+	    }
+
+	    if (last && equals(last, last.next)) {
+	        removeNode(last);
+	        last = last.next;
+	    }
+
+	    return last;
+	}
+
+	// eliminate colinear or duplicate points
+	function filterPoints(start, end) {
+	    if (!start) return start;
+	    if (!end) end = start;
+
+	    var p = start,
+	        again;
+	    do {
+	        again = false;
+
+	        if (!p.steiner && (equals(p, p.next) || area(p.prev, p, p.next) === 0)) {
+	            removeNode(p);
+	            p = end = p.prev;
+	            if (p === p.next) break;
+	            again = true;
+
+	        } else {
+	            p = p.next;
+	        }
+	    } while (again || p !== end);
+
+	    return end;
+	}
+
+	// main ear slicing loop which triangulates a polygon (given as a linked list)
+	function earcutLinked(ear, triangles, dim, minX, minY, invSize, pass) {
+	    if (!ear) return;
+
+	    // interlink polygon nodes in z-order
+	    if (!pass && invSize) indexCurve(ear, minX, minY, invSize);
+
+	    var stop = ear,
+	        prev, next;
+
+	    // iterate through ears, slicing them one by one
+	    while (ear.prev !== ear.next) {
+	        prev = ear.prev;
+	        next = ear.next;
+
+	        if (invSize ? isEarHashed(ear, minX, minY, invSize) : isEar(ear)) {
+	            // cut off the triangle
+	            triangles.push(prev.i / dim);
+	            triangles.push(ear.i / dim);
+	            triangles.push(next.i / dim);
+
+	            removeNode(ear);
+
+	            // skipping the next vertex leads to less sliver triangles
+	            ear = next.next;
+	            stop = next.next;
+
+	            continue;
+	        }
+
+	        ear = next;
+
+	        // if we looped through the whole remaining polygon and can't find any more ears
+	        if (ear === stop) {
+	            // try filtering points and slicing again
+	            if (!pass) {
+	                earcutLinked(filterPoints(ear), triangles, dim, minX, minY, invSize, 1);
+
+	            // if this didn't work, try curing all small self-intersections locally
+	            } else if (pass === 1) {
+	                ear = cureLocalIntersections(filterPoints(ear), triangles, dim);
+	                earcutLinked(ear, triangles, dim, minX, minY, invSize, 2);
+
+	            // as a last resort, try splitting the remaining polygon into two
+	            } else if (pass === 2) {
+	                splitEarcut(ear, triangles, dim, minX, minY, invSize);
+	            }
+
+	            break;
+	        }
+	    }
+	}
+
+	// check whether a polygon node forms a valid ear with adjacent nodes
+	function isEar(ear) {
+	    var a = ear.prev,
+	        b = ear,
+	        c = ear.next;
+
+	    if (area(a, b, c) >= 0) return false; // reflex, can't be an ear
+
+	    // now make sure we don't have other points inside the potential ear
+	    var p = ear.next.next;
+
+	    while (p !== ear.prev) {
+	        if (pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
+	            area(p.prev, p, p.next) >= 0) return false;
+	        p = p.next;
+	    }
+
+	    return true;
+	}
+
+	function isEarHashed(ear, minX, minY, invSize) {
+	    var a = ear.prev,
+	        b = ear,
+	        c = ear.next;
+
+	    if (area(a, b, c) >= 0) return false; // reflex, can't be an ear
+
+	    // triangle bbox; min & max are calculated like this for speed
+	    var minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x),
+	        minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y),
+	        maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x),
+	        maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
+
+	    // z-order range for the current triangle bbox;
+	    var minZ = zOrder(minTX, minTY, minX, minY, invSize),
+	        maxZ = zOrder(maxTX, maxTY, minX, minY, invSize);
+
+	    var p = ear.prevZ,
+	        n = ear.nextZ;
+
+	    // look for points inside the triangle in both directions
+	    while (p && p.z >= minZ && n && n.z <= maxZ) {
+	        if (p !== ear.prev && p !== ear.next &&
+	            pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
+	            area(p.prev, p, p.next) >= 0) return false;
+	        p = p.prevZ;
+
+	        if (n !== ear.prev && n !== ear.next &&
+	            pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
+	            area(n.prev, n, n.next) >= 0) return false;
+	        n = n.nextZ;
+	    }
+
+	    // look for remaining points in decreasing z-order
+	    while (p && p.z >= minZ) {
+	        if (p !== ear.prev && p !== ear.next &&
+	            pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
+	            area(p.prev, p, p.next) >= 0) return false;
+	        p = p.prevZ;
+	    }
+
+	    // look for remaining points in increasing z-order
+	    while (n && n.z <= maxZ) {
+	        if (n !== ear.prev && n !== ear.next &&
+	            pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
+	            area(n.prev, n, n.next) >= 0) return false;
+	        n = n.nextZ;
+	    }
+
+	    return true;
+	}
+
+	// go through all polygon nodes and cure small local self-intersections
+	function cureLocalIntersections(start, triangles, dim) {
+	    var p = start;
+	    do {
+	        var a = p.prev,
+	            b = p.next.next;
+
+	        if (!equals(a, b) && intersects(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
+
+	            triangles.push(a.i / dim);
+	            triangles.push(p.i / dim);
+	            triangles.push(b.i / dim);
+
+	            // remove two nodes involved
+	            removeNode(p);
+	            removeNode(p.next);
+
+	            p = start = b;
+	        }
+	        p = p.next;
+	    } while (p !== start);
+
+	    return filterPoints(p);
+	}
+
+	// try splitting polygon into two and triangulate them independently
+	function splitEarcut(start, triangles, dim, minX, minY, invSize) {
+	    // look for a valid diagonal that divides the polygon into two
+	    var a = start;
+	    do {
+	        var b = a.next.next;
+	        while (b !== a.prev) {
+	            if (a.i !== b.i && isValidDiagonal(a, b)) {
+	                // split the polygon in two by the diagonal
+	                var c = splitPolygon(a, b);
+
+	                // filter colinear points around the cuts
+	                a = filterPoints(a, a.next);
+	                c = filterPoints(c, c.next);
+
+	                // run earcut on each half
+	                earcutLinked(a, triangles, dim, minX, minY, invSize);
+	                earcutLinked(c, triangles, dim, minX, minY, invSize);
+	                return;
+	            }
+	            b = b.next;
+	        }
+	        a = a.next;
+	    } while (a !== start);
+	}
+
+	// link every hole into the outer loop, producing a single-ring polygon without holes
+	function eliminateHoles(data, holeIndices, outerNode, dim) {
+	    var queue = [],
+	        i, len, start, end, list;
+
+	    for (i = 0, len = holeIndices.length; i < len; i++) {
+	        start = holeIndices[i] * dim;
+	        end = i < len - 1 ? holeIndices[i + 1] * dim : data.length;
+	        list = linkedList(data, start, end, dim, false);
+	        if (list === list.next) list.steiner = true;
+	        queue.push(getLeftmost(list));
+	    }
+
+	    queue.sort(compareX);
+
+	    // process holes from left to right
+	    for (i = 0; i < queue.length; i++) {
+	        eliminateHole(queue[i], outerNode);
+	        outerNode = filterPoints(outerNode, outerNode.next);
+	    }
+
+	    return outerNode;
+	}
+
+	function compareX(a, b) {
+	    return a.x - b.x;
+	}
+
+	// find a bridge between vertices that connects hole with an outer ring and and link it
+	function eliminateHole(hole, outerNode) {
+	    outerNode = findHoleBridge(hole, outerNode);
+	    if (outerNode) {
+	        var b = splitPolygon(outerNode, hole);
+
+	        // filter collinear points around the cuts
+	        filterPoints(outerNode, outerNode.next);
+	        filterPoints(b, b.next);
+	    }
+	}
+
+	// David Eberly's algorithm for finding a bridge between hole and outer polygon
+	function findHoleBridge(hole, outerNode) {
+	    var p = outerNode,
+	        hx = hole.x,
+	        hy = hole.y,
+	        qx = -Infinity,
+	        m;
+
+	    // find a segment intersected by a ray from the hole's leftmost point to the left;
+	    // segment's endpoint with lesser x will be potential connection point
+	    do {
+	        if (hy <= p.y && hy >= p.next.y && p.next.y !== p.y) {
+	            var x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
+	            if (x <= hx && x > qx) {
+	                qx = x;
+	                if (x === hx) {
+	                    if (hy === p.y) return p;
+	                    if (hy === p.next.y) return p.next;
+	                }
+	                m = p.x < p.next.x ? p : p.next;
+	            }
+	        }
+	        p = p.next;
+	    } while (p !== outerNode);
+
+	    if (!m) return null;
+
+	    if (hx === qx) return m; // hole touches outer segment; pick leftmost endpoint
+
+	    // look for points inside the triangle of hole point, segment intersection and endpoint;
+	    // if there are no points found, we have a valid connection;
+	    // otherwise choose the point of the minimum angle with the ray as connection point
+
+	    var stop = m,
+	        mx = m.x,
+	        my = m.y,
+	        tanMin = Infinity,
+	        tan;
+
+	    p = m;
+
+	    do {
+	        if (hx >= p.x && p.x >= mx && hx !== p.x &&
+	                pointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
+
+	            tan = Math.abs(hy - p.y) / (hx - p.x); // tangential
+
+	            if (locallyInside(p, hole) &&
+	                (tan < tanMin || (tan === tanMin && (p.x > m.x || (p.x === m.x && sectorContainsSector(m, p)))))) {
+	                m = p;
+	                tanMin = tan;
+	            }
+	        }
+
+	        p = p.next;
+	    } while (p !== stop);
+
+	    return m;
+	}
+
+	// whether sector in vertex m contains sector in vertex p in the same coordinates
+	function sectorContainsSector(m, p) {
+	    return area(m.prev, m, p.prev) < 0 && area(p.next, m, m.next) < 0;
+	}
+
+	// interlink polygon nodes in z-order
+	function indexCurve(start, minX, minY, invSize) {
+	    var p = start;
+	    do {
+	        if (p.z === null) p.z = zOrder(p.x, p.y, minX, minY, invSize);
+	        p.prevZ = p.prev;
+	        p.nextZ = p.next;
+	        p = p.next;
+	    } while (p !== start);
+
+	    p.prevZ.nextZ = null;
+	    p.prevZ = null;
+
+	    sortLinked(p);
+	}
+
+	// Simon Tatham's linked list merge sort algorithm
+	// http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
+	function sortLinked(list) {
+	    var i, p, q, e, tail, numMerges, pSize, qSize,
+	        inSize = 1;
+
+	    do {
+	        p = list;
+	        list = null;
+	        tail = null;
+	        numMerges = 0;
+
+	        while (p) {
+	            numMerges++;
+	            q = p;
+	            pSize = 0;
+	            for (i = 0; i < inSize; i++) {
+	                pSize++;
+	                q = q.nextZ;
+	                if (!q) break;
+	            }
+	            qSize = inSize;
+
+	            while (pSize > 0 || (qSize > 0 && q)) {
+
+	                if (pSize !== 0 && (qSize === 0 || !q || p.z <= q.z)) {
+	                    e = p;
+	                    p = p.nextZ;
+	                    pSize--;
+	                } else {
+	                    e = q;
+	                    q = q.nextZ;
+	                    qSize--;
+	                }
+
+	                if (tail) tail.nextZ = e;
+	                else list = e;
+
+	                e.prevZ = tail;
+	                tail = e;
+	            }
+
+	            p = q;
+	        }
+
+	        tail.nextZ = null;
+	        inSize *= 2;
+
+	    } while (numMerges > 1);
+
+	    return list;
+	}
+
+	// z-order of a point given coords and inverse of the longer side of data bbox
+	function zOrder(x, y, minX, minY, invSize) {
+	    // coords are transformed into non-negative 15-bit integer range
+	    x = 32767 * (x - minX) * invSize;
+	    y = 32767 * (y - minY) * invSize;
+
+	    x = (x | (x << 8)) & 0x00FF00FF;
+	    x = (x | (x << 4)) & 0x0F0F0F0F;
+	    x = (x | (x << 2)) & 0x33333333;
+	    x = (x | (x << 1)) & 0x55555555;
+
+	    y = (y | (y << 8)) & 0x00FF00FF;
+	    y = (y | (y << 4)) & 0x0F0F0F0F;
+	    y = (y | (y << 2)) & 0x33333333;
+	    y = (y | (y << 1)) & 0x55555555;
+
+	    return x | (y << 1);
+	}
+
+	// find the leftmost node of a polygon ring
+	function getLeftmost(start) {
+	    var p = start,
+	        leftmost = start;
+	    do {
+	        if (p.x < leftmost.x || (p.x === leftmost.x && p.y < leftmost.y)) leftmost = p;
+	        p = p.next;
+	    } while (p !== start);
+
+	    return leftmost;
+	}
+
+	// check if a point lies within a convex triangle
+	function pointInTriangle(ax, ay, bx, by, cx, cy, px, py) {
+	    return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
+	           (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
+	           (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+	}
+
+	// check if a diagonal between two polygon nodes is valid (lies in polygon interior)
+	function isValidDiagonal(a, b) {
+	    return a.next.i !== b.i && a.prev.i !== b.i && !intersectsPolygon(a, b) && // dones't intersect other edges
+	           (locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b) && // locally visible
+	            (area(a.prev, a, b.prev) || area(a, b.prev, b)) || // does not create opposite-facing sectors
+	            equals(a, b) && area(a.prev, a, a.next) > 0 && area(b.prev, b, b.next) > 0); // special zero-length case
+	}
+
+	// signed area of a triangle
+	function area(p, q, r) {
+	    return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+	}
+
+	// check if two points are equal
+	function equals(p1, p2) {
+	    return p1.x === p2.x && p1.y === p2.y;
+	}
+
+	// check if two segments intersect
+	function intersects(p1, q1, p2, q2) {
+	    var o1 = sign(area(p1, q1, p2));
+	    var o2 = sign(area(p1, q1, q2));
+	    var o3 = sign(area(p2, q2, p1));
+	    var o4 = sign(area(p2, q2, q1));
+
+	    if (o1 !== o2 && o3 !== o4) return true; // general case
+
+	    if (o1 === 0 && onSegment(p1, p2, q1)) return true; // p1, q1 and p2 are collinear and p2 lies on p1q1
+	    if (o2 === 0 && onSegment(p1, q2, q1)) return true; // p1, q1 and q2 are collinear and q2 lies on p1q1
+	    if (o3 === 0 && onSegment(p2, p1, q2)) return true; // p2, q2 and p1 are collinear and p1 lies on p2q2
+	    if (o4 === 0 && onSegment(p2, q1, q2)) return true; // p2, q2 and q1 are collinear and q1 lies on p2q2
+
+	    return false;
+	}
+
+	// for collinear points p, q, r, check if point q lies on segment pr
+	function onSegment(p, q, r) {
+	    return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) && q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y);
+	}
+
+	function sign(num) {
+	    return num > 0 ? 1 : num < 0 ? -1 : 0;
+	}
+
+	// check if a polygon diagonal intersects any polygon segments
+	function intersectsPolygon(a, b) {
+	    var p = a;
+	    do {
+	        if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i &&
+	                intersects(p, p.next, a, b)) return true;
+	        p = p.next;
+	    } while (p !== a);
+
+	    return false;
+	}
+
+	// check if a polygon diagonal is locally inside the polygon
+	function locallyInside(a, b) {
+	    return area(a.prev, a, a.next) < 0 ?
+	        area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 :
+	        area(a, b, a.prev) < 0 || area(a, a.next, b) < 0;
+	}
+
+	// check if the middle point of a polygon diagonal is inside the polygon
+	function middleInside(a, b) {
+	    var p = a,
+	        inside = false,
+	        px = (a.x + b.x) / 2,
+	        py = (a.y + b.y) / 2;
+	    do {
+	        if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y &&
+	                (px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x))
+	            inside = !inside;
+	        p = p.next;
+	    } while (p !== a);
+
+	    return inside;
+	}
+
+	// link two polygon vertices with a bridge; if the vertices belong to the same ring, it splits polygon into two;
+	// if one belongs to the outer ring and another to a hole, it merges it into a single ring
+	function splitPolygon(a, b) {
+	    var a2 = new Node(a.i, a.x, a.y),
+	        b2 = new Node(b.i, b.x, b.y),
+	        an = a.next,
+	        bp = b.prev;
+
+	    a.next = b;
+	    b.prev = a;
+
+	    a2.next = an;
+	    an.prev = a2;
+
+	    b2.next = a2;
+	    a2.prev = b2;
+
+	    bp.next = b2;
+	    b2.prev = bp;
+
+	    return b2;
+	}
+
+	// create a node and optionally link it with previous one (in a circular doubly linked list)
+	function insertNode(i, x, y, last) {
+	    var p = new Node(i, x, y);
+
+	    if (!last) {
+	        p.prev = p;
+	        p.next = p;
+
+	    } else {
+	        p.next = last.next;
+	        p.prev = last;
+	        last.next.prev = p;
+	        last.next = p;
+	    }
+	    return p;
+	}
+
+	function removeNode(p) {
+	    p.next.prev = p.prev;
+	    p.prev.next = p.next;
+
+	    if (p.prevZ) p.prevZ.nextZ = p.nextZ;
+	    if (p.nextZ) p.nextZ.prevZ = p.prevZ;
+	}
+
+	function Node(i, x, y) {
+	    // vertex index in coordinates array
+	    this.i = i;
+
+	    // vertex coordinates
+	    this.x = x;
+	    this.y = y;
+
+	    // previous and next vertex nodes in a polygon ring
+	    this.prev = null;
+	    this.next = null;
+
+	    // z-order curve value
+	    this.z = null;
+
+	    // previous and next nodes in z-order
+	    this.prevZ = null;
+	    this.nextZ = null;
+
+	    // indicates whether this is a steiner point
+	    this.steiner = false;
+	}
+
+	// return a percentage difference between the polygon area and its triangulation area;
+	// used to verify correctness of triangulation
+	earcut.deviation = function (data, holeIndices, dim, triangles) {
+	    var hasHoles = holeIndices && holeIndices.length;
+	    var outerLen = hasHoles ? holeIndices[0] * dim : data.length;
+
+	    var polygonArea = Math.abs(signedArea(data, 0, outerLen, dim));
+	    if (hasHoles) {
+	        for (var i = 0, len = holeIndices.length; i < len; i++) {
+	            var start = holeIndices[i] * dim;
+	            var end = i < len - 1 ? holeIndices[i + 1] * dim : data.length;
+	            polygonArea -= Math.abs(signedArea(data, start, end, dim));
+	        }
+	    }
+
+	    var trianglesArea = 0;
+	    for (i = 0; i < triangles.length; i += 3) {
+	        var a = triangles[i] * dim;
+	        var b = triangles[i + 1] * dim;
+	        var c = triangles[i + 2] * dim;
+	        trianglesArea += Math.abs(
+	            (data[a] - data[c]) * (data[b + 1] - data[a + 1]) -
+	            (data[a] - data[b]) * (data[c + 1] - data[a + 1]));
+	    }
+
+	    return polygonArea === 0 && trianglesArea === 0 ? 0 :
+	        Math.abs((trianglesArea - polygonArea) / polygonArea);
+	};
+
+	function signedArea(data, start, end, dim) {
+	    var sum = 0;
+	    for (var i = start, j = end - dim; i < end; i += dim) {
+	        sum += (data[j] - data[i]) * (data[i + 1] + data[j + 1]);
+	        j = i;
+	    }
+	    return sum;
+	}
+
+	// turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts
+	earcut.flatten = function (data) {
+	    var dim = data[0][0].length,
+	        result = {vertices: [], holes: [], dimensions: dim},
+	        holeIndex = 0;
+
+	    for (var i = 0; i < data.length; i++) {
+	        for (var j = 0; j < data[i].length; j++) {
+	            for (var d = 0; d < dim; d++) result.vertices.push(data[i][j][d]);
+	        }
+	        if (i > 0) {
+	            holeIndex += data[i - 1].length;
+	            result.holes.push(holeIndex);
+	        }
+	    }
+	    return result;
+	};
+	earcut_1.default = default_1;
+
+	var trianglution = createCommonjsModule(function (module, exports) {
+
+	var __assign = commonjsGlobal && commonjsGlobal.__assign || function () {
+	  __assign = Object.assign || function (t) {
+	    for (var s, i = 1, n = arguments.length; i < n; i++) {
+	      s = arguments[i];
+
+	      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+	    }
+
+	    return t;
+	  };
+
+	  return __assign.apply(this, arguments);
+	};
+
+	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
+	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+	  return r;
+	};
+
+	var __importDefault = commonjsGlobal && commonjsGlobal.__importDefault || function (mod) {
+	  return mod && mod.__esModule ? mod : {
+	    "default": mod
+	  };
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.triangulation = void 0;
+
+	var earcut_1$1 = __importDefault(earcut_1);
+
+
+
+
+
+
+
+
+
+
+	/**
+	 * 三角剖分  earcut.js
+	 * @param {Array} boundary 边界
+	 * @param {Array<Array>} holes 洞的数组
+	 * @param {options:{feature,dim,normal}} feature 选择平平面
+	 * @returns {Array<Number>} 三角形索引数组
+	 */
+
+
+	function triangulation(inboundary, holes, options) {
+	  if (holes === void 0) {
+	    holes = [];
+	  }
+
+	  if (options === void 0) {
+	    options = {
+	      normal: Vec3_1.Vec3.UnitZ
+	    };
+	  }
+
+	  options = __assign({
+	    feature: "xyz",
+	    dim: 3
+	  }, options);
+	  var boundary = null;
+	  var feature = options.feature;
+	  var dim = options.dim;
+	  var normal = options.normal;
+
+	  if (normal.dot(Vec3_1.Vec3.UnitZ) < 1 - _Math.gPrecision) {
+	    boundary = array.clone(inboundary);
+	    common.rotateByUnitVectors(boundary, normal, Vec3_1.Vec3.UnitZ);
+	  } else {
+	    boundary = inboundary;
+	  }
+
+	  var allV = __spreadArrays(boundary, array.flat(holes));
+
+	  var vertextNumbers = pointset.verctorToNumbers(allV, feature);
+	  var holesIndex = [];
+	  var baseIndex = boundary.length;
+
+	  for (var i = -1; i < holes.length - 1; i++) {
+	    holesIndex.push(baseIndex);
+	    var hole = holes[i + 1];
+	    holesIndex.push(baseIndex + hole.length);
+	  }
+
+	  var result = earcut_1$1.default(vertextNumbers, holesIndex, dim);
+	  return result;
+	}
+
+	exports.triangulation = triangulation;
+	});
+
+	unwrapExports(trianglution);
+	var trianglution_1 = trianglution.triangulation;
+
+	var sort = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.vectorCompare = void 0;
+
+	function vectorCompare(a, b) {
+	  if (a.x === b.x) {
+	    if (a.z !== undefined && a.y === b.y) return a.z - b.z;else return a.y - b.y;
+	  } else return a.x - b.x;
+	}
+
+	exports.vectorCompare = vectorCompare;
+	});
+
+	unwrapExports(sort);
+	var sort_1 = sort.vectorCompare;
+
+	var recognition = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.recognitionCCW = exports.recognitionPlane = void 0;
+
+
+
+
+
+
+	/**
+	 * 识别平面
+	 * @param points 点集
+	 */
+
+
+	function recognitionPlane(points) {
+	  points.sort(sort.vectorCompare);
+	  var line = new Line_1.Line(points[0].clone(), points[Math.floor(points.length / 2 + 0.5)].clone());
+	  var maxDistance = -Infinity;
+	  var ipos = -1;
+
+	  for (var i = 1; i < points.length - 1; i++) {
+	    var pt = points[i];
+	    var distance = pt.distanceLine(line).distance;
+
+	    if (distance > maxDistance) {
+	      maxDistance = distance;
+	      ipos = i;
+	    }
+	  }
+
+	  var plane = new Plane_1.Plane();
+	  plane.setFromThreePoint(points[0], points.get(-1), points[ipos]);
+	  return plane;
+	}
+
+	exports.recognitionPlane = recognitionPlane;
+	/**
+	 * 识别多边形顺逆时针  格林求和 投影到XY平面
+	 * @param points
+	 */
+
+	function recognitionCCW(points) {
+	  var d = 0;
+
+	  for (var i = 0; i < points.length - 1; i++) {
+	    var p = points[i];
+	    var p1 = points[i + 1];
+	    d += -0.5 * (p1.y + p.y) * (p1.x + p.x);
+	  }
+
+	  return d > 0;
+	}
+
+	exports.recognitionCCW = recognitionCCW;
+	});
+
+	unwrapExports(recognition);
+	var recognition_1 = recognition.recognitionCCW;
+	var recognition_2 = recognition.recognitionPlane;
+
+	var extrude_1 = createCommonjsModule(function (module, exports) {
+
+	var __assign = commonjsGlobal && commonjsGlobal.__assign || function () {
+	  __assign = Object.assign || function (t) {
+	    for (var s, i = 1, n = arguments.length; i < n; i++) {
+	      s = arguments[i];
+
+	      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+	    }
+
+	    return t;
+	  };
+
+	  return __assign.apply(this, arguments);
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.extrudeNext = exports.extrude = exports.links = exports.linkSides = exports.linkSide = void 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/**
+	 *  常用shape几何操作
+	 */
+
+	/**
+	 * 缝合两个边
+	 * @param {Array} side0
+	 * @param {Array} side1
+	 * @param {Boolean} isClosed
+	 * @returns {Array<Vec3>} 三角形数组，每三个为一个三角形
+	 */
+
+
+	function linkSide(side0, side1, isClosed) {
+	  if (isClosed === void 0) {
+	    isClosed = false;
+	  }
+
+	  if (side0.length !== side1.length) throw "拉伸两边的点数量不一致  linkSide";
+	  if (side0.length < 2 || side1.length < 2) return [];
+	  var sidelength = side0.length;
+	  var orgLen = side0.length;
+	  var length = isClosed ? side0.length : side0.length - 1;
+	  var triangles = [];
+
+	  if (side0[0] instanceof Number) {
+	    //索引三角形
+	    for (var i = 0; i < length; i++) {
+	      var v00 = side0[i];
+	      var v01 = side0[(i + 1) % orgLen];
+	      var v10 = side1[i];
+	      var v11 = side1[(i + 1) % orgLen];
+	      triangles.push(v00);
+	      triangles.push(v10);
+	      triangles.push(v11);
+	      triangles.push(v00);
+	      triangles.push(v11);
+	      triangles.push(v01);
+	    }
+	  } else {
+	    if (side0[0].index !== undefined) {
+	      //含索引的顶点
+	      for (var i = 0; i < length; i++) {
+	        var v00 = side0[i];
+	        var v01 = side0[(i + 1) % orgLen];
+	        var v10 = side1[i];
+	        var v11 = side1[(i + 1) % orgLen];
+	        triangles.push(v00.index);
+	        triangles.push(v10.index);
+	        triangles.push(v11.index);
+	        triangles.push(v00.index);
+	        triangles.push(v11.index);
+	        triangles.push(v01.index);
+	      }
+	    } else {
+	      //三角形顶点
+	      for (var i = 0; i < length; i++) {
+	        var v00 = side0[i];
+	        var v01 = side0[(i + 1) % orgLen];
+	        var v10 = side1[i];
+	        var v11 = side1[(i + 1) % orgLen];
+	        triangles.push(v00);
+	        triangles.push(v10);
+	        triangles.push(v11);
+	        triangles.push(v00);
+	        triangles.push(v01);
+	        triangles.push(v11);
+	      }
+	    }
+	  }
+
+	  return triangles;
+	}
+
+	exports.linkSide = linkSide;
+	/**
+	 * 缝合shape集合
+	 * @param {Array<Array<Point|Vec3>} shapes  路基 点集的集合， 每个shape的点数量一致
+	 * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+	 * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
+	 */
+
+	function linkSides(shapes, isClosed, isClosed2) {
+	  if (isClosed === void 0) {
+	    isClosed = false;
+	  }
+
+	  if (isClosed2 === void 0) {
+	    isClosed2 = false;
+	  }
+
+	  var length = isClosed2 ? shapes.length : shapes.length - 1;
+	  var triangles = [];
+
+	  for (var i = 0; i < length; i++) {
+	    triangles.push.apply(triangles, linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
+	  }
+
+	  return triangles;
+	}
+
+	exports.linkSides = linkSides;
+	/**
+	 * 缝合集合
+	 * @param sides 圈
+	 * @param closed1 圈自身是否缝合
+	 * @param closed2 圈拉伸后首尾是否缝合
+	 */
+
+	function links(sides, closed1, closed2) {
+	  if (closed1 === void 0) {
+	    closed1 = false;
+	  }
+
+	  if (closed2 === void 0) {
+	    closed2 = false;
+	  }
+
+	  closed1 = sides[0] instanceof PolyLine.Polyline ? true :  closed1;
+	  return linkSides(sides, closed1, closed2);
+	}
+
+	exports.links = links;
+	var defaultExtrudeOption = {
+	  isClosed: false,
+	  isClosed2: false,
+	  textureEnable: true,
+	  textureScale: new Vec2_1.Vec2(1, 1),
+	  smoothAngle: Math.PI / 180 * 30,
+	  sealStart: false,
+	  sealEnd: false,
+	  normal: Vec3_1.Vec3.UnitZ
+	};
+	/**
+	 * 挤压
+	 * @param {Polygon|Array<Point|Vec3> }  shape   多边形或顶点数组
+	 * @param {Path|Array<Point|Vec3> } path  路径或者或顶点数组
+	 * @param {Object} options {
+	 *      isClosed: false,闭合为多边形 界面
+	 *      isClosed2: false, 闭合为圈
+	 *      textureEnable: true, 计算纹理坐标
+	 *      textureScale: new Vec2(1, 1),纹理坐标缩放
+	 *      smoothAngle: Math.PI / 180 * 30,大于这个角度则不平滑
+	 *      sealStart: true, 是否密封开始面
+	 *      sealEnd: true,是否密封结束面}
+	 */
+
+	function extrude(shape, arg_path, options) {
+	  if (options === void 0) {
+	    options = defaultExtrudeOption;
+	  }
+
+	  options = __assign(__assign({}, defaultExtrudeOption), options);
+
+	  if (arg_path.length < 2) {
+	    throw "路径节点数必须大于2";
+	  }
+
+	  var isCCW = recognition.recognitionCCW(shape);
+	  if (!isCCW) shape.reverse();
+	  var normal = options.normal;
+	  var startSeal = array.clone(shape);
+	  var shapepath = new Path_1.Path(shape);
+	  var insertNum = 0;
+
+	  for (var i = 1; i < shapepath.length - 1; i++) {
+	    //大角度插入点 角度过大为了呈现flat shader的效果
+	    if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath[i].clone());
+	  }
+
+	  if (options.isClosed) {
+	    var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
+	    var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
+	    if (Math.acos(dir1.dot(dir2)) > options.smoothAngle) shape.push(shape.get(-1).clone()); //新加起始点纹理拉伸
+
+	    shape.unshift(shape[0].clone());
+	  }
+
+	  var path = arg_path;
+	  if (!(path instanceof Path_1.Path) && path instanceof Array) path = new Path_1.Path(arg_path);
+	  var shapeArray = [];
+
+	  for (var i = 0; i < path.length; i++) {
+	    var node = path[i];
+	    var dir = node.tangent;
+	    var newShape = array.clone(shape);
+	    common.rotateByUnitVectors(newShape, normal, dir);
+
+	    if (options.fixedY) {
+	      var v = Vec3_1.Vec3.UnitX;
+	      common.rotateByUnitVectors([v], normal, dir);
+	      var v1 = v.clone();
+	      v1.y = 0;
+	      common.rotateByUnitVectors(newShape, v, v1);
+	    }
+
+	    pointset.translate(newShape, node);
+	    shapeArray.push(newShape);
+	  }
+
+	  var index = {
+	    index: 0
+	  };
+	  var vertices = array.flat(shapeArray);
+	  mesh.indexable(vertices, index);
+	  var triangles = linkSides(shapeArray, options.isClosed, options.isClosed2);
+	  shapepath = new Path_1.Path(shape);
+	  var uvs = [];
+
+	  for (var i = 0; i < path.length; i++) {
+	    for (var j = 0; j < shapepath.length; j++) {
+	      uvs.push(shapepath[j].tlen * options.textureScale.x, path[i].tlen * options.textureScale.y);
+	    }
+	  }
+
+	  var sealUv = array.clone(startSeal);
+	  if (normal.dot(Vec3_1.Vec3.UnitZ) < 1 - 1e-4) common.rotateByUnitVectors(sealUv, normal, Vec3_1.Vec3.UnitZ);
+	  var endSeal = array.clone(startSeal);
+	  common.rotateByUnitVectors(startSeal, normal, path[0].tangent);
+
+	  if (options.fixedY) {
+	    var v = Vec3_1.Vec3.UnitX;
+	    common.rotateByUnitVectors([v], normal, path[0].tangent);
+	    var v1 = v.clone();
+	    v1.y = 0;
+	    common.rotateByUnitVectors(startSeal, v, v1);
+	  }
+
+	  pointset.translate(startSeal, path[0]);
+	  common.rotateByUnitVectors(endSeal, normal, path.get(-1).tangent);
+
+	  if (options.fixedY) {
+	    var v = Vec3_1.Vec3.UnitX;
+	    common.rotateByUnitVectors([v], normal, path.get(-1).tangent);
+	    var v1 = v.clone();
+	    v1.y = 0;
+	    common.rotateByUnitVectors(endSeal, v, v1);
+	  }
+
+	  pointset.translate(endSeal, path.get(-1));
+	  var sealStartTris = trianglution.triangulation(sealUv, [], {
+	    normal: normal
+	  });
+	  sealStartTris.reverse();
+	  if (options.sealStart) mesh.indexable(startSeal, index);
+	  if (options.sealEnd) mesh.indexable(endSeal, index);
+	  var sealEndTris = [];
+	  var hasVLen = vertices.length;
+	  if (options.sealStart) for (var i = 0; i < sealStartTris.length; i++) {
+	    sealStartTris[i] += hasVLen;
+	  }
+	  if (options.sealEnd && !options.sealStart) for (var i = 0; i < sealStartTris.length; i++) {
+	    sealEndTris[i] = sealStartTris[i] + hasVLen;
+	  }
+
+	  if (options.sealEnd && options.sealStart) {
+	    for (var i = 0; i < sealStartTris.length; i++) {
+	      sealEndTris[i] = sealStartTris[i] + startSeal.length;
+	    }
+	  }
+
+	  if (options.sealStart) {
+	    vertices.push.apply(vertices, startSeal);
+	    triangles.push.apply(triangles, sealStartTris);
+
+	    for (var i = 0; i < sealUv.length; i++) uvs.push(sealUv[i].x, sealUv[i].y);
+	  }
+
+	  if (options.sealEnd) {
+	    vertices.push.apply(vertices, endSeal);
+	    sealEndTris.reverse();
+	    triangles.push.apply(triangles, sealEndTris);
+
+	    for (var i = 0; i < sealUv.length; i++) uvs.push(sealUv[i].x, sealUv[i].y);
+	  }
+
+	  return {
+	    vertices: vertices,
+	    triangles: triangles,
+	    uvs: uvs
+	  };
+	}
+
+	exports.extrude = extrude;
+
+	function extrudeNext(section, followPath, options) {
+	  if (options === void 0) {
+	    options = defaultExtrudeOption;
+	  }
+
+	  if (options.center) pointset.translate(section, options.center);
+	}
+
+	exports.extrudeNext = extrudeNext;
+	});
+
+	unwrapExports(extrude_1);
+	var extrude_2 = extrude_1.extrudeNext;
+	var extrude_3 = extrude_1.extrude;
+	var extrude_4 = extrude_1.links;
+	var extrude_5 = extrude_1.linkSides;
+	var extrude_6 = extrude_1.linkSide;
+
+	var delaunay = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.DelaunaySlow = void 0;
+
+
+
+
+	/**
+	 * 只考虑2d的散点，如果是3d的以后会新建一个Delaunay3
+	 */
+
+
+	var EPSILON = 1.0 / 1048576.0;
+
+	var DelaunaySlow =
+	/** @class */
+	function () {
+	  function DelaunaySlow(vs) {
+	    this.vs = vs;
+	  }
+
+	  DelaunaySlow.prototype.supertriangle = function (vertices) {
+	    var xmin = +Infinity,
+	        ymin = +Infinity,
+	        xmax = -Infinity,
+	        ymax = -Infinity,
+	        i,
+	        dx,
+	        dy,
+	        dmax,
+	        xmid,
+	        ymid;
+
+	    for (i = vertices.length; i--;) {
+	      if (vertices[i].x < xmin) xmin = vertices[i].x;
+	      if (vertices[i].x > xmax) xmax = vertices[i].x;
+	      if (vertices[i].y < ymin) ymin = vertices[i].y;
+	      if (vertices[i].y > ymax) ymax = vertices[i].y;
+	    }
+
+	    dx = xmax - xmin;
+	    dy = ymax - ymin;
+	    dmax = Math.max(dx, dy);
+	    xmid = xmin + dx * 0.5;
+	    ymid = ymin + dy * 0.5;
+	    return [new Vec3_1.Vec3(xmid - 20 * dmax, ymid - dmax), new Vec3_1.Vec3(xmid, ymid + 20 * dmax), new Vec3_1.Vec3(xmid + 20 * dmax, ymid - dmax)];
+	  };
+
+	  DelaunaySlow.prototype.triangulation = function (vs) {
+	    var vslen = vs.length;
+	    if (vslen < 3) return [];
+	    var indices = new Array(vslen);
+
+	    for (var i = vslen; i--;) indices[i] = i;
+
+	    indices.sort(function (i, j) {
+	      var diff = vs[j].x - vs[i].x;
+	      return diff !== 0 ? diff : i - j;
+	    });
+	    var superTriangle = this.supertriangle(vs);
+	    vs.push.apply(vs, superTriangle); //新加大三角形点
+
+	    var open = [this.circumcircle(vs, vslen + 0, vslen + 1, vslen + 2)];
+	    var closed = [];
+
+	    for (var i_1 = indices.length; i_1--;) {
+	      var edges = [];
+	      var c = indices[i_1];
+	      var point = vs[c];
+
+	      for (var j = open.length; j--;) {
+	        var openj = open[j];
+	        var dx = point.x - open[j].center.x;
+
+	        if (dx > 0.0 && dx * dx > open[j].radiusSqr) {
+	          closed.push(open[j]);
+	          open.splice(j, 1);
+	          continue;
+	        }
+	        /* If we're outside the circumcircle, skip this triangle. */
+
+
+	        var dy = vs[c].y - open[j].center.y;
+	        if (dx * dx + dy * dy - open[j].radiusSqr > EPSILON) continue;
+	        /* Remove the triangle and add it's edges to the edge list. */
+
+	        edges.push(openj.i, openj.j, openj.j, openj.k, openj.k, openj.i);
+	        open.splice(j, 1);
+	      }
+
+	      this.dedup(edges);
+
+	      for (var j = edges.length; j;) {
+	        var b = edges[--j];
+	        var a = edges[--j];
+	        open.push(this.circumcircle(vs, a, b, c));
+	      }
+	    }
+
+	    for (i = open.length; i--;) closed.push(open[i]);
+
+	    open.length = 0;
+	    var result = [];
+
+	    for (i = closed.length; i--;) {
+	      var close = closed[i];
+	      if (close.i < vslen && close.j < vslen && close.k < vslen) result.push(close.i, close.j, close.k);
+	    }
+	    /* Yay, we're done! */
+
+
+	    return result;
+	  };
+	  /**
+	   * 外接圆
+	   * @param vertices 点击
+	   * @param i
+	   * @param j
+	   * @param k
+	   */
+
+
+	  DelaunaySlow.prototype.circumcircle = function (vertices, i, j, k) {
+	    var circle = new Circle_1.Circle().setFrom3Points(vertices[i], vertices[j], vertices[k]);
+	    circle.i = i;
+	    circle.j = j;
+	    circle.k = k;
+	    return circle;
+	  };
+
+	  DelaunaySlow.prototype.dedup = function (edges) {
+	    var i, j, a, b, m, n;
+
+	    for (j = edges.length; j;) {
+	      b = edges[--j];
+	      a = edges[--j];
+
+	      for (i = j; i;) {
+	        n = edges[--i];
+	        m = edges[--i];
+
+	        if (a === m && b === n || a === n && b === m) {
+	          edges.splice(j, 2);
+	          edges.splice(i, 2);
+	          break;
+	        }
+	      }
+	    }
+	  };
+
+	  DelaunaySlow.prototype.contains = function (tri, p) {
+	    /* Bounding box test first, for quick rejections. */
+	    if (p.x < tri[0].x && p.x < tri[1].x && p.x < tri[2].x || p.x > tri[0].x && p.x > tri[1].x && p.x > tri[2].x || p.y < tri[0].y && p.y < tri[1].y && p.y < tri[2].y || p.y > tri[0].y && p.y > tri[1].y && p.y > tri[2].y) return null;
+	    var a = tri[1].x - tri[0].x,
+	        b = tri[2].x - tri[0].x,
+	        c = tri[1].y - tri[0].y,
+	        d = tri[2].y - tri[0].y,
+	        i = a * d - b * c;
+	    /* Degenerate tri. */
+
+	    if (i === 0.0) return null;
+	    var u = (d * (p.x - tri[0].x) - b * (p.y - tri[0].y)) / i,
+	        v = (a * (p.y - tri[0].y) - c * (p.x - tri[0].x)) / i;
+	    /* If we're outside the tri, fail. */
+
+	    if (u < 0.0 || v < 0.0 || u + v > 1.0) return null;
+	    return [u, v];
+	  };
+
+	  return DelaunaySlow;
+	}();
+
+	exports.DelaunaySlow = DelaunaySlow;
+	});
+
+	unwrapExports(delaunay);
+	var delaunay_1 = delaunay.DelaunaySlow;
+
+	var Box_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Box = void 0;
+
+
+	/**
+	 *
+	 */
+
+
+	var Box =
+	/** @class */
+	function () {
+	  function Box(points) {
+	    this.min = Vec3_1.v3(Infinity, Infinity, Infinity);
+	    this.max = Vec3_1.v3(-Infinity, -Infinity, -Infinity);
+	    this._center = Vec3_1.v3();
+
+	    if (points) {
+	      this.setFromPoints(points);
+	    }
+	  }
+
+	  Object.defineProperty(Box.prototype, "center", {
+	    get: function () {
+	      return this._center.add(this.min, this.max).multiplyScalar(0.5);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  /**
+	   *
+	   * @param {Array<Vec3>} points
+	   */
+
+	  Box.prototype.setFromPoints = function (points) {
+	    this.min.set(Infinity, Infinity, Infinity);
+	    this.max.set(-Infinity, -Infinity, -Infinity);
+	    this.expand.apply(this, points);
+	  };
+
+	  Box.prototype.expand = function () {
+	    var points = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      points[_i] = arguments[_i];
+	    }
+
+	    for (var i = 0; i < points.length; i++) {
+	      var point = points[i];
+	      this.min.min(point);
+	      this.max.max(point);
+	    }
+
+	    this.center.addVecs(this.min, this.max).multiplyScalar(0.5);
+	  };
+
+	  return Box;
+	}();
+
+	exports.Box = Box;
+	});
+
+	unwrapExports(Box_1);
+	var Box_2 = Box_1.Box;
+
+	var Capsule_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Capsule = void 0;
+
+
+
+	var Capsule =
+	/** @class */
+	function (_super) {
+	  __extends(Capsule, _super);
+	  /**
+	   * 胶囊体
+	   * @param {Point|Vec3} p0 点0
+	   * @param {Point|Vec3} p1 点1
+	   * @param {Number} radius  半径
+	   */
+
+
+	  function Capsule(p0, p1, radius) {
+	    if (radius === void 0) {
+	      radius = 0;
+	    }
+
+	    var _this = _super.call(this, p0, p1) || this;
+
+	    _this.radius = radius;
+	    return _this;
+	  }
+
+	  return Capsule;
+	}(Segment_1.Segment);
+
+	exports.Capsule = Capsule;
+	});
+
+	unwrapExports(Capsule_1);
+	var Capsule_2 = Capsule_1.Capsule;
+
+	var Point_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Point = void 0;
+
+
+
+	var Point =
+	/** @class */
+	function (_super) {
+	  __extends(Point, _super);
+
+	  function Point(_x, _y, _z) {
+	    if (_x === void 0) {
+	      _x = 0;
+	    }
+
+	    if (_y === void 0) {
+	      _y = 0;
+	    }
+
+	    if (_z === void 0) {
+	      _z = 0;
+	    }
+
+	    return _super.call(this, _x, _y, _z) || this;
+	  }
+
+	  return Point;
+	}(Vec3_1.Vec3);
+
+	exports.Point = Point;
+	});
+
+	unwrapExports(Point_1);
+	var Point_2 = Point_1.Point;
+
+	var Polyline_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Polyline = void 0;
+
+
+
+
+
+
+	/**
+	 *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
+	 */
+
+
+	var Polyline =
+	/** @class */
+	function (_super) {
+	  __extends(Polyline, _super);
+
+	  function Polyline(vs, normal) {
+	    if (vs === void 0) {
+	      vs = [];
+	    }
+
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    var _this = _super.call(this) || this;
+
+	    _this.normal = normal;
+	    Object.setPrototypeOf(_this, Polyline.prototype);
+
+	    _this.push.apply(_this, vs);
+
+	    _this.isCoPlanar = true;
+	    return _this;
+	  }
+	  /**
+	   * 偏移
+	   * @param {Number} distance  偏移距离
+	   * @param {Vector3} normal  折线所在平面法线
+	   */
+
+
+	  Polyline.prototype.offset = function (distance, normal) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    for (var i = 0; i < this.length; i++) {}
+
+	    return new Polyline(this);
+	  };
+	  /**
+	   * 圆角   将折线拐点圆角化
+	   * @param {Number} useDistance 圆角段距离
+	   * @param {Number} segments 分切割段数
+	   */
+
+
+	  Polyline.prototype.corner = function (useDistance, normal) {
+	    if (normal === void 0) {
+	      normal = this.normal;
+	    }
+
+	    var polyline = new Polyline();
+
+	    for (var i = 0; i < this.length - 2; i++) {
+	      var p0 = this[i];
+	      var p1 = this[i + 1];
+	      var p2 = this[i + 2];
+	      polyline.push(p0);
+	      var fixedPoint0 = p0.distanceTo(p1) <= useDistance * 2 ? p0.clone().add(p1).multiplyScalar(0.5) : p0.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+	      var fixedPoint1 = p2.distanceTo(p1) <= useDistance * 2 ? p2.clone().add(p1).multiplyScalar(0.5) : p2.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+	      polyline.push(fixedPoint0);
+	      var binormal0 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2);
+	      var binormal1 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2); //计算圆弧点
+
+	      var line0 = new Line_1.Line(fixedPoint0, binormal0.add(fixedPoint0));
+	      var line1 = new Line_1.Line(fixedPoint1, binormal1.add(fixedPoint1));
+	      polyline.push(fixedPoint1);
+	    }
+
+	    return polyline;
+	  };
+
+	  return Polyline;
+	}(ArrayEx_1.ArrayEx);
+
+	exports.Polyline = Polyline;
+	});
+
+	unwrapExports(Polyline_1);
+	var Polyline_2 = Polyline_1.Polyline;
+
+	var Polygon_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.recognitionPolygonNormal = exports.Polygon = void 0;
+
+
+
+
+
+
+
+	var Polygon =
+	/** @class */
+	function (_super) {
+	  __extends(Polygon, _super);
+
+	  function Polygon(vs) {
+	    var _this = _super.call(this, vs) || this;
+
+	    _this.isPolygon = true;
+	    Object.setPrototypeOf(_this, Polygon.prototype);
+	    return _this;
+	  }
+
+	  Polygon.prototype.offset = function (distance, normal) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    var segments = [];
+
+	    for (var i = 0; i < this.length; i++) {
+	      var point = this[i];
+	      var pointNext = this[(i + 1) % this.length];
+	      var segment = new Segment_1.Segment(point, pointNext);
+	      segments.push(segment);
+	      segment.offset(distance, normal);
+	    }
+
+	    for (var i = 0; i < this.length; i++) {
+	      var seg = segments[i];
+	      var segNext = segments[i + 1];
+	      var result = seg.distanceLine(segNext);
+	      seg.p1 = result.closests[0];
+	      segNext.p0 = result.closests[1];
+	    }
+
+	    for (var i = 0; i < this.length; i++) {
+	      var seg = segments[i];
+	    }
+
+	    return new Polygon();
+	  };
+
+	  Polygon.prototype.containPoint = function (point) {};
+
+	  return Polygon;
+	}(Polyline_1.Polyline);
+
+	exports.Polygon = Polygon;
+	/**
+	 * robust 识别出点集或者多边形的法线
+	 * @param {Polygon|Array<Point|Vector3>} points
+	 * @returns {Vector3} 法线
+	 */
+
+	function recognitionPolygonNormal(points) {
+	  var len = points.length;
+	  var minV = +Infinity;
+	  var minVIndex = -1;
+
+	  for (var i = 0; i < len + 2; i++) {
+	    var p0 = points[i % len];
+	    var p1 = points[(i + 1) % len];
+	    var p2 = points[(i + 2) % len];
+	    var dotv = Math.abs(p1.clone().sub(p0).normalize().dot(p2.clone().sub(p1).normalize()));
+
+	    if (minV > dotv) {
+	      dotv = minV;
+	      minVIndex = i;
+	    }
+	  }
+
+	  var p0 = points[(minVIndex - 1 + len) % len];
+	  var p1 = points[minVIndex % len];
+	  var p2 = points[(minVIndex + 1) % len];
+	  return p1.clone().sub(p0).cross(p2.clone().sub(p1)).normalize(); //
+	  // const newPoints = [...points];
+	  // newPoints.sort(vectorCompare);
+	  // var line = new Line(newPoints[0], newPoints.get(-1));
+	  // var point = new Point();
+	  // var maxDistance = -Infinity;
+	  // var maxDistanceP = null;
+	  // for (let i = 0; i < len; i++)
+	  // {
+	  //     point.copy(points[i]);
+	  //     var distance = point.distanceLinePureSq(line);
+	  //     if (distance > maxDistance)
+	  //     {
+	  //         maxDistance = distance;
+	  //         maxDistanceP = points[i];
+	  //     }
+	  // }
+	  // var d1 = maxDistanceP.clone().sub(newPoints[0])
+	  // var d2 = maxDistanceP.clone().sub(newPoints.get(-1))
+	  // var normal = d1.cross(d2);
+	}
+
+	exports.recognitionPolygonNormal = recognitionPolygonNormal;
+	});
+
+	unwrapExports(Polygon_1);
+	var Polygon_2 = Polygon_1.recognitionPolygonNormal;
+	var Polygon_3 = Polygon_1.Polygon;
+
+	var Ray_1 = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Ray = void 0;
+
+
+
+	var Ray =
+	/** @class */
+	function () {
+	  function Ray(origin, direction) {
+	    this.origin = origin;
+	    this.direction = direction.normalize();
+	  }
+	  /**
+	  * 射线到射线的距离
+	  * @param  {Ray} ray
+	  */
+
+
+	  Ray.prototype.distanceRay = function (ray) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    };
+	    var diff = this.origin.clone().sub(ray.origin);
+	    var a01 = -this.direction.dot(ray.direction);
+	    var b0 = diff.dot(this.direction),
+	        b1;
+	    var s0, s1;
+
+	    if (Math.abs(a01) < 1) {
+	      // 射线不平行
+	      b1 = -diff.dot(ray.direction);
+	      s0 = a01 * b1 - b0;
+	      s1 = a01 * b0 - b1;
+
+	      if (s0 >= 0) {
+	        if (s1 >= 0) // region 0 (interior)
+	          {
+	            // Minimum at two interior points of rays.
+	            var det = 1 - a01 * a01;
+	            s0 /= det;
+	            s1 /= det;
+	          } else // region 3 (side)
+	          {
+	            s1 = 0;
+
+	            if (b0 >= 0) {
+	              s0 = 0;
+	            } else {
+	              s0 = -b0;
+	            }
+	          }
+	      } else {
+	        if (s1 >= 0) // region 1 (side)
+	          {
+	            s0 = 0;
+
+	            if (b1 >= 0) {
+	              s1 = 0;
+	            } else {
+	              s1 = -b1;
+	            }
+	          } else // region 2 (corner)
+	          {
+	            if (b0 < 0) {
+	              s0 = -b0;
+	              s1 = 0;
+	            } else {
+	              s0 = 0;
+
+	              if (b1 >= 0) {
+	                s1 = 0;
+	              } else {
+	                s1 = -b1;
+	              }
+	            }
+	          }
+	      }
+	    } else {
+	      // Rays are parallel.
+	      if (a01 > 0) {
+	        // Opposite direction vectors.
+	        s1 = 0;
+
+	        if (b0 >= 0) {
+	          s0 = 0;
+	        } else {
+	          s0 = -b0;
+	        }
+	      } else {
+	        // Same direction vectors.
+	        if (b0 >= 0) {
+	          b1 = -diff.dot(ray.direction);
+	          s0 = 0;
+	          s1 = -b1;
+	        } else {
+	          s0 = -b0;
+	          s1 = 0;
+	        }
+	      }
+	    }
+
+	    result.parameters[0] = s0;
+	    result.parameters[1] = s1;
+	    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+	    result.closests[1] = ray.direction.clone().multiplyScalar(s1).add(ray.origin);
+	    diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+	  /**
+	   * 射线到线段的距离
+	   * @param segment
+	   */
+
+
+	  Ray.prototype.distanceSegment = function (segment) {
+	    var result = {
+	      parameters: [],
+	      closests: []
+	    }; // segment.GetCenteredForm(segCenter, segDirection, segExtent);
+
+	    var segCenter = segment.center;
+	    var segDirection = segment.direction;
+	    var segExtent = segment.extent * 0.5;
+	    var diff = this.origin.clone().sub(segCenter);
+	    var a01 = -this.direction.dot(segDirection);
+	    var b0 = diff.dot(this.direction);
+	    var s0, s1;
+
+	    if (Math.abs(a01) < 1) {
+	      // The ray and segment are not parallel.
+	      var det = 1 - a01 * a01;
+	      var extDet = segExtent * det;
+	      var b1 = -diff.dot(segDirection);
+	      s0 = a01 * b1 - b0;
+	      s1 = a01 * b0 - b1;
+
+	      if (s0 >= 0) {
+	        if (s1 >= -extDet) {
+	          if (s1 <= extDet) // region 0
+	            {
+	              // Minimum at interior points of ray and segment.
+	              s0 /= det;
+	              s1 /= det;
+	            } else // region 1
+	            {
+	              s1 = segExtent;
+	              s0 = Math.max(-(a01 * s1 + b0), 0);
+	            }
+	        } else // region 5
+	          {
+	            s1 = -segExtent;
+	            s0 = Math.max(-(a01 * s1 + b0), 0);
+	          }
+	      } else {
+	        if (s1 <= -extDet) // region 4
+	          {
+	            s0 = -(-a01 * segExtent + b0);
+
+	            if (s0 > 0) {
+	              s1 = -segExtent;
+	            } else {
+	              s0 = 0;
+	              s1 = -b1;
+
+	              if (s1 < -segExtent) {
+	                s1 = -segExtent;
+	              } else if (s1 > segExtent) {
+	                s1 = segExtent;
+	              }
+	            }
+	          } else if (s1 <= extDet) // region 3
+	          {
+	            s0 = 0;
+	            s1 = -b1;
+
+	            if (s1 < -segExtent) {
+	              s1 = -segExtent;
+	            } else if (s1 > segExtent) {
+	              s1 = segExtent;
+	            }
+	          } else // region 2
+	          {
+	            s0 = -(a01 * segExtent + b0);
+
+	            if (s0 > 0) {
+	              s1 = segExtent;
+	            } else {
+	              s0 = 0;
+	              s1 = -b1;
+
+	              if (s1 < -segExtent) {
+	                s1 = -segExtent;
+	              } else if (s1 > segExtent) {
+	                s1 = segExtent;
+	              }
+	            }
+	          }
+	      }
+	    } else {
+	      // Ray and segment are parallel.
+	      if (a01 > 0) {
+	        // Opposite direction vectors.
+	        s1 = -segExtent;
+	      } else {
+	        // Same direction vectors.
+	        s1 = segExtent;
+	      }
+
+	      s0 = Math.max(-(a01 * s1 + b0), 0);
+	    }
+
+	    result.parameters[0] = s0;
+	    result.parameters[1] = s1;
+	    result.closests[0] = this.direction.clone().multiplyScalar(s0).add(this.origin);
+	    result.closests[1] = segDirection.clone().multiplyScalar(s1).add(segCenter);
+	    diff = result.closests[0].clone().sub(result.closests[1]);
+	    result.distanceSqr = diff.dot(diff);
+	    result.distance = Math.sqrt(result.distanceSqr);
+	    return result;
+	  };
+
+	  Ray.prototype.distanceTriangle = function (triangle) {
+	    var result = {
+	      parameters: [],
+	      closests: [],
+	      triangleParameters: []
+	    };
+	    var line = new Line_1.Line(this.origin, this.origin.clone().add(this.direction)); // DCPQuery < Real, Line3 < Real >, Triangle3 < Real >> ltQuery;
+
+	    var ltResult = line.distanceTriangle(triangle);
+
+	    if (ltResult.lineParameter >= 0) {
+	      //最近点在直线前半部分部分，涉嫌方向
+	      result.distance = ltResult.distance;
+	      result.distanceSqr = ltResult.distanceSqr;
+	      result.rayParameter = ltResult.lineParameter;
+	      result.triangleParameters[0] = ltResult.triangleParameters[0];
+	      result.triangleParameters[1] = ltResult.triangleParameters[1];
+	      result.triangleParameters[2] = ltResult.triangleParameters[2];
+	      result.closests[0] = ltResult.closests[0];
+	      result.closests[1] = ltResult.closests[1];
+	    } else {
+	      var ptResult = this.origin.clone().distanceTriangle(triangle);
+	      result.distance = ptResult.distance;
+	      result.distanceSqr = ptResult.distanceSqr;
+	      result.rayParameter = 0;
+	      result.triangleParameters[0] = ptResult.triangleParameters[0];
+	      result.triangleParameters[1] = ptResult.triangleParameters[1];
+	      result.triangleParameters[2] = ptResult.triangleParameters[2];
+	      result.closests[0] = this.origin;
+	      result.closests[1] = ptResult.closests[1];
+	    }
+
+	    return result;
+	  };
+
+	  Ray.prototype.distancePloyline = function () {
+	    var result = {};
+	    return result;
+	  };
+
+	  return Ray;
+	}();
+
+	exports.Ray = Ray;
+	});
+
+	unwrapExports(Ray_1);
+	var Ray_2 = Ray_1.Ray;
+
+	var delaunator = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Delaunator = void 0;
+	var EPSILON = Math.pow(2, -52);
+	var EDGE_STACK = new Uint32Array(512);
+
+	var Delaunator =
+	/** @class */
+	function () {
+	  function Delaunator(coords) {
+	    var n = coords.length >> 1;
+	    if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
+	    this.coords = coords; // arrays that will store the triangulation graph
+
+	    var maxTriangles = Math.max(2 * n - 5, 0);
+	    this._triangles = new Uint32Array(maxTriangles * 3);
+	    this._halfedges = new Int32Array(maxTriangles * 3); // temporary arrays for tracking the edges of the advancing convex hull
+
+	    this._hashSize = Math.ceil(Math.sqrt(n));
+	    this._hullPrev = new Uint32Array(n); // edge to prev edge
+
+	    this._hullNext = new Uint32Array(n); // edge to next edge
+
+	    this._hullTri = new Uint32Array(n); // edge to adjacent triangle
+
+	    this._hullHash = new Int32Array(this._hashSize).fill(-1); // angular edge hash
+	    // temporary arrays for sorting points
+
+	    this._ids = new Uint32Array(n);
+	    this._dists = new Float64Array(n);
+	    this.update();
+	  }
+
+	  Delaunator.from = function (points, getX, getY) {
+
+	    var n = points.length;
+	    var coords = new Float64Array(n);
+
+	    for (var i = 0; i < n; i++) {
+	      var p = points[i];
+	      coords[i] = p;
+	    }
+
+	    return new Delaunator(coords);
+	  };
+
+	  Delaunator.prototype.update = function () {
+	    var _a = this,
+	        coords = _a.coords,
+	        hullPrev = _a._hullPrev,
+	        hullNext = _a._hullNext,
+	        hullTri = _a._hullTri,
+	        hullHash = _a._hullHash;
+
+	    var n = coords.length >> 1; // populate an array of point indices; calculate input data bbox
+
+	    var minX = Infinity;
+	    var minY = Infinity;
+	    var maxX = -Infinity;
+	    var maxY = -Infinity;
+
+	    for (var i = 0; i < n; i++) {
+	      var x = coords[2 * i];
+	      var y = coords[2 * i + 1];
+	      if (x < minX) minX = x;
+	      if (y < minY) minY = y;
+	      if (x > maxX) maxX = x;
+	      if (y > maxY) maxY = y;
+	      this._ids[i] = i;
+	    }
+
+	    var cx = (minX + maxX) / 2;
+	    var cy = (minY + maxY) / 2;
+	    var minDist = Infinity;
+	    var i0 = 0,
+	        i1 = 0,
+	        i2 = 0; // pick a seed point close to the center
+
+	    for (var i = 0; i < n; i++) {
+	      var d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
+
+	      if (d < minDist) {
+	        i0 = i;
+	        minDist = d;
+	      }
+	    }
+
+	    var i0x = coords[2 * i0];
+	    var i0y = coords[2 * i0 + 1];
+	    minDist = Infinity; // find the point closest to the seed
+
+	    for (var i = 0; i < n; i++) {
+	      if (i === i0) continue;
+	      var d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
+
+	      if (d < minDist && d > 0) {
+	        i1 = i;
+	        minDist = d;
+	      }
+	    }
+
+	    var i1x = coords[2 * i1];
+	    var i1y = coords[2 * i1 + 1];
+	    var minRadius = Infinity; // find the third point which forms the smallest circumcircle with the first two
+
+	    for (var i = 0; i < n; i++) {
+	      if (i === i0 || i === i1) continue;
+	      var r = circumradius(i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
+
+	      if (r < minRadius) {
+	        i2 = i;
+	        minRadius = r;
+	      }
+	    }
+
+	    var i2x = coords[2 * i2];
+	    var i2y = coords[2 * i2 + 1];
+
+	    if (minRadius === Infinity) {
+	      // order collinear points by dx (or dy if all x are identical)
+	      // and return the list as a hull
+	      for (var i = 0; i < n; i++) {
+	        this._dists[i] = coords[2 * i] - coords[0] || coords[2 * i + 1] - coords[1];
+	      }
+
+	      quicksort(this._ids, this._dists, 0, n - 1);
+	      var hull = new Uint32Array(n);
+	      var j = 0;
+
+	      for (var i = 0, d0 = -Infinity; i < n; i++) {
+	        var id = this._ids[i];
+
+	        if (this._dists[id] > d0) {
+	          hull[j++] = id;
+	          d0 = this._dists[id];
+	        }
+	      }
+
+	      this.hull = hull.subarray(0, j);
+	      this.triangles = new Uint32Array(0);
+	      this.halfedges = new Uint32Array(0);
+	      return;
+	    } // swap the order of the seed points for counter-clockwise orientation
+
+
+	    if (orient(i0x, i0y, i1x, i1y, i2x, i2y)) {
+	      var i = i1;
+	      var x = i1x;
+	      var y = i1y;
+	      i1 = i2;
+	      i1x = i2x;
+	      i1y = i2y;
+	      i2 = i;
+	      i2x = x;
+	      i2y = y;
+	    }
+
+	    var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
+	    this._cx = center.x;
+	    this._cy = center.y;
+
+	    for (var i = 0; i < n; i++) {
+	      this._dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
+	    } // sort the points by distance from the seed triangle circumcenter
+
+
+	    quicksort(this._ids, this._dists, 0, n - 1); // set up the seed triangle as the starting hull
+
+	    this._hullStart = i0;
+	    var hullSize = 3;
+	    hullNext[i0] = hullPrev[i2] = i1;
+	    hullNext[i1] = hullPrev[i0] = i2;
+	    hullNext[i2] = hullPrev[i1] = i0;
+	    hullTri[i0] = 0;
+	    hullTri[i1] = 1;
+	    hullTri[i2] = 2;
+	    hullHash.fill(-1);
+	    hullHash[this._hashKey(i0x, i0y)] = i0;
+	    hullHash[this._hashKey(i1x, i1y)] = i1;
+	    hullHash[this._hashKey(i2x, i2y)] = i2;
+	    this.trianglesLen = 0;
+
+	    this._addTriangle(i0, i1, i2, -1, -1, -1);
+
+	    for (var k = 0, xp = void 0, yp = void 0; k < this._ids.length; k++) {
+	      var i = this._ids[k];
+	      var x = coords[2 * i];
+	      var y = coords[2 * i + 1]; // skip near-duplicate points
+
+	      if (k > 0) if (xp !== undefined && yp !== undefined) {
+	        if (Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
+	      } else continue;
+	      xp = x;
+	      yp = y; // skip seed triangle points
+
+	      if (i === i0 || i === i1 || i === i2) continue; // find a visible edge on the convex hull using edge hash
+
+	      var start = 0;
+
+	      for (var j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
+	        start = hullHash[(key + j) % this._hashSize];
+	        if (start !== -1 && start !== hullNext[start]) break;
+	      }
+
+	      start = hullPrev[start];
+	      var e = start,
+	          q = void 0;
+
+	      while (q = hullNext[e], !orient(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1])) {
+	        e = q;
+
+	        if (e === start) {
+	          e = -1;
+	          break;
+	        }
+	      }
+
+	      if (e === -1) continue; // likely a near-duplicate point; skip it
+	      // add the first triangle from the point
+
+	      var t = this._addTriangle(e, i, hullNext[e], -1, -1, hullTri[e]); // recursively flip triangles from the point until they satisfy the Delaunay condition
+
+
+	      hullTri[i] = this._legalize(t + 2);
+	      hullTri[e] = t; // keep track of boundary triangles on the hull
+
+	      hullSize++; // walk forward through the hull, adding more triangles and flipping recursively
+
+	      var n_1 = hullNext[e];
+
+	      while (q = hullNext[n_1], orient(x, y, coords[2 * n_1], coords[2 * n_1 + 1], coords[2 * q], coords[2 * q + 1])) {
+	        t = this._addTriangle(n_1, i, q, hullTri[i], -1, hullTri[n_1]);
+	        hullTri[i] = this._legalize(t + 2);
+	        hullNext[n_1] = n_1; // mark as removed
+
+	        hullSize--;
+	        n_1 = q;
+	      } // walk backward from the other side, adding more triangles and flipping
+
+
+	      if (e === start) {
+	        while (q = hullPrev[e], orient(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1])) {
+	          t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
+
+	          this._legalize(t + 2);
+
+	          hullTri[q] = t;
+	          hullNext[e] = e; // mark as removed
+
+	          hullSize--;
+	          e = q;
+	        }
+	      } // update the hull indices
+
+
+	      this._hullStart = hullPrev[i] = e;
+	      hullNext[e] = hullPrev[n_1] = i;
+	      hullNext[i] = n_1; // save the two new edges in the hash table
+
+	      hullHash[this._hashKey(x, y)] = i;
+	      hullHash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
+	    }
+
+	    this.hull = new Uint32Array(hullSize);
+
+	    for (var i = 0, e = this._hullStart; i < hullSize; i++) {
+	      this.hull[i] = e;
+	      e = hullNext[e];
+	    } // trim typed triangle mesh arrays
+
+
+	    this.triangles = this._triangles.subarray(0, this.trianglesLen);
+	    this.halfedges = this._halfedges.subarray(0, this.trianglesLen);
+	  };
+
+	  Delaunator.prototype._hashKey = function (x, y) {
+	    return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
+	  };
+
+	  Delaunator.prototype._legalize = function (a) {
+	    var _a = this,
+	        triangles = _a._triangles,
+	        halfedges = _a._halfedges,
+	        coords = _a.coords;
+
+	    var i = 0;
+	    var ar = 0; // recursion eliminated with a fixed-size stack
+
+	    while (true) {
+	      var b = halfedges[a];
+	      /* if the pair of triangles doesn't satisfy the Delaunay condition
+	       * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
+	       * then do the same check/flip recursively for the new pair of triangles
+	       *
+	       *           pl                    pl
+	       *          /||\                  /  \
+	       *       al/ || \bl            al/    \a
+	       *        /  ||  \              /      \
+	       *       /  a||b  \    flip    /___ar___\
+	       *     p0\   ||   /p1   =>   p0\---bl---/p1
+	       *        \  ||  /              \      /
+	       *       ar\ || /br             b\    /br
+	       *          \||/                  \  /
+	       *           pr                    pr
+	       */
+
+	      var a0 = a - a % 3;
+	      ar = a0 + (a + 2) % 3;
+
+	      if (b === -1) {
+	        // convex hull edge
+	        if (i === 0) break;
+	        a = EDGE_STACK[--i];
+	        continue;
+	      }
+
+	      var b0 = b - b % 3;
+	      var al = a0 + (a + 1) % 3;
+	      var bl = b0 + (b + 2) % 3;
+	      var p0 = triangles[ar];
+	      var pr = triangles[a];
+	      var pl = triangles[al];
+	      var p1 = triangles[bl];
+	      var illegal = inCircle(coords[2 * p0], coords[2 * p0 + 1], coords[2 * pr], coords[2 * pr + 1], coords[2 * pl], coords[2 * pl + 1], coords[2 * p1], coords[2 * p1 + 1]);
+
+	      if (illegal) {
+	        triangles[a] = p1;
+	        triangles[b] = p0;
+	        var hbl = halfedges[bl]; // edge swapped on the other side of the hull (rare); fix the halfedge reference
+
+	        if (hbl === -1) {
+	          var e = this._hullStart;
+
+	          do {
+	            if (this._hullTri[e] === bl) {
+	              this._hullTri[e] = a;
+	              break;
+	            }
+
+	            e = this._hullPrev[e];
+	          } while (e !== this._hullStart);
+	        }
+
+	        this._link(a, hbl);
+
+	        this._link(b, halfedges[ar]);
+
+	        this._link(ar, bl);
+
+	        var br = b0 + (b + 1) % 3; // don't worry about hitting the cap: it can only happen on extremely degenerate input
+
+	        if (i < EDGE_STACK.length) {
+	          EDGE_STACK[i++] = br;
+	        }
+	      } else {
+	        if (i === 0) break;
+	        a = EDGE_STACK[--i];
+	      }
+	    }
+
+	    return ar;
+	  };
+
+	  Delaunator.prototype._link = function (a, b) {
+	    this._halfedges[a] = b;
+	    if (b !== -1) this._halfedges[b] = a;
+	  }; // add a new triangle given vertex indices and adjacent half-edge ids
+
+
+	  Delaunator.prototype._addTriangle = function (i0, i1, i2, a, b, c) {
+	    var t = this.trianglesLen;
+	    this._triangles[t] = i0;
+	    this._triangles[t + 1] = i1;
+	    this._triangles[t + 2] = i2;
+
+	    this._link(t, a);
+
+	    this._link(t + 1, b);
+
+	    this._link(t + 2, c);
+
+	    this.trianglesLen += 3;
+	    return t;
+	  };
+
+	  return Delaunator;
+	}();
+
+	exports.Delaunator = Delaunator; // monotonically increases with real angle, but doesn't need expensive trigonometry
+
+	function pseudoAngle(dx, dy) {
+	  var p = dx / (Math.abs(dx) + Math.abs(dy));
+	  return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
+	}
+
+	function dist(ax, ay, bx, by) {
+	  var dx = ax - bx;
+	  var dy = ay - by;
+	  return dx * dx + dy * dy;
+	} // return 2d orientation sign if we're confident in it through J. Shewchuk's error bound check
+
+
+	function orientIfSure(px, py, rx, ry, qx, qy) {
+	  var l = (ry - py) * (qx - px);
+	  var r = (rx - px) * (qy - py);
+	  return Math.abs(l - r) >= 3.3306690738754716e-16 * Math.abs(l + r) ? l - r : 0;
+	} // a more robust orientation test that's stable in a given triangle (to fix robustness issues)
+
+
+	function orient(rx, ry, qx, qy, px, py) {
+	  return (orientIfSure(px, py, rx, ry, qx, qy) || orientIfSure(rx, ry, qx, qy, px, py) || orientIfSure(qx, qy, px, py, rx, ry)) < 0;
+	}
+
+	function inCircle(ax, ay, bx, by, cx, cy, px, py) {
+	  var dx = ax - px;
+	  var dy = ay - py;
+	  var ex = bx - px;
+	  var ey = by - py;
+	  var fx = cx - px;
+	  var fy = cy - py;
+	  var ap = dx * dx + dy * dy;
+	  var bp = ex * ex + ey * ey;
+	  var cp = fx * fx + fy * fy;
+	  return dx * (ey * cp - bp * fy) - dy * (ex * cp - bp * fx) + ap * (ex * fy - ey * fx) < 0;
+	}
+
+	function circumradius(ax, ay, bx, by, cx, cy) {
+	  var dx = bx - ax;
+	  var dy = by - ay;
+	  var ex = cx - ax;
+	  var ey = cy - ay;
+	  var bl = dx * dx + dy * dy;
+	  var cl = ex * ex + ey * ey;
+	  var d = 0.5 / (dx * ey - dy * ex);
+	  var x = (ey * bl - dy * cl) * d;
+	  var y = (dx * cl - ex * bl) * d;
+	  return x * x + y * y;
+	}
+
+	function circumcenter(ax, ay, bx, by, cx, cy) {
+	  var dx = bx - ax;
+	  var dy = by - ay;
+	  var ex = cx - ax;
+	  var ey = cy - ay;
+	  var bl = dx * dx + dy * dy;
+	  var cl = ex * ex + ey * ey;
+	  var d = 0.5 / (dx * ey - dy * ex);
+	  var x = ax + (ey * bl - dy * cl) * d;
+	  var y = ay + (dx * cl - ex * bl) * d;
+	  return {
+	    x: x,
+	    y: y
+	  };
+	}
+
+	function quicksort(ids, dists, left, right) {
+	  if (right - left <= 20) {
+	    for (var i = left + 1; i <= right; i++) {
+	      var temp = ids[i];
+	      var tempDist = dists[temp];
+	      var j = i - 1;
+
+	      while (j >= left && dists[ids[j]] > tempDist) ids[j + 1] = ids[j--];
+
+	      ids[j + 1] = temp;
+	    }
+	  } else {
+	    var median = left + right >> 1;
+	    var i = left + 1;
+	    var j = right;
+	    swap(ids, median, i);
+	    if (dists[ids[left]] > dists[ids[right]]) swap(ids, left, right);
+	    if (dists[ids[i]] > dists[ids[right]]) swap(ids, i, right);
+	    if (dists[ids[left]] > dists[ids[i]]) swap(ids, left, i);
+	    var temp = ids[i];
+	    var tempDist = dists[temp];
+
+	    while (true) {
+	      do i++; while (dists[ids[i]] < tempDist);
+
+	      do j--; while (dists[ids[j]] > tempDist);
+
+	      if (j < i) break;
+	      swap(ids, i, j);
+	    }
+
+	    ids[left + 1] = ids[j];
+	    ids[j] = temp;
+
+	    if (right - i + 1 >= j - left) {
+	      quicksort(ids, dists, i, right);
+	      quicksort(ids, dists, left, j - 1);
+	    } else {
+	      quicksort(ids, dists, left, j - 1);
+	      quicksort(ids, dists, i, right);
+	    }
+	  }
+	}
+
+	function swap(arr, i, j) {
+	  var tmp = arr[i];
+	  arr[i] = arr[j];
+	  arr[j] = tmp;
+	}
+	});
+
+	unwrapExports(delaunator);
+	var delaunator_1 = delaunator.Delaunator;
+
+	var voronoi = createCommonjsModule(function (module, exports) {
+
+	var __generator = commonjsGlobal && commonjsGlobal.__generator || function (thisArg, body) {
+	  var _ = {
+	    label: 0,
+	    sent: function () {
+	      if (t[0] & 1) throw t[1];
+	      return t[1];
+	    },
+	    trys: [],
+	    ops: []
+	  },
+	      f,
+	      y,
+	      t,
+	      g;
+	  return g = {
+	    next: verb(0),
+	    "throw": verb(1),
+	    "return": verb(2)
+	  }, typeof Symbol === "function" && (g[Symbol.iterator] = function () {
+	    return this;
+	  }), g;
+
+	  function verb(n) {
+	    return function (v) {
+	      return step([n, v]);
+	    };
+	  }
+
+	  function step(op) {
+	    if (f) throw new TypeError("Generator is already executing.");
+
+	    while (_) try {
+	      if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	      if (y = 0, t) op = [op[0] & 2, t.value];
+
+	      switch (op[0]) {
+	        case 0:
+	        case 1:
+	          t = op;
+	          break;
+
+	        case 4:
+	          _.label++;
+	          return {
+	            value: op[1],
+	            done: false
+	          };
+
+	        case 5:
+	          _.label++;
+	          y = op[1];
+	          op = [0];
+	          continue;
+
+	        case 7:
+	          op = _.ops.pop();
+
+	          _.trys.pop();
+
+	          continue;
+
+	        default:
+	          if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+	            _ = 0;
+	            continue;
+	          }
+
+	          if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+	            _.label = op[1];
+	            break;
+	          }
+
+	          if (op[0] === 6 && _.label < t[1]) {
+	            _.label = t[1];
+	            t = op;
+	            break;
+	          }
+
+	          if (t && _.label < t[2]) {
+	            _.label = t[2];
+
+	            _.ops.push(op);
+
+	            break;
+	          }
+
+	          if (t[2]) _.ops.pop();
+
+	          _.trys.pop();
+
+	          continue;
+	      }
+
+	      op = body.call(thisArg, _);
+	    } catch (e) {
+	      op = [6, e];
+	      y = 0;
+	    } finally {
+	      f = t = 0;
+	    }
+
+	    if (op[0] & 5) throw op[1];
+	    return {
+	      value: op[0] ? op[1] : void 0,
+	      done: true
+	    };
+	  }
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Voronoi = void 0;
+	var epsilon = 1e-6;
+
+	var Path =
+	/** @class */
+	function () {
+	  function Path() {
+	    this._x0 = this._y0 = // start of current subpath
+	    this._x1 = this._y1 = null; // end of current subpath
+
+	    this._ = "";
+	  }
+
+	  Path.prototype.moveTo = function (x, y) {
+	    this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y);
+	  };
+
+	  Path.prototype.closePath = function () {
+	    if (this._x1 !== null) {
+	      this._x1 = this._x0, this._y1 = this._y0;
+	      this._ += "Z";
+	    }
+	  };
+
+	  Path.prototype.lineTo = function (x, y) {
+	    this._ += "L" + (this._x1 = +x) + "," + (this._y1 = +y);
+	  };
+
+	  Path.prototype.arc = function (x, y, r) {
+	    x = +x, y = +y, r = +r;
+	    var x0 = x + r;
+	    var y0 = y;
+	    if (r < 0) throw new Error("negative radius");
+	    if (this._x1 === null) this._ += "M" + x0 + "," + y0;else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) this._ += "L" + x0 + "," + y0;
+	    if (!r) return;
+	    this._ += "A" + r + "," + r + ",0,1,1," + (x - r) + "," + y + "A" + r + "," + r + ",0,1,1," + (this._x1 = x0) + "," + (this._y1 = y0);
+	  };
+
+	  Path.prototype.rect = function (x, y, w, h) {
+	    this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y) + "h" + +w + "v" + +h + "h" + -w + "Z";
+	  };
+
+	  Path.prototype.value = function () {
+	    return this._ || null;
+	  };
+
+	  return Path;
+	}();
+
+	var Polygon =
+	/** @class */
+	function () {
+	  function Polygon() {
+	    this._ = [];
+	  }
+
+	  Polygon.prototype.moveTo = function (x, y) {
+	    this._.push([x, y]);
+	  };
+
+	  Polygon.prototype.closePath = function () {
+	    this._.push(this._[0].slice());
+	  };
+
+	  Polygon.prototype.lineTo = function (x, y) {
+	    this._.push([x, y]);
+	  };
+
+	  Polygon.prototype.value = function () {
+	    return this._.length ? this._ : null;
+	  };
+
+	  return Polygon;
+	}();
+
+	var Voronoi =
+	/** @class */
+	function () {
+	  function Voronoi(delaunay, _a) {
+	    var _b = _a === void 0 ? [0, 0, 960, 500] : _a,
+	        xmin = _b[0],
+	        ymin = _b[1],
+	        xmax = _b[2],
+	        ymax = _b[3];
+
+	    if (!((xmax = +xmax) >= (xmin = +xmin)) || !((ymax = +ymax) >= (ymin = +ymin))) throw new Error("invalid bounds");
+	    this.delaunay = delaunay;
+	    this._circumcenters = new Float64Array(delaunay.points.length * 2);
+	    this.vectors = new Float64Array(delaunay.points.length * 2);
+	    this.xmax = xmax, this.xmin = xmin;
+	    this.ymax = ymax, this.ymin = ymin;
+
+	    this._init();
+	  }
+
+	  Voronoi.prototype.update = function () {
+	    this.delaunay.update();
+
+	    this._init();
+
+	    return this;
+	  };
+
+	  Voronoi.prototype._init = function () {
+	    var _a = this,
+	        _b = _a.delaunay,
+	        points = _b.points,
+	        hull = _b.hull,
+	        triangles = _b.triangles,
+	        vectors = _a.vectors; // Compute circumcenters.
+
+
+	    var circumcenters = this.circumcenters = this._circumcenters.subarray(0, triangles.length / 3 * 2);
+
+	    for (var i = 0, j = 0, n = triangles.length, x = void 0, y = void 0; i < n; i += 3, j += 2) {
+	      var t1 = triangles[i] * 2;
+	      var t2 = triangles[i + 1] * 2;
+	      var t3 = triangles[i + 2] * 2;
+	      var x1_1 = points[t1];
+	      var y1_1 = points[t1 + 1];
+	      var x2 = points[t2];
+	      var y2 = points[t2 + 1];
+	      var x3 = points[t3];
+	      var y3 = points[t3 + 1];
+	      var dx = x2 - x1_1;
+	      var dy = y2 - y1_1;
+	      var ex = x3 - x1_1;
+	      var ey = y3 - y1_1;
+	      var bl = dx * dx + dy * dy;
+	      var cl = ex * ex + ey * ey;
+	      var ab = (dx * ey - dy * ex) * 2;
+
+	      if (!ab) {
+	        // degenerate case (collinear diagram)
+	        x = (x1_1 + x3) / 2 - 1e8 * ey;
+	        y = (y1_1 + y3) / 2 + 1e8 * ex;
+	      } else if (Math.abs(ab) < 1e-8) {
+	        // almost equal points (degenerate triangle)
+	        x = (x1_1 + x3) / 2;
+	        y = (y1_1 + y3) / 2;
+	      } else {
+	        var d = 1 / ab;
+	        x = x1_1 + (ey * bl - dy * cl) * d;
+	        y = y1_1 + (dx * cl - ex * bl) * d;
+	      }
+
+	      circumcenters[j] = x;
+	      circumcenters[j + 1] = y;
+	    } // Compute exterior cell rays.
+
+
+	    var h = hull[hull.length - 1];
+	    var p0,
+	        p1 = h * 4;
+	    var x0,
+	        x1 = points[2 * h];
+	    var y0,
+	        y1 = points[2 * h + 1];
+	    vectors.fill(0);
+
+	    for (var i = 0; i < hull.length; ++i) {
+	      h = hull[i];
+	      p0 = p1, x0 = x1, y0 = y1;
+	      p1 = h * 4, x1 = points[2 * h], y1 = points[2 * h + 1];
+	      vectors[p0 + 2] = vectors[p1] = y0 - y1;
+	      vectors[p0 + 3] = vectors[p1 + 1] = x1 - x0;
+	    }
+	  };
+
+	  Voronoi.prototype.render = function (context) {
+	    var buffer = context == null ? context = new Path() : undefined;
+
+	    var _a = this,
+	        _b = _a.delaunay,
+	        halfedges = _b.halfedges,
+	        inedges = _b.inedges,
+	        hull = _b.hull,
+	        circumcenters = _a.circumcenters,
+	        vectors = _a.vectors;
+
+	    if (hull.length <= 1) return null;
+
+	    for (var i = 0, n = halfedges.length; i < n; ++i) {
+	      var j = halfedges[i];
+	      if (j < i) continue;
+	      var ti = Math.floor(i / 3) * 2;
+	      var tj = Math.floor(j / 3) * 2;
+	      var xi = circumcenters[ti];
+	      var yi = circumcenters[ti + 1];
+	      var xj = circumcenters[tj];
+	      var yj = circumcenters[tj + 1];
+
+	      this._renderSegment(xi, yi, xj, yj, context);
+	    }
+
+	    var h0,
+	        h1 = hull[hull.length - 1];
+
+	    for (var i = 0; i < hull.length; ++i) {
+	      h0 = h1, h1 = hull[i];
+	      var t = Math.floor(inedges[h1] / 3) * 2;
+	      var x = circumcenters[t];
+	      var y = circumcenters[t + 1];
+	      var v = h0 * 4;
+
+	      var p = this._project(x, y, vectors[v + 2], vectors[v + 3]);
+
+	      if (p) this._renderSegment(x, y, p[0], p[1], context);
+	    }
+
+	    return buffer && buffer.value();
+	  };
+
+	  Voronoi.prototype.renderBounds = function (context) {
+	    var buffer = context == null ? context = new Path() : undefined;
+	    context.rect(this.xmin, this.ymin, this.xmax - this.xmin, this.ymax - this.ymin);
+	    return buffer && buffer.value();
+	  };
+
+	  Voronoi.prototype.renderCell = function (i, context) {
+	    var buffer = context == null ? context = new Path() : undefined;
+
+	    var points = this._clip(i);
+
+	    if (points === null || !points.length) return;
+	    context.moveTo(points[0], points[1]);
+	    var n = points.length;
+
+	    while (points[0] === points[n - 2] && points[1] === points[n - 1] && n > 1) n -= 2;
+
+	    for (var i_1 = 2; i_1 < n; i_1 += 2) {
+	      if (points[i_1] !== points[i_1 - 2] || points[i_1 + 1] !== points[i_1 - 1]) context.lineTo(points[i_1], points[i_1 + 1]);
+	    }
+
+	    context.closePath();
+	    return buffer && buffer.value();
+	  };
+
+	  Voronoi.prototype.cellPolygons = function () {
+	    var points, i, n, cell;
+	    return __generator(this, function (_a) {
+	      switch (_a.label) {
+	        case 0:
+	          points = this.delaunay.points;
+	          i = 0, n = points.length / 2;
+	          _a.label = 1;
+
+	        case 1:
+	          if (!(i < n)) return [3
+	          /*break*/
+	          , 4];
+	          cell = this.cellPolygon(i);
+	          if (!cell) return [3
+	          /*break*/
+	          , 3];
+	          cell.index = i;
+	          return [4
+	          /*yield*/
+	          , cell];
+
+	        case 2:
+	          _a.sent();
+
+	          _a.label = 3;
+
+	        case 3:
+	          ++i;
+	          return [3
+	          /*break*/
+	          , 1];
+
+	        case 4:
+	          return [2
+	          /*return*/
+	          ];
+	      }
+	    });
+	  };
+
+	  Voronoi.prototype.cellPolygon = function (i) {
+	    var polygon = new Polygon();
+	    this.renderCell(i, polygon);
+	    return polygon.value();
+	  };
+
+	  Voronoi.prototype._renderSegment = function (x0, y0, x1, y1, context) {
+	    var S;
+
+	    var c0 = this._regioncode(x0, y0);
+
+	    var c1 = this._regioncode(x1, y1);
+
+	    if (c0 === 0 && c1 === 0) {
+	      context.moveTo(x0, y0);
+	      context.lineTo(x1, y1);
+	    } else if (S = this._clipSegment(x0, y0, x1, y1, c0, c1)) {
+	      context.moveTo(S[0], S[1]);
+	      context.lineTo(S[2], S[3]);
+	    }
+	  };
+
+	  Voronoi.prototype.contains = function (i, x, y) {
+	    if ((x = +x, x !== x) || (y = +y, y !== y)) return false;
+	    return this.delaunay._step(i, x, y) === i;
+	  };
+
+	  Voronoi.prototype.neighbors = function (i) {
+	    var ci, _i, _a, j, cj, ai, li, aj, lj;
+
+	    return __generator(this, function (_b) {
+	      switch (_b.label) {
+	        case 0:
+	          ci = this._clip(i);
+	          if (!ci) return [3
+	          /*break*/
+	          , 8];
+	          _i = 0, _a = this.delaunay.neighbors(i);
+	          _b.label = 1;
+
+	        case 1:
+	          if (!(_i < _a.length)) return [3
+	          /*break*/
+	          , 8];
+	          j = _a[_i];
+	          cj = this._clip(j);
+	          if (!cj) return [3
+	          /*break*/
+	          , 7];
+	          ai = 0, li = ci.length;
+	          _b.label = 2;
+
+	        case 2:
+	          if (!(ai < li)) return [3
+	          /*break*/
+	          , 7];
+	          aj = 0, lj = cj.length;
+	          _b.label = 3;
+
+	        case 3:
+	          if (!(aj < lj)) return [3
+	          /*break*/
+	          , 6];
+	          if (!(ci[ai] == cj[aj] && ci[ai + 1] == cj[aj + 1] && ci[(ai + 2) % li] == cj[(aj + lj - 2) % lj] && ci[(ai + 3) % li] == cj[(aj + lj - 1) % lj])) return [3
+	          /*break*/
+	          , 5];
+	          return [4
+	          /*yield*/
+	          , j];
+
+	        case 4:
+	          _b.sent();
+
+	          return [3
+	          /*break*/
+	          , 7];
+
+	        case 5:
+	          aj += 2;
+	          return [3
+	          /*break*/
+	          , 3];
+
+	        case 6:
+	          ai += 2;
+	          return [3
+	          /*break*/
+	          , 2];
+
+	        case 7:
+	          _i++;
+	          return [3
+	          /*break*/
+	          , 1];
+
+	        case 8:
+	          return [2
+	          /*return*/
+	          ];
+	      }
+	    });
+	  };
+
+	  Voronoi.prototype._cell = function (i) {
+	    var _a = this,
+	        circumcenters = _a.circumcenters,
+	        _b = _a.delaunay,
+	        inedges = _b.inedges,
+	        halfedges = _b.halfedges,
+	        triangles = _b.triangles;
+
+	    var e0 = inedges[i];
+	    if (e0 === -1) return null; // coincident point
+
+	    var points = [];
+	    var e = e0;
+
+	    do {
+	      var t = Math.floor(e / 3);
+	      points.push(circumcenters[t * 2], circumcenters[t * 2 + 1]);
+	      e = e % 3 === 2 ? e - 2 : e + 1;
+	      if (triangles[e] !== i) break; // bad triangulation
+
+	      e = halfedges[e];
+	    } while (e !== e0 && e !== -1);
+
+	    return points;
+	  };
+
+	  Voronoi.prototype._clip = function (i) {
+	    // degenerate case (1 valid point: return the box)
+	    if (i === 0 && this.delaunay.hull.length === 1) {
+	      return [this.xmax, this.ymin, this.xmax, this.ymax, this.xmin, this.ymax, this.xmin, this.ymin];
+	    }
+
+	    var points = this._cell(i);
+
+	    if (points === null) return null;
+	    var V = this.vectors;
+	    var v = i * 4;
+	    return V[v] || V[v + 1] ? this._clipInfinite(i, points, V[v], V[v + 1], V[v + 2], V[v + 3]) : this._clipFinite(i, points);
+	  };
+
+	  Voronoi.prototype._clipFinite = function (i, points) {
+	    var n = points.length;
+	    var P = null;
+	    var x0,
+	        y0,
+	        x1 = points[n - 2],
+	        y1 = points[n - 1];
+
+	    var c0,
+	        c1 = this._regioncode(x1, y1);
+
+	    var e0, e1;
+
+	    for (var j = 0; j < n; j += 2) {
+	      x0 = x1, y0 = y1, x1 = points[j], y1 = points[j + 1];
+	      c0 = c1, c1 = this._regioncode(x1, y1);
+
+	      if (c0 === 0 && c1 === 0) {
+	        e0 = e1, e1 = 0;
+	        if (P) P.push(x1, y1);else P = [x1, y1];
+	      } else {
+	        var S = void 0,
+	            sx0 = void 0,
+	            sy0 = void 0,
+	            sx1 = void 0,
+	            sy1 = void 0;
+
+	        if (c0 === 0) {
+	          if ((S = this._clipSegment(x0, y0, x1, y1, c0, c1)) === null) continue;
+	          sx0 = S[0], sy0 = S[1], sx1 = S[2], sy1 = S[3];
+	        } else {
+	          if ((S = this._clipSegment(x1, y1, x0, y0, c1, c0)) === null) continue;
+	          sx1 = S[0], sy1 = S[1], sx0 = S[2], sy0 = S[3];
+	          e0 = e1, e1 = this._edgecode(sx0, sy0);
+	          if (e0 && e1) this._edge(i, e0, e1, P, P.length);
+	          if (P) P.push(sx0, sy0);else P = [sx0, sy0];
+	        }
+
+	        e0 = e1, e1 = this._edgecode(sx1, sy1);
+	        if (e0 && e1) this._edge(i, e0, e1, P, P.length);
+	        if (P) P.push(sx1, sy1);else P = [sx1, sy1];
+	      }
+	    }
+
+	    if (P) {
+	      e0 = e1, e1 = this._edgecode(P[0], P[1]);
+	      if (e0 && e1) this._edge(i, e0, e1, P, P.length);
+	    } else if (this.contains(i, (this.xmin + this.xmax) / 2, (this.ymin + this.ymax) / 2)) {
+	      return [this.xmax, this.ymin, this.xmax, this.ymax, this.xmin, this.ymax, this.xmin, this.ymin];
+	    }
+
+	    return P;
+	  };
+
+	  Voronoi.prototype._clipSegment = function (x0, y0, x1, y1, c0, c1) {
+	    while (true) {
+	      if (c0 === 0 && c1 === 0) return [x0, y0, x1, y1];
+	      if (c0 & c1) return null;
+	      var x = void 0,
+	          y = void 0,
+	          c = c0 || c1;
+	      if (c & 8) x = x0 + (x1 - x0) * (this.ymax - y0) / (y1 - y0), y = this.ymax;else if (c & 4) x = x0 + (x1 - x0) * (this.ymin - y0) / (y1 - y0), y = this.ymin;else if (c & 2) y = y0 + (y1 - y0) * (this.xmax - x0) / (x1 - x0), x = this.xmax;else y = y0 + (y1 - y0) * (this.xmin - x0) / (x1 - x0), x = this.xmin;
+	      if (c0) x0 = x, y0 = y, c0 = this._regioncode(x0, y0);else x1 = x, y1 = y, c1 = this._regioncode(x1, y1);
+	    }
+	  };
+
+	  Voronoi.prototype._clipInfinite = function (i, points, vx0, vy0, vxn, vyn) {
+	    var P = Array.from(points),
+	        p;
+	    if (p = this._project(P[0], P[1], vx0, vy0)) P.unshift(p[0], p[1]);
+	    if (p = this._project(P[P.length - 2], P[P.length - 1], vxn, vyn)) P.push(p[0], p[1]);
+
+	    if (P = this._clipFinite(i, P)) {
+	      for (var j = 0, n = P.length, c0 = void 0, c1 = this._edgecode(P[n - 2], P[n - 1]); j < n; j += 2) {
+	        c0 = c1, c1 = this._edgecode(P[j], P[j + 1]);
+	        if (c0 && c1) j = this._edge(i, c0, c1, P, j), n = P.length;
+	      }
+	    } else if (this.contains(i, (this.xmin + this.xmax) / 2, (this.ymin + this.ymax) / 2)) {
+	      P = [this.xmin, this.ymin, this.xmax, this.ymin, this.xmax, this.ymax, this.xmin, this.ymax];
+	    }
+
+	    return P;
+	  };
+
+	  Voronoi.prototype._edge = function (i, e0, e1, P, j) {
+	    while (e0 !== e1) {
+	      var x = void 0,
+	          y = void 0;
+
+	      switch (e0) {
+	        case 5:
+	          e0 = 4;
+	          continue;
+	        // top-left
+
+	        case 4:
+	          e0 = 6, x = this.xmax, y = this.ymin;
+	          break;
+	        // top
+
+	        case 6:
+	          e0 = 2;
+	          continue;
+	        // top-right
+
+	        case 2:
+	          e0 = 10, x = this.xmax, y = this.ymax;
+	          break;
+	        // right
+
+	        case 10:
+	          e0 = 8;
+	          continue;
+	        // bottom-right
+
+	        case 8:
+	          e0 = 9, x = this.xmin, y = this.ymax;
+	          break;
+	        // bottom
+
+	        case 9:
+	          e0 = 1;
+	          continue;
+	        // bottom-left
+
+	        case 1:
+	          e0 = 5, x = this.xmin, y = this.ymin;
+	          break;
+	        // left
+	      }
+
+	      if ((P[j] !== x || P[j + 1] !== y) && this.contains(i, x, y)) {
+	        P.splice(j, 0, x, y), j += 2;
+	      }
+	    }
+
+	    if (P.length > 4) {
+	      for (var i_2 = 0; i_2 < P.length; i_2 += 2) {
+	        var j_1 = (i_2 + 2) % P.length,
+	            k = (i_2 + 4) % P.length;
+	        if (P[i_2] === P[j_1] && P[j_1] === P[k] || P[i_2 + 1] === P[j_1 + 1] && P[j_1 + 1] === P[k + 1]) P.splice(j_1, 2), i_2 -= 2;
+	      }
+	    }
+
+	    return j;
+	  };
+
+	  Voronoi.prototype._project = function (x0, y0, vx, vy) {
+	    var t = Infinity,
+	        c,
+	        x,
+	        y;
+
+	    if (vy < 0) {
+	      // top
+	      if (y0 <= this.ymin) return null;
+	      if ((c = (this.ymin - y0) / vy) < t) y = this.ymin, x = x0 + (t = c) * vx;
+	    } else if (vy > 0) {
+	      // bottom
+	      if (y0 >= this.ymax) return null;
+	      if ((c = (this.ymax - y0) / vy) < t) y = this.ymax, x = x0 + (t = c) * vx;
+	    }
+
+	    if (vx > 0) {
+	      // right
+	      if (x0 >= this.xmax) return null;
+	      if ((c = (this.xmax - x0) / vx) < t) x = this.xmax, y = y0 + (t = c) * vy;
+	    } else if (vx < 0) {
+	      // left
+	      if (x0 <= this.xmin) return null;
+	      if ((c = (this.xmin - x0) / vx) < t) x = this.xmin, y = y0 + (t = c) * vy;
+	    }
+
+	    return [x, y];
+	  };
+
+	  Voronoi.prototype._edgecode = function (x, y) {
+	    return (x === this.xmin ? 1 : x === this.xmax ? 2 : 0) | (y === this.ymin ? 4 : y === this.ymax ? 8 : 0);
+	  };
+
+	  Voronoi.prototype._regioncode = function (x, y) {
+	    return (x < this.xmin ? 1 : x > this.xmax ? 2 : 0) | (y < this.ymin ? 4 : y > this.ymax ? 8 : 0);
+	  };
+
+	  return Voronoi;
+	}();
+
+	exports.Voronoi = Voronoi;
+	});
+
+	unwrapExports(voronoi);
+	var voronoi_1 = voronoi.Voronoi;
+
+	var threeaid = createCommonjsModule(function (module, exports) {
+
+	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
+	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+	  return r;
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.trianglutionToGeometryBuffer = exports.linksToMesh = exports.linkToMesh = exports.extrudeToGeometryBuffer = exports.toGeometryBuffer = void 0;
+
+
+
+
+
+
+
+
+
+
+
+	function toGeometryBuffer(vertices, triangles, uvs) {
+	  if (uvs === void 0) {
+	    uvs = [];
+	  }
+
+	  var buffer = mesh.toBuffer(vertices, triangles, uvs);
+	  return buffer;
+	}
+
+	exports.toGeometryBuffer = toGeometryBuffer;
+	/**
+	 * shape 挤压后转几何体
+	 * @param {*} shape
+	 * @param {*} arg_path
+	 * @param {*} options
+	 */
+
+	function extrudeToGeometryBuffer(shape, arg_path, options) {
+	  var extrudeRes = extrude_1.extrude(shape, arg_path, options);
+	  return toGeometryBuffer(extrudeRes.vertices, extrudeRes.triangles, extrudeRes.uvs);
+	}
+
+	exports.extrudeToGeometryBuffer = extrudeToGeometryBuffer;
+	/**
+	 * 两个轮廓缝合
+	 * @param {*} shape
+	 * @param {*} arg_path
+	 * @param {*} options
+	 * @param {*} material
+	 */
+
+	function linkToMesh(shape, shape1, isClose) {
+	  if (isClose === void 0) {
+	    isClose = false;
+	  }
+
+	  var vertices = __spreadArrays(shape, shape1);
+
+	  mesh.indexable(vertices);
+	  var tris = extrude_1.linkSide(shape, shape1, isClose);
+	  var geometry = toGeometryBuffer(vertices, tris);
+	  return geometry;
+	}
+
+	exports.linkToMesh = linkToMesh;
+	/**
+	 * 多个轮廓缝合
+	 * @param shape
+	 * @param isClose
+	 * @param material
+	 */
+
+	function linksToMesh(shape, isClose) {
+	  if (isClose === void 0) {
+	    isClose = false;
+	  }
+
+	  var vertices = array.flat(shape);
+	  mesh.indexable(vertices);
+	  var tris = extrude_1.linkSides(shape, isClose);
+	  var geometry = toGeometryBuffer(vertices, tris);
+	  return geometry;
+	}
+
+	exports.linksToMesh = linksToMesh;
+	/**
+	 * 三角剖分后转成几何体
+	 * 只考虑XY平面
+	 * @param {*} boundary
+	 * @param {*} hole
+	 * @param {*} options
+	 */
+
+	function trianglutionToGeometryBuffer(boundary, holes, options) {
+	  if (holes === void 0) {
+	    holes = [];
+	  }
+
+	  if (options === void 0) {
+	    options = {
+	      normal: Vec3_1.Vec3.UnitZ
+	    };
+	  }
+
+	  var triangles = trianglution.triangulation(boundary, holes, options);
+
+	  var vertices = __spreadArrays(boundary, array.flat(holes));
+
+	  var uvs = [];
+	  vertices.reduce(function (acc, v) {
+	    acc.push(v.x, v.y);
+	    return acc;
+	  }, uvs);
+	  var geometry = toGeometryBuffer(vertices, triangles, uvs);
+	  return geometry;
+	}
+
+	exports.trianglutionToGeometryBuffer = trianglutionToGeometryBuffer;
+	});
+
+	unwrapExports(threeaid);
+	var threeaid_1 = threeaid.trianglutionToGeometryBuffer;
+	var threeaid_2 = threeaid.linksToMesh;
+	var threeaid_3 = threeaid.linkToMesh;
+	var threeaid_4 = threeaid.extrudeToGeometryBuffer;
+	var threeaid_5 = threeaid.toGeometryBuffer;
+
+	var dist = createCommonjsModule(function (module, exports) {
+
+	var __createBinding = commonjsGlobal && commonjsGlobal.__createBinding || (Object.create ? function (o, m, k, k2) {
+	  if (k2 === undefined) k2 = k;
+	  Object.defineProperty(o, k2, {
+	    enumerable: true,
+	    get: function () {
+	      return m[k];
+	    }
+	  });
+	} : function (o, m, k, k2) {
+	  if (k2 === undefined) k2 = k;
+	  o[k2] = m[k];
+	});
+
+	var __exportStar = commonjsGlobal && commonjsGlobal.__exportStar || function (m, exports) {
+	  for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+
+
+	__exportStar(Vec2_1, exports);
+
+	__exportStar(Vec3_1, exports);
+
+	__exportStar(Vec4_1, exports);
+
+	__exportStar(Mat3_1, exports);
+
+	__exportStar(Mat4_1, exports);
+
+	__exportStar(Quat_1, exports);
+
+	__exportStar(_Math, exports);
+
+	__exportStar(Euler_1, exports);
+
+	__exportStar(common, exports);
+
+	__exportStar(result, exports);
+
+	__exportStar(extrude_1, exports);
+
+	__exportStar(delaunay, exports);
+
+	__exportStar(Box_1, exports);
+
+	__exportStar(Capsule_1, exports);
+
+	__exportStar(Circle_1, exports);
+
+	__exportStar(Line_1, exports);
+
+	__exportStar(Path_1, exports);
+
+	__exportStar(Plane_1, exports);
+
+	__exportStar(Point_1, exports);
+
+	__exportStar(PolyLine, exports);
+
+	__exportStar(Polygon_1, exports);
+
+	__exportStar(Ray_1, exports);
+
+	__exportStar(Segment_1, exports);
+
+	__exportStar(delaunator, exports);
+
+	__exportStar(voronoi, exports);
+
+	__exportStar(threeaid, exports);
+	});
+
+	var index = unwrapExports(dist);
+
+	return index;
+
+}());

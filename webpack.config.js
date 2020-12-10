@@ -4,20 +4,22 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const copyWebpackPlugin = require("copy-webpack-plugin");
+
 // const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const path = require("path");
 const resolve = dir => path.resolve(__dirname, dir);
 
 module.exports = {
-  entry: __dirname + "/src/app.js", //已多次提及的唯一入口文件
+  entry: __dirname + "/src/app.ts", //已多次提及的唯一入口文件
   output: {
     path: __dirname + "/dist",
     filename: "[name].[hash].js"
   },
   resolve: {
     alias: {
-      "@": resolve("./src/*")
-    }
+      "@/*": __dirname + "/src/*",
+    },
+    extensions: [".tsx", ".ts", ".js"]//解析类型
   },
   devtool: "inline-source-map", //'source-map',
   devServer: {
@@ -40,23 +42,10 @@ module.exports = {
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
-        // use: ExtractTextPlugin.extract({
-        //     fallback: "style-loader",
-        //     use: ["css-loader"]
-        // })
       },
       {
         test: /\.scss$/,
         use: ["style-loader", "css-loader", "sass-loader"]
-        // use: ExtractTextPlugin.extract({
-        //     fallback: 'style-loader',
-        //     //resolve-url-loader may be chained before sass-loader if necessary
-        //     use: ['css-loader', 'sass-loader']
-        // })
-      },
-      {
-        // test: /\.(dae|obj|glb|gltf)$/,
-        // loader: 'raw'
       },
       {
         test: /\.(gif|png|jpe?g|svg|tif|glb)$/i,
@@ -64,8 +53,8 @@ module.exports = {
           {
             loader: "file-loader",
             options: {
-              name: "[path][name].[ext]"
-              // outputPath: 'assets/'
+              name: "[path][name].[ext]",
+              outputPath: './assets/'
             }
           }
         ]
@@ -80,29 +69,21 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/
       }
-      //   {
-      //     test: /\.tsx?$/,
-      //     use: "ts-loader",
-      //     exclude: /node_modules/
-      //   }
-    ]
-  },
-  resolve: {
-    extensions: [".tsx", ".ts", ".js"],
-    plugins: [
-      //   new TsconfigPathsPlugin({
-      //     /* options: see below */
-      //   })
     ]
   },
   plugins: [
-    new copyWebpackPlugin([
-      {
-        from: __dirname + "/src/assets", //打包的静态资源目录地址
-        to: "./assets" //打包到dist下面的public
-      }
-    ]),
+    // new copyWebpackPlugin([
+    //   {
+    //     from: __dirname + "/src/assets", //打包的静态资源目录地址
+    //     to: "./assets" //打包到dist下面的public
+    //   }
+    // ]),
     // new TsconfigPathsPlugin({/* options: see below */ }),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({

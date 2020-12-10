@@ -14,8 +14,8 @@ const DIST = process.env.DIST || false;
 const MIN = process.env.MIN || false;
 
 const banner = `/**
-* https://github.com/yszhao91/xtorcga
-*CGA Lib |xtorcga |alex Zhao | Zhao yaosheng
+* https://github.com/yszhao91/cga.js
+*CGA Lib |cga.js |alex Zhao | Zhao yaosheng
 *@license free for all
 */`;
 
@@ -34,7 +34,8 @@ const plugins = [
     })
 ];
 
-if (MIN) {
+if (MIN)
+{
     plugins.push(uglify({
         output: {
             comments: /@license/
@@ -44,7 +45,7 @@ if (MIN) {
 }
 
 export default {
-    input: path.join('src', 'index.js'),
+    input: path.join('dist', 'index.js'),
     external: ['lodash'],
     plugins: plugins,
     output: {
