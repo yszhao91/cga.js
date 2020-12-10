@@ -1,3 +1,5 @@
+import { Vec2 } from '../math/Vec2';
+import { Vec3 } from '../math/Vec3';
 const EPSILON = Math.pow(2, -52);
 const EDGE_STACK = new Uint32Array(512);
 
@@ -20,7 +22,7 @@ export class Delaunator {
     _hullStart!: number;
     trianglesLen!: number;
 
-    static from(points: number[], getX = defaultGetX, getY = defaultGetY) {
+    static from(points: number[]) {
         const n = points.length;
         const coords = new Float64Array(n);
 
@@ -31,6 +33,15 @@ export class Delaunator {
 
         return new Delaunator(coords);
     }
+
+    static fromVecs(points: Vec2[] | Vec3[]) {
+        var ps: number[] = [];
+        for (let i = 0; i < points.length; i++) {
+            ps.push(points[i].x, points[i].y)
+        }
+        return Delaunator.from(ps)
+    }
+
 
     constructor(coords: Float64Array) {
         const n = coords.length >> 1;
@@ -195,7 +206,7 @@ export class Delaunator {
             // skip near-duplicate points
             if (k > 0)
                 if (xp !== undefined && yp !== undefined) {
-                    if(Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
+                    if (Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
                 }
                 else
                     continue;
@@ -505,10 +516,4 @@ function swap(arr: { [x: string]: any; }, i: number, j: string | number) {
     arr[i] = arr[j];
     arr[j] = tmp;
 }
-
-function defaultGetX(p: any[]) {
-    return p[0];
-}
-function defaultGetY(p: any[]) {
-    return p[1];
-}
+ 

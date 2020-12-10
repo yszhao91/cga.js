@@ -1,183 +1,162 @@
-import { Vec3 } from '../math/Vec3';
-import { Circle } from '../struct/3d/Circle';
-/**
- * 只考虑2d的散点，如果是3d的以后会新建一个Delaunay3
- */
+import { Delaunator } from "./delaunator";
+import { Voronoi } from './voronoi';
 
-const EPSILON = 1.0 / 1048576.0;
-export class DelaunaySlow {
-    constructor(private vs?: Vec3[]) {
+const tau = 2 * Math.PI, pow = Math.pow;
 
 
 
+// A triangulation is collinear if all its triangles have a non-null area
+function collinear(d: any) {
+    const { triangles, coords } = d;
+    for (let i = 0; i < triangles.length; i += 3) {
+        const a = 2 * triangles[i],
+            b = 2 * triangles[i + 1],
+            c = 2 * triangles[i + 2],
+            cross = (coords[c] - coords[a]) * (coords[b + 1] - coords[a + 1])
+                - (coords[b] - coords[a]) * (coords[c + 1] - coords[a + 1]);
+        if (cross > 1e-10) return false;
     }
-
-    supertriangle(vertices: Vec3[]) {
-        var xmin = +Infinity,
-            ymin = +Infinity,
-            xmax = -Infinity,
-            ymax = -Infinity,
-            i, dx, dy, dmax, xmid, ymid;
-
-        for (i = vertices.length; i--;) {
-            if (vertices[i].x < xmin) xmin = vertices[i].x;
-            if (vertices[i].x > xmax) xmax = vertices[i].x;
-            if (vertices[i].y < ymin) ymin = vertices[i].y;
-            if (vertices[i].y > ymax) ymax = vertices[i].y;
-        }
-
-        dx = xmax - xmin;
-        dy = ymax - ymin;
-        dmax = Math.max(dx, dy);
-        xmid = xmin + dx * 0.5;
-        ymid = ymin + dy * 0.5;
-
-        return [
-            new Vec3(xmid - 20 * dmax, ymid - dmax),
-            new Vec3(xmid, ymid + 20 * dmax),
-            new Vec3(xmid + 20 * dmax, ymid - dmax)
-        ];
-    }
-
-
-    triangulation(vs: Vec3[]): number[] {
-        var vslen = vs.length;
-
-        if (vslen < 3)
-            return [];
-
-        var indices = new Array(vslen);
-
-        for (var i = vslen; i--;)
-            indices[i] = i;
-
-        indices.sort(function (i, j) {
-            var diff = vs[j].x - vs[i].x;
-            return diff !== 0 ? diff : i - j;
-        });
-
-        const superTriangle = this.supertriangle(vs);
-
-        vs.push(...superTriangle);//新加大三角形点
-
-        var open = [this.circumcircle(vs, vslen + 0, vslen + 1, vslen + 2)];
-        var closed = [];
-
-        for (let i = indices.length; i--;) {
-            var edges = [];
-            var c = indices[i];
-            var point = vs[c]
-
-            for (let j = open.length; j--;) {
-                var openj: any = open[j];
-                var dx = point.x - open[j].center.x;
-
-                if (dx > 0.0 && dx * dx > open[j].radiusSqr) {
-                    closed.push(open[j]);
-                    open.splice(j, 1);
-                    continue;
-                }
-
-                /* If we're outside the circumcircle, skip this triangle. */
-                var dy = vs[c].y - open[j].center.y;
-                if (dx * dx + dy * dy - open[j].radiusSqr > EPSILON)
-                    continue;
-
-                /* Remove the triangle and add it's edges to the edge list. */
-                edges.push(
-                    openj.i, openj.j,
-                    openj.j, openj.k,
-                    openj.k, openj.i
-                );
-                open.splice(j, 1);
-            }
-
-            this.dedup(edges);
-            for (let j = edges.length; j;) {
-                var b = edges[--j];
-                var a = edges[--j];
-                open.push(this.circumcircle(vs, a, b, c));
-            }
-
-        }
-        for (i = open.length; i--;)
-            closed.push(open[i]);
-        open.length = 0;
-
-        var result = []
-        for (i = closed.length; i--;) {
-            var close: any = closed[i]
-            if (close.i < vslen && close.j < vslen && close.k < vslen)
-                result.push(close.i, close.j, close.k);
-        }
-
-        /* Yay, we're done! */
-        return result;
-    }
-
-
-    /**
-     * 外接圆
-     * @param vertices 点击
-     * @param i 
-     * @param j 
-     * @param k 
-     */
-    circumcircle(vertices: Vec3[], i: number, j: number, k: number) {
-        var circle = new Circle().setFrom3Points(vertices[i], vertices[j], vertices[k]);
-        (circle as any).i = i;
-        (circle as any).j = j;
-        (circle as any).k = k;
-        return circle;
-    }
-
-    dedup(edges: any[]) {
-        var i, j, a, b, m, n;
-
-        for (j = edges.length; j;) {
-            b = edges[--j];
-            a = edges[--j];
-
-            for (i = j; i;) {
-                n = edges[--i];
-                m = edges[--i];
-
-                if ((a === m && b === n) || (a === n && b === m)) {
-                    edges.splice(j, 2);
-                    edges.splice(i, 2);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    contains(tri: Vec3[], p: Vec3) {
-        /* Bounding box test first, for quick rejections. */
-        if ((p.x < tri[0].x && p.x < tri[1].x && p.x < tri[2].x) ||
-            (p.x > tri[0].x && p.x > tri[1].x && p.x > tri[2].x) ||
-            (p.y < tri[0].y && p.y < tri[1].y && p.y < tri[2].y) ||
-            (p.y > tri[0].y && p.y > tri[1].y && p.y > tri[2].y))
-            return null;
-
-        var a = tri[1].x - tri[0].x,
-            b = tri[2].x - tri[0].x,
-            c = tri[1].y - tri[0].y,
-            d = tri[2].y - tri[0].y,
-            i = a * d - b * c;
-
-        /* Degenerate tri. */
-        if (i === 0.0)
-            return null;
-
-        var u = (d * (p.x - tri[0].x) - b * (p.y - tri[0].y)) / i,
-            v = (a * (p.y - tri[0].y) - c * (p.x - tri[0].x)) / i;
-
-        /* If we're outside the tri, fail. */
-        if (u < 0.0 || v < 0.0 || (u + v) > 1.0)
-            return null;
-
-        return [u, v];
-    }
-
+    return true;
 }
+
+function jitter(x: number, y: number, r: number) {
+    return [x + Math.sin(x + y) * r, y + Math.cos(x - y) * r];
+}
+
+export default class Delaunay {
+    _delaunator: Delaunator;
+    inedges: Int32Array;
+    _hullIndex: Int32Array;
+    points: Float64Array;
+    collinear?: Int32Array;
+    halfedges: any;
+    hull!: Uint32Array;
+    triangles!: Uint32Array;
+    static from(points: number[]) {
+        return new Delaunay(new Float64Array(points));
+    }
+    constructor(points: Float64Array) {
+        this._delaunator = new Delaunator(points);
+        this.inedges = new Int32Array(points.length / 2);
+        this._hullIndex = new Int32Array(points.length / 2);
+        this.points = this._delaunator.coords;
+        this._init();
+    }
+    update() {
+        this._delaunator.update();
+        this._init();
+        return this;
+    }
+    _init() {
+        const d = this._delaunator, points = this.points;
+
+        // check for collinear
+        if (d.hull && d.hull.length > 2 && collinear(d)) {
+            this.collinear = Int32Array.from({ length: points.length / 2 }, (_, i) => i)
+                .sort((i, j) => points[2 * i] - points[2 * j] || points[2 * i + 1] - points[2 * j + 1]); // for exact neighbors
+            const e = this.collinear[0], f = this.collinear[this.collinear.length - 1],
+                bounds = [points[2 * e], points[2 * e + 1], points[2 * f], points[2 * f + 1]],
+                r = 1e-8 * Math.hypot(bounds[3] - bounds[1], bounds[2] - bounds[0]);
+            for (let i = 0, n = points.length / 2; i < n; ++i) {
+                const p = jitter(points[2 * i], points[2 * i + 1], r);
+                points[2 * i] = p[0];
+                points[2 * i + 1] = p[1];
+            }
+            this._delaunator = new Delaunator(points);
+        } else {
+            delete this.collinear;
+        }
+
+        const halfedges = this.halfedges = this._delaunator.halfedges;
+        const hull = this.hull = this._delaunator.hull;
+        const triangles = this.triangles = this._delaunator.triangles;
+        const inedges = this.inedges.fill(-1);
+        const hullIndex = this._hullIndex.fill(-1);
+
+        // Compute an index from each point to an (arbitrary) incoming halfedge
+        // Used to give the first neighbor of each point; for this reason,
+        // on the hull we give priority to exterior halfedges
+        for (let e = 0, n = halfedges.length; e < n; ++e) {
+            const p = triangles[e % 3 === 2 ? e - 2 : e + 1];
+            if (halfedges[e] === -1 || inedges[p] === -1) inedges[p] = e;
+        }
+        for (let i = 0, n = hull.length; i < n; ++i) {
+            hullIndex[hull[i]] = i;
+        }
+
+        // degenerate case: 1 or 2 (distinct) points
+        if (hull.length <= 2 && hull.length > 0) {
+            this.triangles = new Uint32Array(3).fill(-1);
+            this.halfedges = new Uint32Array(3).fill(-1);
+            this.triangles[0] = hull[0];
+            this.triangles[1] = hull[1];
+            this.triangles[2] = hull[1];
+            inedges[hull[0]] = 1;
+            if (hull.length === 2) inedges[hull[1]] = 0;
+        }
+    }
+    voronoi(bounds: [number, number, number, number] | undefined) {
+        return new Voronoi(this, bounds);
+    }
+    *neighbors(i: number) {
+        const { inedges, hull, _hullIndex, halfedges, triangles, collinear } = this;
+
+        // degenerate case with several collinear points
+        if (collinear) {
+            const l = collinear.indexOf(i);
+            if (l > 0) yield collinear[l - 1];
+            if (l < collinear.length - 1) yield collinear[l + 1];
+            return;
+        }
+
+        const e0 = inedges[i];
+        if (e0 === -1) return; // coincident point
+        let e = e0, p0 = -1;
+        do {
+            yield p0 = triangles[e];
+            e = e % 3 === 2 ? e - 2 : e + 1;
+            if (triangles[e] !== i) return; // bad triangulation
+            e = halfedges[e];
+            if (e === -1) {
+                const p = hull[(_hullIndex[i] + 1) % hull.length];
+                if (p !== p0) yield p;
+                return;
+            }
+        } while (e !== e0);
+    }
+    find(x:number, y:number, i = 0) {
+        if ((x = +x, x !== x) || (y = +y, y !== y)) return -1;
+        const i0 = i;
+        let c;
+        while ((c = this._step(i, x, y)) >= 0 && c !== i && c !== i0) i = c;
+        return c;
+    }
+    _step(i:number, x:number, y:number) {
+        const { inedges, hull, _hullIndex, halfedges, triangles, points } = this;
+        if (inedges[i] === -1 || !points.length) return (i + 1) % (points.length >> 1);
+        let c = i;
+        let dc = pow(x - points[i * 2], 2) + pow(y - points[i * 2 + 1], 2);
+        const e0 = inedges[i];
+        let e = e0;
+        do {
+            let t = triangles[e];
+            const dt = pow(x - points[t * 2], 2) + pow(y - points[t * 2 + 1], 2);
+            if (dt < dc) dc = dt, c = t;
+            e = e % 3 === 2 ? e - 2 : e + 1;
+            if (triangles[e] !== i) break; // bad triangulation
+            e = halfedges[e];
+            if (e === -1) {
+                e = hull[(_hullIndex[i] + 1) % hull.length];
+                if (e !== t) {
+                    if (pow(x - points[e * 2], 2) + pow(y - points[e * 2 + 1], 2) < dc) return e;
+                }
+                break;
+            }
+        } while (e !== e0);
+        return c;
+    }
+
+    
+   
+}
+

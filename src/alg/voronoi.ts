@@ -1,45 +1,7 @@
+import Delaunay from './delaunay';
 const epsilon = 1e-6;
 
-class Path {
-    _x0: any;
-    _y0: any;
-    _x1: any;
-    _y1: any;
-    _: string;
-    constructor() {
-        this._x0 = this._y0 = // start of current subpath
-            this._x1 = this._y1 = null; // end of current subpath
-        this._ = "";
-    }
-    moveTo(x: string | number, y: string | number) {
-        this._ += `M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
-    }
-    closePath() {
-        if (this._x1 !== null) {
-            this._x1 = this._x0, this._y1 = this._y0;
-            this._ += "Z";
-        }
-    }
-    lineTo(x: string | number, y: string | number) {
-        this._ += `L${this._x1 = +x},${this._y1 = +y}`;
-    }
-    arc(x: number, y: number, r: number) {
-        x = +x, y = +y, r = +r;
-        const x0 = x + r;
-        const y0 = y;
-        if (r < 0) throw new Error("negative radius");
-        if (this._x1 === null) this._ += `M${x0},${y0}`;
-        else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) this._ += "L" + x0 + "," + y0;
-        if (!r) return;
-        this._ += `A${r},${r},0,1,1,${x - r},${y}A${r},${r},0,1,1,${this._x1 = x0},${this._y1 = y0}`;
-    }
-    rect(x: string | number, y: string | number, w: number, h: string | number) {
-        this._ += `M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${+w}v${+h}h${-w}Z`;
-    }
-    value() {
-        return this._ || null;
-    }
-}
+
 class Polygon {
     _: any[];
     constructor() {
@@ -69,11 +31,11 @@ export class Voronoi {
     ymax: number;
     ymin: number;
     circumcenters: any;
-    constructor(delaunay: { points: string | any[]; }, [xmin, ymin, xmax, ymax] = [0, 0, 960, 500]) {
+    constructor(delaunay: Delaunay, [xmin, ymin, xmax, ymax] = [0, 0, 960, 500]) {
         if (!((xmax = +xmax) >= (xmin = +xmin)) || !((ymax = +ymax) >= (ymin = +ymin))) throw new Error("invalid bounds");
         this.delaunay = delaunay;
-        this._circumcenters = new Float64Array(delaunay.points.length * 2);
-        this.vectors = new Float64Array(delaunay.points.length * 2);
+        this._circumcenters = new Float64Array(delaunay.points.length);
+        this.vectors = new Float64Array(delaunay.points.length);
         this.xmax = xmax, this.xmin = xmin;
         this.ymax = ymax, this.ymin = ymin;
         this._init();
@@ -139,52 +101,7 @@ export class Voronoi {
             vectors[p0 + 3] = vectors[p1 + 1] = x1 - x0;
         }
     }
-    render(context: Path | null) {
-        const buffer = context == null ? context = new Path : undefined;
-        const { delaunay: { halfedges, inedges, hull }, circumcenters, vectors } = this;
-        if (hull.length <= 1) return null;
-        for (let i = 0, n = halfedges.length; i < n; ++i) {
-            const j = halfedges[i];
-            if (j < i) continue;
-            const ti = Math.floor(i / 3) * 2;
-            const tj = Math.floor(j / 3) * 2;
-            const xi = circumcenters[ti];
-            const yi = circumcenters[ti + 1];
-            const xj = circumcenters[tj];
-            const yj = circumcenters[tj + 1];
-            this._renderSegment(xi, yi, xj, yj, context);
-        }
-        let h0, h1 = hull[hull.length - 1];
-        for (let i = 0; i < hull.length; ++i) {
-            h0 = h1, h1 = hull[i];
-            const t = Math.floor(inedges[h1] / 3) * 2;
-            const x = circumcenters[t];
-            const y = circumcenters[t + 1];
-            const v = h0 * 4;
-            const p = this._project(x, y, vectors[v + 2], vectors[v + 3]);
-            if (p) this._renderSegment(x, y, p[0], p[1], context);
-        }
-        return buffer && buffer.value();
-    }
-    renderBounds(context: Path | null) {
-        const buffer = context == null ? context = new Path : undefined;
-        context.rect(this.xmin, this.ymin, this.xmax - this.xmin, this.ymax - this.ymin);
-        return buffer && buffer.value();
-    }
-    renderCell(i: any, context: Path | Polygon | null) {
-        const buffer = context == null ? context = new Path : undefined;
-        const points = this._clip(i);
-        if (points === null || !points.length) return;
-        context.moveTo(points[0], points[1]);
-        let n = points.length;
-        while (points[0] === points[n - 2] && points[1] === points[n - 1] && n > 1) n -= 2;
-        for (let i = 2; i < n; i += 2) {
-            if (points[i] !== points[i - 2] || points[i + 1] !== points[i - 1])
-                context.lineTo(points[i], points[i + 1]);
-        }
-        context.closePath();
-        return buffer && buffer.value();
-    }
+
     *cellPolygons() {
         const { delaunay: { points } } = this;
         for (let i = 0, n = points.length / 2; i < n; ++i) {
@@ -194,7 +111,6 @@ export class Voronoi {
     }
     cellPolygon(i: number) {
         const polygon = new Polygon;
-        this.renderCell(i, polygon);
         return polygon.value();
     }
     _renderSegment(x0: any, y0: any, x1: any, y1: any, context: { moveTo: (arg0: any, arg1: any) => void; lineTo: (arg0: any, arg1: any) => void; }) {

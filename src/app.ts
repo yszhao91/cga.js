@@ -97,7 +97,7 @@ import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vec
 import { clone } from './utils/array';
 import { toGeometryBuffer } from './extends/threeaid copy';
 import { Delaunator } from './alg/delaunator';
-// import { Delaunay } from "d3-delaunay";
+import Delaunay from './alg/delaunay';
 
 var glv = new GLView({ container: document.body });
 
@@ -105,7 +105,7 @@ var glv = new GLView({ container: document.body });
 glv.run();
 
 
-var delaunay = new cga.DelaunaySlow()
+// var delaunay = new cga.Delaunay()
 
 var vs = []
 var data = []
@@ -113,28 +113,29 @@ for (let i = 0; i < 10000; i++) {
     var x = Math.random() * 1000 - 500
     var y = Math.random() * 1000 - 500
     vs.push(new Vec3(x, y, 0));
-    data.push([x, y]);
+    data.push(x, y);
 }
 
 // var index = delaunay.triangulation(vs)
-// var delaunator = Delaunator.from(data);
+var delaunator = Delaunay.from(data);
 // const delaunay1 = Delaunay.from(data);
-// var index = delaunay1.triangles;
-// const voronoi = delaunay1.voronoi([-520, -520, 520, 520]);
+var index = delaunator.triangles;
+debugger
+const voronoi = delaunator.voronoi([-520, -520, 520, 520]);
 
-// var k = 0;
-// var geometry = new Geometry();
-// while (k++ < 10000) {
-//     var vvs: any = voronoi.cellPolygon(k);
+var k = -1;
+var geometry = new Geometry();
+while (k++ < 10000) {
+    var vvs: any = voronoi._clip(k);
+    debugger
+    for (let i = 0; i < vvs.length; i++) {
+        const e0 = vvs[i];
+        const e1 = vvs[(i + 1) % vvs.length];
+        geometry.vertices.push(new Vector3(e0[0], e0[1], 0));
+        geometry.vertices.push(new Vector3(e1[0], e1[1], 0));
+    }
+}
+var geo = toGeometryBuffer(vs, index)
 
-//     for (let i = 0; i < vvs.length; i++) {
-//         const e0 = vvs[i];
-//         const e1 = vvs[(i + 1) % vvs.length];
-//         geometry.vertices.push(new Vector3(e0[0], e0[1], 0));
-//         geometry.vertices.push(new Vector3(e1[0], e1[1], 0));
-//     }
-// }
-// var geo = toGeometryBuffer(vs, index)
-
-// glv.add(new Mesh(geo, new MeshBasicMaterial({ wireframe: true, side: DoubleSide })));
-// glv.add(new LineSegments(geometry, new LineBasicMaterial({ color: 0xff0000 })));
+glv.add(new Mesh(geo, new MeshBasicMaterial({ wireframe: true, side: DoubleSide })));
+glv.add(new LineSegments(geometry, new LineBasicMaterial({ color: 0xff0000 })));

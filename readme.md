@@ -31,9 +31,9 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 ## 安装
 
 ```
-npm install @xtor/cga.js -D 
+npm install @xtor/cga.js -D
 国内
-cnpm install @xtor/cga.js -D 
+cnpm install @xtor/cga.js -D
 ```
 
 ## 使用
@@ -90,7 +90,7 @@ var result = point.distanceSegment(seg);
 
 ## 项目编译
 
-``` shell
+```shell
 npm run build //js 编译到build目录下生成cga.js dist目录下生成每个文件的js和.d.ts
 npm run dev  //运行项目，自己更改源码测试
 ```
@@ -118,20 +118,32 @@ npm run dev  //运行项目，自己更改源码测试
 
 > 已完成
 >
-> ![](./docs/.vuepress/public/plane-set-convex.png)
+> ![凸包](./docs/.vuepress/public/plane-set-convex.png)
 >
 > ```js
 > var convexHull = new ConvexHull(points, { planeNormal: cga.Vector3.UnitZ });
 > var hull = convexHull.hull;
 > ```
 
-### 3d 凸包
-
-> 进行中
-
 ### delauny 三角网构建
 
-> 完成
+> ![三角剖分](./docs/.vuepress/public/delaunay.png)
+
+> ```js
+> var vs=[];
+> var data = [];
+> for (let i = 0; i < 10000; i++) {
+>   var x = Math.random() * 1000 - 500;
+>   var y = Math.random() * 1000 - 500;
+>   vs.push(new Vec3(x, y, 0));
+>   data.push(x, y);
+> }
+> 
+> var delaunator = Delaunator.from(data);
+> // 或者
+> var delaunator = Delaunator.fromVecs(vs);
+> var index = delaunator.triangles;//三角形索引
+> ```
 
 ### voronoi 图构建
 
