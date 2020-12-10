@@ -1,7 +1,7 @@
 # 3D 计算几何算法库(3D Computional Geometry Algorithm)
 
 inspire by Wild Magic
-threejs/cgajs 开发交流群：284389784
+threejs/cga.js 开发交流群：284389784
 2020 年 12 月 10 日 开发很久 typescript 全新版本更新 可以根据自己的需要编译成 js 版
 xtorcga 更名为 cga.js
 
@@ -15,23 +15,25 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 
 案例：
 
-[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/cag.js/)
+[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/cga.js/)
 
-[文档与演示（github）](https://yszhao91.github.io/cag.js/)
+[文档与演示（github）](https://yszhao91.github.io/cga.js/)
 
-- [点与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distPointAll.html](http://dcgraph.gitee.io/cag.js/guide/distPointAll.html)
+- [点与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distPointAll.html](http://dcgraph.gitee.io/cga.js/guide/distPointAll.html)
 
-- [线与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distLineAll.html](http://dcgraph.gitee.io/cag.js/guide/distLineAll.html)
+- [线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distLineAll.html](http://dcgraph.gitee.io/cga.js/guide/distLineAll.html)
 
-- [射线与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distRayAll.html](http://dcgraph.gitee.io/cag.js/guide/distRayAll.html)
+- [射线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distRayAll.html](http://dcgraph.gitee.io/cga.js/guide/distRayAll.html)
 
-- [线段与其他元素的距离 http://dcgraph.gitee.io/cag.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cag.js/guide/distSegmentAll.html)
-- [常用 https://yszhao91.github.io/cag.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cag.js/guide/%E5%B8%B8%E7%94%A8.html)
+- [线段与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html)
+- [常用 https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html)
 
 ## 安装
 
 ```
-npm install cag.js -D
+npm install @xtor/cga.js -D 
+国内
+cnpm install @xtor/cga.js -D 
 ```
 
 ## 使用
@@ -39,7 +41,7 @@ npm install cag.js -D
 - 全部引用;：
 
 ```javascript
-import * as cga from "cag.js";
+import * as cga from "@xtor/cga.js";
 function randomV3() {
   return cga.v3(
     Math.random() * 100 - 50,
@@ -56,7 +58,7 @@ var result = point.distanceSegment(seg);
 - 按需求引用：
 
 ```javascript
-import { v3, Point, Segment } from "cag.js";
+import { v3, Point, Segment } from "@xtor/cga.js";
 function randomV3() {
   return v3(
     Math.random() * 100 - 50,
@@ -75,7 +77,7 @@ var result = point.distanceSegment(seg);
 ```html
 <script src="cga.js" />
 或者
-<script src="https://raw.githack.com/yszhao91/cag.js/master/build/cga.js" />
+<script src="https://raw.githack.com/yszhao91/cga.js/master/build/cga.js" />
 <script>
   var point = new cga.Point(1, 2, 3);
   var line = new cga.Line(
@@ -88,11 +90,7 @@ var result = point.distanceSegment(seg);
 
 ## 项目编译
 
-```
-npm install
-国内
-cnpm install
-
+``` shell
 npm run build //js 编译到build目录下生成cga.js dist目录下生成每个文件的js和.d.ts
 npm run dev  //运行项目，自己更改源码测试
 ```
