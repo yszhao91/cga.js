@@ -98,6 +98,7 @@ import { clone } from './utils/array';
 import { toGeometryBuffer } from './extends/threeaid copy';
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
+import { extrudeNext } from './alg/extrude';
 
 var glv = new GLView({ container: document.body });
 
@@ -116,26 +117,31 @@ for (let i = 0; i < 10000; i++) {
     data.push(x, y);
 }
 
-// var index = delaunay.triangulation(vs)
-var delaunator = Delaunay.from(data);
-// const delaunay1 = Delaunay.from(data);
-var index = delaunator.triangles;
-debugger
-const voronoi = delaunator.voronoi([-520, -520, 520, 520]);
+// // var index = delaunay.triangulation(vs)
+// var delaunator = Delaunay.from(data);
+// // const delaunay1 = Delaunay.from(data);
+// var index = delaunator.triangles;
 
-var k = -1;
-var geometry = new Geometry();
-while (k++ < 10000) {
-    var vvs: any = voronoi._clip(k);
-    debugger
-    for (let i = 0; i < vvs.length; i++) {
-        const e0 = vvs[i];
-        const e1 = vvs[(i + 1) % vvs.length];
-        geometry.vertices.push(new Vector3(e0[0], e0[1], 0));
-        geometry.vertices.push(new Vector3(e1[0], e1[1], 0));
-    }
-}
-var geo = toGeometryBuffer(vs, index)
+// const voronoi = delaunator.voronoi([-520, -520, 520, 520]);
 
-glv.add(new Mesh(geo, new MeshBasicMaterial({ wireframe: true, side: DoubleSide })));
-glv.add(new LineSegments(geometry, new LineBasicMaterial({ color: 0xff0000 })));
+// var k = -1;
+// var geometry = new Geometry();
+// while (k++ < 10000) {
+//     var vvs: any = voronoi._clip(k);
+//     debugger
+//     for (let i = 0; i < vvs.length; i++) {
+//         const e0 = vvs[i];
+//         const e1 = vvs[(i + 1) % vvs.length];
+//         geometry.vertices.push(new Vector3(e0[0], e0[1], 0));
+//         geometry.vertices.push(new Vector3(e1[0], e1[1], 0));
+//     }
+// }
+// var geo = toGeometryBuffer(vs, index)
+
+// glv.add(new Mesh(geo, new MeshBasicMaterial({ wireframe: true, side: DoubleSide })));
+// glv.add(new LineSegments(geometry, new LineBasicMaterial({ color: 0xff0000 })));
+
+var section = [-1, -1, -1, 1, 1, 1, 1, -1];
+var path = [v3(-10, 0, 0), v3(-10, 10, 0), v3(10, 10, 0), v3(10, 0, 0)]
+
+extrudeNext(section, path, { sectionClosed: true, pathClosed: false, vecdim: 2 })

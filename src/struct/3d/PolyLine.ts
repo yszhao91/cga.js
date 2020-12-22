@@ -22,6 +22,7 @@ export class Polyline extends ArrayEx {
      */
     offset(distance: number, normal: Vec3 = Vec3.UnitY): Polyline {
         for (let i = 0; i < this.length; i++) {
+            
         }
         return new Polyline(this);
     }

@@ -205,8 +205,8 @@ export function simplifyPointList(points: any, maxDistance = 0.1, maxAngle = Mat
  * @param {*} points  点集
  * @param {*} plane 对称镜像平面
  */
-export function reverseOnPlane(points: any, plane:Plane) {
-  
+export function reverseOnPlane(points: any, plane: Plane) {
+
 }
 
 /**
@@ -215,8 +215,16 @@ export function reverseOnPlane(points: any, plane:Plane) {
  * @param {*} plane  投影平面
  * @param {*} projectDirect  默认是法线的方向
  */
-export function projectOnPlane(points: any, plane: any, projectDirect: any) {
-    return points;
+export function projectOnPlane(points: Vec3[], plane: Plane, projectDirect: Vec3 = plane.normal, ref: boolean = true): any {
+    if (ref) {
+        for (let i = 0; i < points.length; i++) {
+            const pt = points[i];
+            pt.projectDirectionOnPlane(plane, projectDirect);
+        }
+        return points;
+    } else {
+        return projectOnPlane(clone(points), plane, projectDirect)
+    }
 }
 
 /**

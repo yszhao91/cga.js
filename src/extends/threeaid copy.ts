@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import { toBuffer, IBuffer, indexable } from '../alg/mesh';
+import { toGeoBuffer, IGeometryBuffer, indexable } from '../render/mesh';
 import { Vec3 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
 import { extrude, IExtrudeOptions, linkSide, linkSides } from '../alg/extrude';
@@ -8,9 +8,9 @@ import { Polygon } from '../struct/3d/Polygon';
 import { triangulation } from '../alg/trianglution';
 import { flat } from '../utils/array';
 
-export function toGeometryBuffer(vertices: number[] | Vec3[], triangles: number[]|Uint32Array, uvs: Vec2[] | number[] = []) {
+export function toGeometryBuffer(vertices: number[] | Vec3[], triangles: number[] | Uint32Array, uvs: Vec2[] | number[] = []) {
 
-    var buffer: IBuffer = toBuffer(vertices, triangles, uvs)
+    var buffer: IGeometryBuffer = toGeoBuffer(vertices, triangles, uvs)
 
     var geometry = new THREE.BufferGeometry()
     if (buffer.indices)
@@ -101,3 +101,4 @@ export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], o
 
     return geometry;
 }
+

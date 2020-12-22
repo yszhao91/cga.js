@@ -4,17 +4,17 @@ import { forall } from '../utils/array';
 
 export interface IGeometry {
     vertices: number[];
-    normals: number[];
-    indices: number[];
+    normals?: number[];
+    indices?: number[];
     uvs?: number[];
     uvs2?: number[];
     tangents?: number[];
 }
 
 
-export interface IBuffer {
-    indices?: Uint32Array | Uint16Array
+export interface IGeometryBuffer {
     vertices: Float32Array;
+    indices?: Uint32Array | Uint16Array
     normals?: Float32Array;
     uvs?: Float32Array;
     uvs2?: Float32Array;
@@ -41,7 +41,7 @@ export function triangListToBuffer(vertices: Vec3[], triangleList: Vec3[]) {
     forall(triangleList, (v: Vec3 | any) => {
         indices.push(v.index);
     })
-    return toBuffer(vertices, indices);
+    return toGeoBuffer(vertices, indices);
 }
 
 
@@ -51,7 +51,7 @@ export function triangListToBuffer(vertices: Vec3[], triangleList: Vec3[]) {
  * @param {Array<Number>} indices
  * @param {Array<Verctor2|Number>} uvs
  */
-export function toBuffer(inVertices: number[] | Vec3[], indices: number[] | Uint32Array | Uint16Array, inUvs: Vec2[] | number[] = []): IBuffer {
+export function toGeoBuffer(inVertices: number[] | Vec3[], indices: number[] | Uint32Array | Uint16Array, inUvs: Vec2[] | number[] = []): IGeometryBuffer {
     var vertices: any[] = []
     if (Vec3.isVec3(inVertices[0])) {
         for (let i = 0; i < inVertices.length; i++) {

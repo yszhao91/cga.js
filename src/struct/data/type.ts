@@ -7,7 +7,7 @@ export enum IntersectType {
 
 export enum Orientation {
     None = -1,
-    Common,
+    Common, //共面
     Positive,
     Negative,
     Intersect,

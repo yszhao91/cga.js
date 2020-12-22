@@ -1,10 +1,7 @@
 export class EventHandler {
-    _callbacks: any;
-    _callbackActive: any;
-    constructor() {
-        // super();
-        this._callbacks = {};
-        this._callbackActive = {};
+    private _callbacks: any = {};
+    private _callbackActive: any = {};
+    constructor() { 
     }
 
 

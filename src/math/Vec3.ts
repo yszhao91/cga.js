@@ -514,10 +514,43 @@ export class Vec3 extends EventHandler {
     return this.copy(vec).multiplyScalar(scalar);
   }
 
-  projectOnPlane(planeNormal: any) {
+  projectOnPlaneNormal(planeNormal: any) {
     _vec.copy(this).projectOnVec(planeNormal);
 
     return this.sub(_vec);
+  }
+
+  /**
+   * 投影到平面
+   * @param plane 
+   */
+  projectOnPlane(plane: Plane) {
+    var scalar = plane.normal.dot(this) - plane.w;
+
+    _vec.copy(plane.normal).multiplyScalar(scalar);
+
+    return this.sub(_vec);
+  }
+
+
+  /**
+   * 从指定方向线(斜线，也可能是法线)上投影到平面
+   * @param planeNormal 
+   * @param dir 
+   */
+  projectDirectionOnPlane(plane: Plane, dir: Vec3) {
+    var scalar = plane.normal.dot(this) - plane.w;
+
+    _vec.copy(plane.normal).multiplyScalar(scalar);
+
+    _vec.negate().add(this);
+    var len = this.distanceTo(_vec);
+
+    var nlen = len / plane.normal.dot(dir)
+
+    this.add(_vec.copy(dir).negate().multiplyScalar(nlen));
+
+    return this;
   }
 
   reflect(normal: any) {
@@ -527,7 +560,7 @@ export class Vec3 extends EventHandler {
     return this.sub(_vec.copy(normal).multiplyScalar(2 * this.dot(normal)));
   }
 
-  angleTo(v: Vec3, normal: Vec3 | any) {
+  angleTo(v: Vec3, normal?: Vec3 | any) {
     if (normal)
       return this.angleToEx(v, normal)
 
@@ -562,7 +595,7 @@ export class Vec3 extends EventHandler {
     );
   }
 
-  setFromSpherical(s: { radius: any; phi: any; theta: any; }) {
+  setFromSpherical(s: { radius: number; phi: number; theta: number; }) {
     return this.setFromSphericalCoords(s.radius, s.phi, s.theta);
   }
 
@@ -668,6 +701,10 @@ export class Vec3 extends EventHandler {
     return result;
   }
 
+  /**
+   * 点到直线的距离  point distance to Line
+   * @param line 
+   */
   distanceLine(line: Line): DistanceResult {
     const result: DistanceResult = { parameters: [], closests: [] };
     var diff = this.clone().sub(line.origin);
@@ -784,6 +821,7 @@ export class Vec3 extends EventHandler {
   /**
    * 点与线段的距离
    * 点与折线的距离 测试排除法，平均比线性检索(暴力法)要快两倍以上
+   * @param { Polyline | Vec3[]} polyline 
    */
   distancePolyLine(polyline: Polyline | Vec3[]) {
     let u = +Infinity;
@@ -812,7 +850,10 @@ export class Vec3 extends EventHandler {
     return result;
   }
 
-
+  /**
+   * 点到三角形的距离
+   * @param {Triangle} triangle 
+   */
   distanceTriangle(triangle: Triangle): DistanceResult {
 
     function GetMinEdge02(a11: any, b1: any, p: any) {
@@ -1037,7 +1078,7 @@ export class Vec3 extends EventHandler {
   }
 
   /**
-  * 
+  * 点到胶囊的距离
   * @param {Capsule} capsule 
   */
   distanceCapsule(capsule: Capsule): DistanceResult {
