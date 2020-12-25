@@ -5,9 +5,9 @@
 ## 三维向量点
 
 ```js
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 function randomV3() {
-  return cga.Vector3(
+  return cga.Vec3(
     Math.random() * 100 - 50,
     Math.random() * 100,
     Math.random() * 100 - 50
@@ -21,13 +21,13 @@ function randomV3() {
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Point"></distance> 
+<distance geo0 = "Vec3" geo1 = "Vec3"></distance> 
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
-var point0 = new cga.Point().copy(randomV3());
-var point1 = new cga.Point().copy(randomV3());
+import * as cga from "@xtor/cga.js";
+var point0 = new cga.Vec3().copy(randomV3());
+var point1 = new cga.Vec3().copy(randomV3());
 var result = point0.distancePoint(point1);
 ```
 
@@ -37,12 +37,12 @@ var result = point0.distancePoint(point1);
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Line"></distance> 
+<distance geo0 = "Vec3" geo1 = "Line"></distance> 
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
-var point = new cga.Point().copy(randomV3());
+import * as cga from "@xtor/cga.js";
+var point = new cga.Vec3().copy(randomV3());
 var line = new cga.Line(randomV3(), randomV3());
 var result = point.distanceTo(line);
 ```
@@ -51,12 +51,12 @@ var result = point.distanceTo(line);
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Ray"></distance> 
+<distance geo0 = "Vec3" geo1 = "Ray"></distance> 
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
-var point = new cga.Point().copy(randomV3());
+import * as cga from "@xtor/cga.js";
+var point = new cga.Vec3().copy(randomV3());
 var ray = new cga.Ray(randomV3(), randomV3().normalize());
 var result = point.distanceRay(ray);
 ```
@@ -65,12 +65,12 @@ var result = point.distanceRay(ray);
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Segment"></distance> 
+<distance geo0 = "Vec3" geo1 = "Segment"></distance> 
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
-var point = new cga.Point().copy(randomV3());
+import * as cga from "@xtor/cga.js";
+var point = new cga.Vec3().copy(randomV3());
 var seg = new cga.Segment(randomV3(), randomV3());
 var result = point.distanceSegment(seg);
 ```
@@ -79,19 +79,19 @@ var result = point.distanceSegment(seg);
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Polyline"></distance> 
+<distance geo0 = "Vec3" geo1 = "Polyline"></distance> 
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var vs = [];
 for (let i = 0; i < 100000; i++) {
   vs.push(randomV3());
 }
-var point = new cga.Point().copy(randomV3());
+var point = new cga.Vec3().copy(randomV3());
 var polyline = new cga.Polyline(vs);
 console.time("测试法");
-var result = point.distancePolyLine(polyline);
+var result = point.distancePolyline(polyline);
 console.timeEnd("测试法");
 // console.time("线性检索");
 // var result1 = point.distancePolyLine1(polyline);
@@ -103,28 +103,28 @@ console.timeEnd("测试法");
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Circle"></distance> 
+<distance geo0 = "Vec3" geo1 = "Circle"></distance> 
 </ClientOnly>
 
 ## 点与三角形的距离测试
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Triangle"></distance> 
+<distance geo0 = "Vec3" geo1 = "Triangle"></distance> 
 </ClientOnly>
 
 ```javascript
-var point = new cga.Point().copy(randomV3());
+var point = new cga.Vec3().copy(randomV3());
 var triangle = new cga.Triangle(randomV3(), randomV3(), randomV3());
 var result = point.distanceTriangle(triangle);
 infoPanel.innerText = JSON.stringify(result);
 ```
 
-## 点到圆的距离
+## 点到圆盘的距离
 
 <div></div>
 <ClientOnly>
-<distance geo0 = "Point" geo1 = "Disk"></distance> 
+<distance geo0 = "Vec3" geo1 = "Disk"></distance> 
 </ClientOnly>
 
 <!-- <click-to-copy :info="loadingTag" /> -->

@@ -1,4 +1,4 @@
-import * as cga from "@xtor/cga.js";
+import * as cga from "../../../dist";
 import {
     BufferGeometry,
     Geometry,
@@ -14,14 +14,15 @@ import {
     MeshBasicMaterial,
     CircleGeometry,
     Quaternion,
-    Matrix4
-} from "three"; 
+    Matrix4,
+    Vector3
+} from "three";
 
 function randomGeo(key) {
-    switch (key)
-    {
+    switch (key) {
         case "Point":
-            return new cga.Point().copy(randomV3());
+        case "Vec3":
+            return new cga.Vec3().copy(randomV3());
         case "Line":
             return new cga.Line(randomV3(), randomV3());
         case "Ray":
@@ -30,8 +31,7 @@ function randomGeo(key) {
             return new cga.Segment(randomV3(), randomV3());
         case "Polyline":
             var vs = [];
-            for (let i = 0; i < Math.floor(Math.random() * 100 + 3); i++)
-            {
+            for (let i = 0; i < Math.floor(Math.random() * 100 + 3); i++) {
                 vs.push(randomV3());
             }
             return new cga.Polyline(vs);
@@ -39,10 +39,10 @@ function randomGeo(key) {
             return new cga.Triangle(randomV3(200), randomV3(200), randomV3(200));
 
         case "Circle":
-            return new cga.Circle(randomV3(), randomV3().normalize(), Math.random() * 60 + 5);
+            return new cga.Circle(randomV3(), Math.random() * 60 + 5, randomV3().normalize());
 
         case "Disk":
-            return new cga.Disk(randomV3(), randomV3().normalize(), Math.random() * 60 + 5);
+            return new cga.Disk(randomV3(), Math.random() * 60 + 5, randomV3().normalize());
 
         case "Capsule":
             return new cga.Capsule(randomV3(), randomV3());
@@ -56,12 +56,11 @@ export function poufeng(polygon) {
 
 export function initTestScene(geoKey1, geoKey2, scene) {
     var geo0 = randomGeo(geoKey1);
-    var geo1 = randomGeo(geoKey2);;
+    var geo1 = randomGeo(geoKey2);
     var result = geo0["distance" + geoKey2](geo1);
     scene.add(toMesh(geo0));
     scene.add(toMesh(geo1));
-    if (result.closests && result.closests.length === 2)
-    {
+    if (result.closests && result.closests.length === 2) {
         scene.add(toDisSeg(result.closests))
     }
     // if (geo0 instanceof cga.Point && (geo1 instanceof cga.Circle || geo1 instanceof cga.Disk
@@ -111,15 +110,13 @@ export function toDisSeg(obj, opts) {
 
 export function toMesh(obj, materialOption) {
     var renderObj = null;
-    if (obj instanceof cga.Point || obj.isVector3)
-    {
+    if (obj instanceof cga.Point || obj.isVec3) {
         var geometry = new BufferGeometry()
         geometry.setAttribute('position', new Float32BufferAttribute([obj.x, obj.y, obj.z], 3));
         var material = new PointsMaterial({ size: 5, sizeAttenuation: false, color: 0x0ff0f0, alphaTest: 0.9, transparent: true });
         renderObj = new Points(geometry, material);
 
-    } else if (obj instanceof cga.Line)
-    {
+    } else if (obj instanceof cga.Line) {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         var v2 = obj.direction.clone().multiplyScalar(-10000).add(obj.origin);
@@ -127,21 +124,18 @@ export function toMesh(obj, materialOption) {
         var material = new LineBasicMaterial({ color: 0xffff8f });
         renderObj = new Line(geometry, material);
 
-    } else if (obj instanceof cga.Ray)
-    {
+    } else if (obj instanceof cga.Ray) {
         var geometry = new Geometry()
         var v1 = obj.direction.clone().multiplyScalar(10000).add(obj.origin);
         geometry.vertices.push(obj.origin, v1);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Segment)
-    {
+    } else if (obj instanceof cga.Segment) {
         var geometry = new Geometry()
         geometry.vertices.push(obj.p0, obj.p1);
         var material = new LineBasicMaterial({ color: 0x8fffff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Triangle)
-    {
+    } else if (obj instanceof cga.Triangle) {
         var geometry = new Geometry()
         geometry.vertices = [...obj];
         geometry.faces.push(new Face3(0, 1, 2))
@@ -149,27 +143,23 @@ export function toMesh(obj, materialOption) {
         renderObj = new Mesh(geometry, material);
     }
 
-    else if (obj instanceof cga.Polyline)
-    {
+    else if (obj instanceof cga.Polyline) {
         var geometry = new Geometry()
         geometry.vertices.push(...obj);
         var material = new LineBasicMaterial({ color: 0xff8fff });
         renderObj = new Line(geometry, material);
-    } else if (obj instanceof cga.Polygon)
-    {
+    } else if (obj instanceof cga.Polygon) {
 
-    } else if (obj instanceof cga.Circle)
-    {
+    } else if (obj instanceof cga.Circle) {
         var geometry = new Geometry()
         var radius = obj.radius;
-        for (let i = 0; i <= 128; i++)
-        {
-            var p = new cga.Vector3();
+        for (let i = 0; i <= 128; i++) {
+            var p = new Vector3();
             p.x = radius * Math.cos(Math.PI / 64 * i);
             p.y = radius * Math.sin(Math.PI / 64 * i);
             geometry.vertices.push(p);
         }
-        var quaternion = getQuaternionForm2V(new cga.Vector3(0, 0, 1), obj.normal);
+        var quaternion = getQuaternionForm2V(new Vector3(0, 0, 1), obj.normal);
         var mat4 = new Matrix4();
         mat4.makeRotationFromQuaternion(quaternion);
         geometry.applyMatrix(mat4);
@@ -179,14 +169,13 @@ export function toMesh(obj, materialOption) {
         renderObj.add(new toMesh(obj.center))
         renderObj.add(new toMesh(new cga.Ray(obj.center, obj.normal)))
     }
-    else if (obj instanceof cga.Disk)
-    {
+    else if (obj instanceof cga.Disk) {
         var geometry = new CircleGeometry(obj.radius, 128)
         var material = new MeshBasicMaterial({ color: 0x8f8fff, side: DoubleSide });
-        var quaternion = getQuaternionForm2V(new cga.Vector3(0, 0, 1), obj.normal);
+        var quaternion = getQuaternionForm2V(new Vector3(0, 0, 1), obj.normal);
         var mat4 = new Matrix4();
         mat4.makeRotationFromQuaternion(quaternion);
-        geometry.applyMatrix(mat4);
+        geometry.applyMatrix4(mat4);
         geometry.translate(obj.center.x, obj.center.y, obj.center.z);
         renderObj = new Mesh(geometry, material);
         renderObj.add(new toMesh(obj.center))
@@ -205,26 +194,20 @@ function transitionJsonToString(jsonObj, callback) {
     // 转换后的jsonObj受体对象
     var _jsonObj = null;
     // 判断传入的jsonObj对象是不是字符串，如果是字符串需要先转换为对象，再转换为字符串，这样做是为了保证转换后的字符串为双引号
-    if (Object.prototype.toString.call(jsonObj) !== "[object String]")
-    {
-        try
-        {
+    if (Object.prototype.toString.call(jsonObj) !== "[object String]") {
+        try {
             _jsonObj = JSON.stringify(jsonObj);
-        } catch (error)
-        {
+        } catch (error) {
             // 转换失败错误信息
             console.error('您传递的json数据格式有误，请核对...');
             console.error(error);
             callback(error);
         }
-    } else
-    {
-        try
-        {
+    } else {
+        try {
             jsonObj = jsonObj.replace(/(\')/g, '\"');
             _jsonObj = JSON.stringify(JSON.parse(jsonObj));
-        } catch (error)
-        {
+        } catch (error) {
             // 转换失败错误信息
             console.error('您传递的json数据格式有误，请核对...');
             console.error(error);
@@ -245,8 +228,7 @@ export function formatJson(jsonObj, callback) {
     var PADDING = '    ';
     // json对象转换为字符串变量
     var jsonString = transitionJsonToString(jsonObj, callback);
-    if (!jsonString)
-    {
+    if (!jsonString) {
         return jsonString;
     }
     // 存储需要特殊处理的字符串段
@@ -273,17 +255,14 @@ export function formatJson(jsonObj, callback) {
         // 获取当前字符串段中"的数量
         var num = node.match(/\"/g) ? node.match(/\"/g).length : 0;
         // 判断num是否为奇数来确定是否需要特殊处理
-        if (num % 2 && !_indexStart)
-        {
+        if (num % 2 && !_indexStart) {
             _indexStart = index
         }
-        if (num % 2 && _indexStart && _indexStart != index)
-        {
+        if (num % 2 && _indexStart && _indexStart != index) {
             _indexEnd = index
         }
         // 将需要特殊处理的字符串段的其实位置和结束位置信息存入，并对应重置开始时和结束变量
-        if (_indexStart && _indexEnd)
-        {
+        if (_indexStart && _indexEnd) {
             _index.push({
                 start: _indexStart,
                 end: _indexEnd
@@ -313,23 +292,18 @@ export function formatJson(jsonObj, callback) {
         var indent = 0;
         // 表示缩进的位数，以空格作为计数单位
         var padding = '';
-        if (item.match(/\{$/) || item.match(/\[$/))
-        {
+        if (item.match(/\{$/) || item.match(/\[$/)) {
             // 匹配到以{和[结尾的时候indent加1
             indent += 1
-        } else if (item.match(/\}$/) || item.match(/\]$/) || item.match(/\},$/) || item.match(/\],$/))
-        {
+        } else if (item.match(/\}$/) || item.match(/\]$/) || item.match(/\},$/) || item.match(/\],$/)) {
             // 匹配到以}和]结尾的时候indent减1
-            if (pad !== 0)
-            {
+            if (pad !== 0) {
                 pad -= 1
             }
-        } else
-        {
+        } else {
             indent = 0
         }
-        for (i = 0; i < pad; i++)
-        {
+        for (i = 0; i < pad; i++) {
             padding += PADDING
         }
         formatted += padding + item + '\r\n'

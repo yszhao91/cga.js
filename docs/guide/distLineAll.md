@@ -14,7 +14,7 @@ sidebarDepth: 2
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var line0 = new cga.Line(randomV3(), randomV3());
 var line1 = new cga.Line(randomV3(), randomV3());
 var result = line0.distanceLine(line1);
@@ -30,7 +30,7 @@ var result = line0.distanceLine(line1);
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var line1 = new cga.Line(randomV3(), randomV3());
 var ray = new cga.Ray(randomV3(), randomV3().normalize());
 var result = line.distanceRay(ray);
@@ -46,7 +46,7 @@ var result = line.distanceRay(ray);
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var line1 = new cga.Line(randomV3(), randomV3());
 var segment = new cga.Segment(randomV3(), randomV3());
 var result = line.distanceSegment(segment);
@@ -62,7 +62,7 @@ var result = line.distanceSegment(segment);
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var line1 = new cga.Line(randomV3(), randomV3());
 var triangle = new cga.Triangle(randomV3(), randomV3()，randomV3());
 var result = line.distanceTriangle(triangle);
@@ -78,7 +78,7 @@ var result = line.distanceTriangle(triangle);
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var line1 = new cga.Line(randomV3(), randomV3());
 var circle = new cga.Circle(randomV3(), randomV3().normalize(),Math.random()*50)+5);
 var result = line.distanceCircle(circle);

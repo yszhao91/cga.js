@@ -11,6 +11,7 @@ import { Segment } from "./Segment";
  */
 export class Polyline extends ArrayEx {
     isCoPlanar: boolean;
+    isPolyline: boolean = true;
     constructor(vs: any[] = [], public normal: Vec3 = Vec3.UnitY) {
         super();
         Object.setPrototypeOf(this, Polyline.prototype);

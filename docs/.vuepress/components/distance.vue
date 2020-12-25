@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import * as cga from "@xtor/cga.js";
+import * as cga from "../../../dist";
 import { initTestScene, randomV3, toDisSeg, toMesh, formatJson } from "./utils";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
@@ -79,7 +79,6 @@ export default {
         // scope.camera.updateProjectionMatrix();
       });
       //---点与直线的距离测试----------------------------------------------------------------
-
       var result = initTestScene(this.geo0, this.geo1, this.testScene);
       this.resultText = formatJson(JSON.stringify(result));
     },

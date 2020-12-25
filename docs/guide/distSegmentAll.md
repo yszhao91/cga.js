@@ -12,7 +12,7 @@ sidebarDepth: 2
 </ClientOnly>
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 var seg0 = new cga.Segment(randomV3(), randomV3());
 var seg1 = new cga.Segment(randomV3(), randomV3());
 var result = seg0.distanceSegment(seg);

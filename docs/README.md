@@ -10,5 +10,5 @@ features:
     details: 自带数学库，直接使用
   - title: 内容丰富
     details: 提供各种几何计算问题的解决方案，距离，相交，包含，偏移...
-footer: MIT Licensed | Copyright © 2020-present yszhao
+footer: MIT Licensed | Copyright © 2020-present 赵耀圣
 ---

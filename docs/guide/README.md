@@ -50,9 +50,9 @@ cga 计算库基于 JavaScript，主要用于（**web 图形**）场景的几何
 - npm 安装
 
 ```sh
-npm install xtorcga -D
+npm install @xtor/cga.js -D
 #国内镜像
-cnpm install xtorcga -D
+cnpm install @xtor/cga.js -D
 ```
 
 <!-- - yarn 安装
@@ -65,7 +65,7 @@ yarn add @jiaminghi/data-view
 
 ```js
 // 全部引用
-import * as cga from "xtorcga";
+import * as cga from "@xtor/cga.js";
 ```
 
 ## 按需引入
@@ -73,12 +73,12 @@ import * as cga from "xtorcga";
 按需引入仅支持基于**ES module**的**tree shaking**，按需引入示例如下：
 
 ```js
-import { Point, Segment } from "xtorcga";
+import { Point, Segment } from "@xtor/cga.js";
 ```
 
 ## UMD 版
 
-`UMD`版可直接使用`script`标签引入，`UMD`版文件下载请移步[UMD](https://github.com/yszhao91/xtorcga/tree/master/build)， 直接引入使用
+`UMD`版可直接使用`script`标签引入，`UMD`版文件下载请移步[UMD](https://github.com/yszhao91/@xtor/cga.js/tree/master/build)， 直接引入使用
 
 ```html
 <script src="./build/cga.js" />

@@ -1,7 +1,7 @@
 import { Quat, quat } from './Quat';
 import { Mat3 } from './Mat3';
 import { Mat4 } from './Mat4';
-import { clamp } from './Math';
+import { clamp, gPrecision } from './Math';
 import { euler, Euler } from './Euler';
 import { DistanceResult } from '../alg/result';
 import { Line, line } from '../struct/3d/Line';
@@ -15,6 +15,8 @@ import { IDistanceResut } from '../struct/3d/Path';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
 import { Rectangle } from '../struct/3d/Rectangle';
+import { Circle } from '../struct/3d/Circle';
+import { Disk } from '../struct/3d/Disk';
 
 export class Vec3 extends EventHandler {
   x!: number;
@@ -701,6 +703,11 @@ export class Vec3 extends EventHandler {
     return result;
   }
 
+  distanceVec3(point: Vec3): DistanceResult {
+    return this.distancePoint(point);
+  }
+
+
   /**
    * 点到直线的距离  point distance to Line
    * @param line 
@@ -731,10 +738,9 @@ export class Vec3 extends EventHandler {
  */
   distanceRay(ray: Ray) {
     var result: DistanceResult = {
-      parameters: [],
-      closests: []
+      parameters: [0],
+      closests: [this]
     };
-
     var diff = this.clone().sub(ray.origin);
     result.parameters![1] = ray.direction.dot(diff);
 
@@ -818,17 +824,89 @@ export class Vec3 extends EventHandler {
     return result;
   }
 
+
+  /**
+   * 点与圆圈的距离
+   * @param {*} circle 
+   * @param {*} disk 
+   * @returns {} result
+   */
+  distanceCircle(circle: Circle) {
+    var result: DistanceResult = {
+      parameters: [],
+      closests: [],
+      equidistant: false//是否等距
+    };
+
+    // Projection of P-C onto plane is Q-C = P-C - Dot(N,P-C)*N.
+
+    var PmC = this.clone().sub(circle.center);
+    var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
+    var lengthQmC = QmC.length();
+    if (lengthQmC > gPrecision) {
+      result.circleClosest = QmC.clone().multiplyScalar(circle.radius / lengthQmC).add(circle.center);
+      result.equidistant = false;
+    }
+    else {
+      var offsetPoint = circle.center.clone().add(v3(10, 10, 10));
+      var CP = offsetPoint.sub(circle.center);
+      var CQ = CP.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(CP))).normalize()
+      //在圆圈圆心的法线上，到圆圈上的没一点都相同 
+      result.circleClosest = CQ.clone().multiplyScalar(circle.radius).add(circle.center)
+      result.equidistant = true;
+    }
+    result.closests!.push(this, result.circleClosest);
+    var diff = this.clone().sub(result.circleClosest);
+    result.distanceSqr = diff.dot(diff);
+    result.distance = Math.sqrt(result.distanceSqr);
+
+    return result;
+  }
+
+
+  /**
+  * 点与圆盘的距离 
+  * @param {*} Disk 
+  * @returns {} result
+  */
+  distanceDisk(disk: Disk): DistanceResult {
+    var result: DistanceResult = {
+      parameters: [],
+      closests: [],
+      signedDistance: 1,
+      distanceSqr: 0,
+      distance: 0,
+    };
+
+    var PmC = this.clone().sub(disk.center);
+    var QmC = PmC.clone().sub(disk.normal.clone().multiplyScalar(disk.normal.dot(PmC)));
+    var lengthQmC = QmC.length();
+
+    result.signedDistance = this.clone().dot(disk.normal) - disk.w;
+
+    if (lengthQmC > disk.radius) {
+      result.diskClosest = QmC.clone().multiplyScalar(disk.radius / lengthQmC).add(disk.center);
+    }
+    else {
+      var signedDistance = this.clone().dot(disk.normal) - disk.w;
+      result.diskClosest = this.clone().sub(disk.normal.clone().multiplyScalar(signedDistance));
+    }
+    result.closests!.push(this, result.diskClosest);
+    var diff = this.clone().sub(result.diskClosest);
+    result.distanceSqr = diff.dot(diff);
+    result.distance = Math.sqrt(result.distanceSqr);
+    return result;
+  }
   /**
    * 点与线段的距离
    * 点与折线的距离 测试排除法，平均比线性检索(暴力法)要快两倍以上
    * @param { Polyline | Vec3[]} polyline 
    */
-  distancePolyLine(polyline: Polyline | Vec3[]) {
+  distancePolyline(polyline: Polyline | Vec3[]) {
     let u = +Infinity;
     let ipos: number = -1;
     let tempResult: DistanceResult;
     let result = null;
-
     for (let i = 0; i < polyline.length - 1; i++) {
       const pti = polyline[i];
       const ptj = polyline[i + 1];
@@ -1009,21 +1087,19 @@ export class Vec3 extends EventHandler {
 
     var result: DistanceResult = {
       closests: [],
-      parameters: []
+      parameters: [],
+      triangleParameters: []
     };
     result.triangleParameters![0] = 1 - p[0] - p[1];
     result.triangleParameters![1] = p[0];
     result.triangleParameters![2] = p[1];
-    result.parameters![0] = this;
-    result.parameters![1] = result.triangleParameters!;
     var closest = triangle.p0.clone().add(edge0.multiplyScalar(p[0])).add(edge1.multiplyScalar(p[1]));
-    result.parameters!.push(0, result.rayParameter);
+    result.parameters!.push(0, result.triangleParameters);
     result.closests!.push(this, closest);
     diff = this.clone().sub(closest);
     result.distanceSqr = diff.dot(diff);
     result.distance = Math.sqrt(result.distanceSqr);
     return result;
-
   }
 
   /**

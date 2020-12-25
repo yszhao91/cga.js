@@ -11,8 +11,10 @@ export interface DistanceResult {
     interior?: boolean;
     triangleParameters?: Array<any>;
     rectangleParameters?: Array<any>;
+    circleClosest?: Vec3;
     signedDistance?: number;//需要符号距离正负距离
     segmentIndex?: number;//多线段最近位置 
+    diskClosest?: Vec3;
 }
 
 export interface IntersectResult extends DistanceResult {
