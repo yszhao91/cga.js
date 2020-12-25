@@ -2,6 +2,10 @@
 
 cga 计算库基于 JavaScript，主要用于（**web 图形**）场景的几何计算，通常包含几何体之间的关系包含,距离,平行,相交等....
 
+> github 地址：[https://github.com/yszhao91/cga.js(主要地址)](https://github.com/yszhao91/cga.js)
+
+> 码云地址：[https://gitee.com/Dcgraph/cga.js](https://gitee.com/Dcgraph/cga.jss)
+
 - **距离**
 
 计算几何体之间的距离，返回结果包含了距离的最近点

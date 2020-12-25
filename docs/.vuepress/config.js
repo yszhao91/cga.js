@@ -28,12 +28,8 @@ module.exports = {
         label: '简体中文',
         nav: [
           {
-            text: '指南',
+            text: '指南与例子',
             link: '/guide/'
-          },
-          {
-            text: 'Demo',
-            link: '/demo/'
           },
           {
             text: '支持赞助',
@@ -45,11 +41,11 @@ module.exports = {
             items: [
               {
                 text: '项目源码仓库',
-                link: 'https://github.com/yszhao91/xtorcga'
+                link: 'https://github.com/yszhao91/cga.js'
               },
               {
                 text: '国内镜像',
-                link: 'https://gitee.com/Dcgraph/xtorcga'
+                link: 'https://gitee.com/Dcgraph/cga.js'
               }
             ]
           }
