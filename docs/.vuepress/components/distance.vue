@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import * as cga from "../../../src/";
+import * as cga from "@xtor/cga.js";
 import { initTestScene, randomV3, toDisSeg, toMesh, formatJson } from "./utils";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {

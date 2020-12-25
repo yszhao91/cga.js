@@ -1,4 +1,4 @@
-import * as cga from "../../../src/";
+import * as cga from "@xtor/cga.js";
 import {
     BufferGeometry,
     Geometry,
@@ -15,8 +15,8 @@ import {
     CircleGeometry,
     Quaternion,
     Matrix4
-} from "three";
-import { clamp, trianglation } from "../../../src/";
+} from "three"; 
+
 function randomGeo(key) {
     switch (key)
     {
@@ -51,7 +51,7 @@ function randomGeo(key) {
 }
 
 export function poufeng(polygon) {
-    trianglation(polygon)
+    cga.trianglation(polygon)
 }
 
 export function initTestScene(geoKey1, geoKey2, scene) {
@@ -85,7 +85,7 @@ export function getQuaternionForm2V(v1, v2) {
         .cross(vc2)
         .normalize();
     var rq = new Quaternion();
-    var angle = clamp(vc1.normalize().dot(vc2.normalize()), -1, 1);
+    var angle = cga.clamp(vc1.normalize().dot(vc2.normalize()), -1, 1);
     angle = Math.acos(angle);
     rq.setFromAxisAngle(n, angle);
 

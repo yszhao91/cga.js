@@ -1,7 +1,9 @@
-import { Polyline } from './PolyLine';
+
 import { Vec3 } from '../../math/Vec3';
 import { Point } from './Point';
 import { clamp } from '../../math/Math';
+import { Polyline } from './Polyline';
+// import { Polyline } from './PolyLine';
 
 export interface IDistanceResut {
     isNode: boolean;//是否在节点上
@@ -10,7 +12,7 @@ export interface IDistanceResut {
 
 export class Path extends Polyline {
     _closed: boolean;
-    constructor(vs: any[]) {
+    constructor(vs: any[]) { 
         super(vs);
         Object.setPrototypeOf(this, Path.prototype);
         this._closed = false;

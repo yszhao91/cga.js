@@ -1,7 +1,7 @@
-import { Polyline } from "./Polyline";
+import { DistanceResult } from '../../alg/result';
 import { Vec3 } from '../../math/Vec3';
 import { Segment } from './Segment'; 
-import { DistanceResult } from '../../alg/result';
+import { Polyline } from "./Polyline";
 
 export class Polygon extends Polyline {
     isPolygon: boolean = true;

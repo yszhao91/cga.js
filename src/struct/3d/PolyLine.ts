@@ -1,6 +1,9 @@
+import { EndType, JoinType } from "../../alg/extrude";
+import { gPrecision } from "../../math/Math";
+import { Vec3 } from "../../math/Vec3";
 import { ArrayEx } from "../data/ArrayEx";
-import { Vec3 } from '../../math/Vec3';
-import { Line } from './Line';
+import { Line } from "./Line";
+import { Segment } from "./Segment";
 
 
 /**
@@ -20,11 +23,43 @@ export class Polyline extends ArrayEx {
      * @param {Number} distance  偏移距离  
      * @param {Vector3} normal  折线所在平面法线
      */
-    offset(distance: number, normal: Vec3 = Vec3.UnitY): Polyline {
-        for (let i = 0; i < this.length; i++) {
-            
+    offset(distance: number, normal: Vec3 = Vec3.UnitY, endtype: EndType = EndType.Butt, jointype: JoinType = JoinType.Miter): Polyline {
+        const segs = []
+        for (let i = 0; i < this.length - 1; i++) {
+            const seg: Segment = new Segment(this[i].clone(), this[i + 1].clone());
+            const segtangetvec = seg[1].clone().sub(seg[0]).normalize().applyAxisAngle(normal, Math.PI / 2).multiplyScalar(distance);
+            seg.forEach((e: Vec3) => e.add(segtangetvec));
+
+            segs.push(seg);
         }
-        return new Polyline(this);
+
+        for (let i = 0; i < segs.length - 1; i++) {
+            const segi: Segment = segs[i];
+            for (let j = i + 1; j < segs.length; j++) {
+
+                const segj = segs[j];
+
+                const disRes = segi.distanceSegment(segj);
+                if (disRes.distance! < gPrecision) {
+                    //相交
+                    segj[0].copy(disRes.closests![0])
+                    segi[1].copy(disRes.closests![0])
+                } else {
+                    //判断是否在内
+                    // var i_o = segi.direction.clone().cross(segj.p0.clone().sub(segi.p0)).dot(normal);
+
+                }
+            }
+        }
+
+        var offsetPts = []
+        offsetPts.push(segs[0].p0)
+        for (let i = 0; i < segs.length; i++) {
+            const element = segs[i];
+            offsetPts.push(element.p1)
+        }
+
+        return new Polyline(offsetPts);
     }
 
 

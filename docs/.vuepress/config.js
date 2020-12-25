@@ -6,13 +6,13 @@ module.exports = {
   ],
   host: 'localhost',
   // dest: './dist',
-  base: '/xtorcga/', // 这是部署到github相关的配置 下面会讲
+  base: '/cga.js/', // 这是部署到github相关的配置 下面会讲
   // base: '/', // 这是部署到github相关的配置 下面会讲
   port: 8800,
   locales: {
     '/': {
       lang: 'zh-CN',
-      title: 'xtorcga',
+      title: 'cga.js',
       description: '计算几何库（CGA)'
     },
     // '/EN/': {

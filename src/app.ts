@@ -99,6 +99,7 @@ import { toGeometryBuffer } from './extends/threeaid copy';
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
 import { extrudeNext } from './alg/extrude';
+import { Polyline } from './struct/3d/PolyLine';
 
 var glv = new GLView({ container: document.body });
 
@@ -141,7 +142,11 @@ for (let i = 0; i < 10000; i++) {
 // glv.add(new Mesh(geo, new MeshBasicMaterial({ wireframe: true, side: DoubleSide })));
 // glv.add(new LineSegments(geometry, new LineBasicMaterial({ color: 0xff0000 })));
 
-var section = [-1, -1, -1, 1, 1, 1, 1, -1];
-var path = [v3(-10, 0, 0), v3(-10, 10, 0), v3(10, 10, 0), v3(10, 0, 0)]
+// var section = [-1, -1, -1, 1, 1, 1, 1, -1];
+// extrudeNext(section, path, { sectionClosed: true, pathClosed: false, vecdim: 2 })
+var pathx = [v3(-20, 0, 0), v3(-20, 0, 20), v3(20, 0, 20), v3(20, 0, 0)]
+ 
+var polyline = new Polyline(pathx);
+ 
+polyline.offset(1)
 
-extrudeNext(section, path, { sectionClosed: true, pathClosed: false, vecdim: 2 })

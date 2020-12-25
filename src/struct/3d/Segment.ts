@@ -279,7 +279,7 @@ export class Segment extends Array {
       segment.p1.clone().multiplyScalar(result.parameters![1]));
     var diff = result.closests![0].clone().sub(result.closests![1]);
     result.distanceSqr = diff.dot(diff);
-    result.distance = Math.sqrt(result.distance!);
+    result.distance = Math.sqrt(result.distanceSqr!);
     return result;
   }
 

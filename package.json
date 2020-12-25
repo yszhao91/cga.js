@@ -43,6 +43,7 @@
     "bignumber.js": "^9.0.1",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
+    "core-js": "^2.6.12",
     "css-loader": "^3.5.3",
     "decimal.js": "^10.2.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
