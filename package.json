@@ -1,6 +1,6 @@
 {
-  "name": "@xtor/cga.js",
-  "version": "0.0.6",
+  "name": "xtorcga",
+  "version": "0.0.25",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

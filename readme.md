@@ -2,8 +2,7 @@
 
 inspire by Wild Magic
 threejs/cga.js 开发交流群：284389784
-2020 年 12 月 10 日 开发很久 typescript 全新版本更新 可以根据自己的需要编译成 js 版
-xtorcga 更名为 cga.js
+2020 年 12 月 10 日 开发很久 typescript 全新版本更新 可以根据自己的需要编译成 js 版 
 
 ## 概要
 
@@ -15,25 +14,25 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 
 案例：
 
-[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/cga.js/)
+[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
 
-[文档与演示（github）](https://yszhao91.github.io/cga.js/)
+[文档与演示（github）](https://yszhao91.github.io/xtorcga/)
 
-- [点与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distPointAll.html](http://dcgraph.gitee.io/cga.js/guide/distPointAll.html)
+- [点与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html](http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html)
 
-- [线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distLineAll.html](http://dcgraph.gitee.io/cga.js/guide/distLineAll.html)
+- [线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html](http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html)
 
-- [射线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distRayAll.html](http://dcgraph.gitee.io/cga.js/guide/distRayAll.html)
+- [射线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html](http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html)
 
-- [线段与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html)
-- [常用 https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html)
+- [线段与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html](http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html)
+- [常用 https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html)
 
 ## 安装
 
 ```
-npm install @xtor/cga.js -D
+npm install xtorcga-D
 国内
-cnpm install @xtor/cga.js -D
+cnpm install xtorcga-D
 ```
 
 ## 使用
@@ -41,7 +40,7 @@ cnpm install @xtor/cga.js -D
 - 全部引用;：
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "xtorcga";
 function randomV3() {
   return cga.v3(
     Math.random() * 100 - 50,
@@ -58,7 +57,7 @@ var result = point.distanceSegment(seg);
 - 按需求引用：
 
 ```javascript
-import { v3, Point, Segment } from "@xtor/cga.js";
+import { v3, Point, Segment } from "xtorcga";
 function randomV3() {
   return v3(
     Math.random() * 100 - 50,
@@ -72,12 +71,12 @@ var seg = new Segment(randomV3(), randomV3());
 var result = point.distanceSegment(seg);
 ```
 
-- 网页嵌入：直接下载使用 build 目录下面的 cga.js，包含到项目中
+- 网页嵌入：直接下载使用 build 目录下面的 xtorcga，包含到项目中
 
 ```html
-<script src="cga.js" />
+<script src="xtorcga" />
 或者
-<script src="https://raw.githack.com/yszhao91/cga.js/master/build/cga.js" />
+<script src="https://raw.githack.com/yszhao91/xtorcga/master/build/xtorcga" />
 <script>
   var point = new cga.Point(1, 2, 3);
   var line = new cga.Line(
@@ -91,7 +90,7 @@ var result = point.distanceSegment(seg);
 ## 项目编译
 
 ```shell
-npm run build //js 编译到build目录下生成cga.js dist目录下生成每个文件的js和.d.ts
+npm run build //js 编译到build目录下生成xtorcga dist目录下生成每个文件的js和.d.ts
 npm run dev  //运行项目，自己更改源码测试
 ```
 
