@@ -1,4 +1,4 @@
-import { Vec3 } from "@/math/Vec3"; 
+import { Vec3 } from "../math/Vec3"; 
 
 export interface DistanceResult {
     rayParameter?: any;
