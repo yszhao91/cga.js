@@ -9,14 +9,14 @@ import { Ray } from '../struct/3d/Ray';
 import { Segment } from '../struct/3d/Segment';
 import { Plane } from '../struct/3d/Plane';
 import { buildAccessors } from '../render/thing';
-import { EventHandler } from '../render/eventhandler';
-import { Polyline } from './Polyline';
+import { EventHandler } from '../render/eventhandler'; 
 import { IDistanceResut } from '../struct/3d/Path';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
 import { Rectangle } from '../struct/3d/Rectangle';
 import { Circle } from '../struct/3d/Circle';
 import { Disk } from '../struct/3d/Disk';
+import { Polyline } from '..';
 
 export class Vec3 extends EventHandler {
   x!: number;

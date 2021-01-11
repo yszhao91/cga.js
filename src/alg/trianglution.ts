@@ -1,7 +1,7 @@
 import earcut from "earcut";
 import { Vec3 } from '../math/Vec3';
-import { clone, flat } from '../utils/array';
-import { rotateByUnitVectors } from './common';
+import { flat } from '../utils/array';
+import { clone, rotateByUnitVectors } from './common';
 import { gPrecision } from '../math/Math';
 import { verctorToNumbers } from './pointset';
 

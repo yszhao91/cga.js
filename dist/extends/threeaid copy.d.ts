@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Vec3 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
 import { IExtrudeOptions } from '../alg/extrude';
-import { Polyline } from '../struct/3d/PolyLine';
+import { Polyline } from '../struct/3d/Polyline';
 import { Polygon } from '../struct/3d/Polygon';
 export declare function toGeometryBuffer(vertices: number[] | Vec3[], triangles: number[] | Uint32Array, uvs?: Vec2[] | number[]): THREE.BufferGeometry;
 /**

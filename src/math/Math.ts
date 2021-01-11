@@ -93,3 +93,18 @@ export function toFixed(obj: { toFixed: (arg0: any) => string; x: number | undef
     }
     return obj;
 }
+
+/** 
+ * 数组中所有数字或者向量固定位数
+ * @param {Array} array 
+ * @param {Number} precision 
+ */
+export function toFixedAry(array: Array<any>, precision: number = gPrecision) {
+    for (let i = 0; i < array.length; i++) {
+        const e = array[i];
+        if (e instanceof Array)
+            toFixedAry(e);
+        else
+            array[i] = toFixed(e, precision);
+    }
+}

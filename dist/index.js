@@ -7,10 +7,10 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("./utils/array");
+__exportStar(require("./utils/array"), exports);
 __exportStar(require("./math/Vec2"), exports);
 __exportStar(require("./math/Vec3"), exports);
 __exportStar(require("./math/Vec4"), exports);
@@ -31,7 +31,7 @@ __exportStar(require("./struct/3d/Line"), exports);
 __exportStar(require("./struct/3d/Path"), exports);
 __exportStar(require("./struct/3d/Plane"), exports);
 __exportStar(require("./struct/3d/Point"), exports);
-__exportStar(require("./struct/3d/PolyLine"), exports);
+__exportStar(require("./struct/3d/Polyline"), exports);
 __exportStar(require("./struct/3d/Polygon"), exports);
 __exportStar(require("./struct/3d/Ray"), exports);
 __exportStar(require("./struct/3d/Segment"), exports);

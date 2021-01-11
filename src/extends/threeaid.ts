@@ -2,7 +2,7 @@ import { toGeoBuffer, IGeometryBuffer, indexable } from '../render/mesh';
 import { Vec3 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
 import { extrude, IExtrudeOptions, linkSide, linkSides } from '../alg/extrude';
-import { Polyline } from '../struct/3d/PolyLine';
+import { Polyline } from '../struct/3d/Polyline';
 import { Polygon } from '../struct/3d/Polygon';
 import { triangulation } from '../alg/trianglution';
 import { flat } from '../utils/array';

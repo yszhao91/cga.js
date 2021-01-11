@@ -16,6 +16,10 @@ var XYZSort = function (e1, e2) {
         return e1.z - e2.z;
 };
 var _vector = Vec3_1.v3();
+/**
+ * 数组深度复制
+ * @param {Array} array
+ */
 function clone(array) {
     var result = new Array();
     for (var i = 0; i < array.length; i++) {

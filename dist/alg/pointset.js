@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isInOnePlane = exports.recognitionPlane = exports.projectOnPlane = exports.reverseOnPlane = exports.simplifyPointList = exports.applyMat4 = exports.scale = exports.rotateByUnitVecs = exports.rotate = exports.translate = exports.applyQuat = exports.boundingBox = exports.verctorToNumbers = exports.VecCompare = void 0;
 var Quat_1 = require("../math/Quat");
-var array_1 = require("../utils/array");
 var Vec3_1 = require("../math/Vec3");
 var Math_1 = require("../math/Math");
 var Line_1 = require("../struct/3d/Line");
 var Plane_1 = require("../struct/3d/Plane");
+var common_1 = require("./common");
 var _Vec = Vec3_1.v3();
 /**
  * 点排序函数
@@ -89,7 +89,7 @@ function applyQuat(points, quat, ref) {
         });
         return points;
     }
-    return applyQuat(array_1.clone(points), quat);
+    return applyQuat(common_1.clone(points), quat);
 }
 exports.applyQuat = applyQuat;
 /**
@@ -106,7 +106,7 @@ function translate(points, distance, ref) {
         });
         return points;
     }
-    return translate(array_1.clone(points));
+    return translate(common_1.clone(points));
 }
 exports.translate = translate;
 /**
@@ -148,7 +148,7 @@ function scale(points, scale, ref) {
         });
         return points;
     }
-    return scale(array_1.clone(points));
+    return scale(common_1.clone(points));
 }
 exports.scale = scale;
 /**
@@ -166,7 +166,7 @@ function applyMat4(points, mat4, ref) {
         });
         return points;
     }
-    return applyMat4(array_1.clone(points), mat4);
+    return applyMat4(common_1.clone(points), mat4);
 }
 exports.applyMat4 = applyMat4;
 /**
@@ -231,7 +231,7 @@ function projectOnPlane(points, plane, projectDirect, ref) {
         return points;
     }
     else {
-        return projectOnPlane(array_1.clone(points), plane, projectDirect);
+        return projectOnPlane(common_1.clone(points), plane, projectDirect);
     }
 }
 exports.projectOnPlane = projectOnPlane;

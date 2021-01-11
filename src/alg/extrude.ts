@@ -2,13 +2,13 @@ import { Vec3, v3 } from '../math/Vec3';
 import { Point } from '../struct/3d/Point';
 import { Vec2 } from '../math/Vec2';
 import { Polygon } from '../struct/3d/Polygon';
-import { Polyline } from '../struct/3d/PolyLine';
+import { Polyline } from '../struct/3d/Polyline';
 import { Path } from '../struct/3d/Path';
-import { rotateByUnitVectors } from './common';
+import { clone, rotateByUnitVectors } from './common';
 import { projectOnPlane, translate } from './pointset';
 import { indexable } from '../render/mesh';
 import { triangulation } from './trianglution';
-import { clone, flat } from '../utils/array';
+import { flat } from '../utils/array';
 import { recognitionCCW, recognitionPolygonNormal, recognitionPlane } from './recognition';
 import { Plane } from '../struct/3d/Plane';
 import { linksToGeometry } from '../extends/threeaid';
@@ -389,7 +389,7 @@ export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<numb
 
     }
 
-    
+
     //计算截面uv 
     for (let i = 0; i < shape.length; i++) {
         const pt = shape[i];

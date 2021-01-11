@@ -18,8 +18,13 @@ const XYZSort = (e1: Vec3, e2: Vec3) => {
 
 
 const _vector = v3();
-export function clone(array: any | []) {
-    var result = new Array()
+
+/**
+ * 数组深度复制
+ * @param {Array} array
+ */
+export function clone(array: any | any[]) {
+    var result = new Array() 
     for (let i = 0; i < array.length; i++) {
         var ele = array[i];
         if (ele instanceof Number || ele instanceof String)

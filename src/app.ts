@@ -94,12 +94,12 @@ import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
 import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial } from 'three';
-import { clone } from './utils/array';
+ 
 import { toGeometryBuffer } from './extends/threeaid copy';
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
 import { extrudeNext } from './alg/extrude';
-import { Polyline } from './struct/3d/PolyLine';
+import { Polyline } from './struct/3d/Polyline';
 
 var glv = new GLView({ container: document.body });
 

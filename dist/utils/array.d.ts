@@ -1,15 +1,4 @@
 /**
- * 数组深度复制
- * @param {Array} array
- */
-export declare function clone(array: Array<any>): any[];
-/**
- * 数组中所有数字或者向量固定位数
- * @param {Array} array
- * @param {Number} precision
- */
-export declare function toFixed(array: Array<any>, precision?: number): void;
-/**
  * 遍历多级数组中所有对象
  * @param {Array} array
  * @param {Function} method

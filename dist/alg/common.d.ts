@@ -3,7 +3,11 @@ import { Circle } from '../struct/3d/Circle';
 import { Quat } from '../math/Quat';
 import { Plane } from '../struct/3d/Plane';
 import { Mat4 } from '../math/Mat4';
-export declare function clone(array: any | []): any[];
+/**
+ * 数组深度复制
+ * @param {Array} array
+ */
+export declare function clone(array: any | any[]): any[];
 /**
  * 点排序函数
  * @param {Vector*} a

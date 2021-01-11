@@ -1,10 +1,10 @@
 import { v3, Vec3 } from "../../math/Vec3";
-import { DistanceResult } from '../../alg/result';
-import { Polyline } from '../../math/Polyline';
+import { DistanceResult } from '../../alg/result'; 
 import { Segment } from './Segment';
 import { gPrecision } from '../../math/Math';
 import { Ray } from './Ray';
 import { Triangle } from './Triangle';
+import { Polyline } from "./Polyline";
 
 export class Line {
 

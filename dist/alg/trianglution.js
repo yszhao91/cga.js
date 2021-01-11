@@ -44,7 +44,7 @@ function triangulation(inboundary, holes, options) {
     var dim = options.dim;
     var normal = options.normal;
     if (normal.dot(Vec3_1.Vec3.UnitZ) < 1 - Math_1.gPrecision) {
-        boundary = array_1.clone(inboundary);
+        boundary = common_1.clone(inboundary);
         common_1.rotateByUnitVectors(boundary, normal, Vec3_1.Vec3.UnitZ);
     }
     else {

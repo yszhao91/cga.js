@@ -7,12 +7,12 @@ import { Ray } from '../struct/3d/Ray';
 import { Segment } from '../struct/3d/Segment';
 import { Plane } from '../struct/3d/Plane';
 import { EventHandler } from '../render/eventhandler';
-import { Polyline } from './Polyline';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
 import { Rectangle } from '../struct/3d/Rectangle';
 import { Circle } from '../struct/3d/Circle';
 import { Disk } from '../struct/3d/Disk';
+import { Polyline } from '..';
 export declare class Vec3 extends EventHandler {
     private _x;
     private _y;

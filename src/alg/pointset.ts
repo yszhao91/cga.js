@@ -1,10 +1,10 @@
-import { Quat } from "../math/Quat";
-import { clone } from "../utils/array";
+import { Quat } from "../math/Quat"; 
 import { v3, Vec3 } from "../math/Vec3";
 import { gPrecision } from "../math/Math";
 import { Line } from "../struct/3d/Line";
 import { Plane } from "../struct/3d/Plane";
 import { Mat4 } from '../math/Mat4';
+import { clone } from "./common";
 
 const _Vec = v3();
 

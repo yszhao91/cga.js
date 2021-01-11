@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.extrudeNext = exports.EndType = exports.JoinType = exports.isCCW = exports.extrude = exports.links = exports.linkSides = exports.linkSide = void 0;
 var Vec3_1 = require("../math/Vec3");
 var Vec2_1 = require("../math/Vec2");
-var PolyLine_1 = require("../struct/3d/PolyLine");
+var Polyline_1 = require("../struct/3d/Polyline");
 var Path_1 = require("../struct/3d/Path");
 var common_1 = require("./common");
 var pointset_1 = require("./pointset");
@@ -120,7 +120,7 @@ exports.linkSides = linkSides;
 function links(sides, closed1, closed2) {
     if (closed1 === void 0) { closed1 = false; }
     if (closed2 === void 0) { closed2 = false; }
-    closed1 = sides[0] instanceof PolyLine_1.Polyline ? true : false || closed1;
+    closed1 = sides[0] instanceof Polyline_1.Polyline ? true : false || closed1;
     return linkSides(sides, closed1, closed2);
 }
 exports.links = links;
@@ -158,7 +158,7 @@ function extrude(shape, arg_path, options) {
     if (!isCCW)
         shape.reverse();
     var normal = options.normal;
-    var startSeal = array_1.clone(shape);
+    var startSeal = common_1.clone(shape);
     var shapepath = new Path_1.Path(shape);
     var insertNum = 0;
     for (var i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
@@ -180,7 +180,7 @@ function extrude(shape, arg_path, options) {
     for (var i = 0; i < path.length; i++) {
         var node = path[i];
         var dir = node.tangent;
-        var newShape = array_1.clone(shape);
+        var newShape = common_1.clone(shape);
         common_1.rotateByUnitVectors(newShape, normal, dir);
         if (options.fixedY) {
             var v = Vec3_1.Vec3.UnitX;
@@ -203,10 +203,10 @@ function extrude(shape, arg_path, options) {
             uvs.push(shapepath[j].tlen * options.textureScale.x, path[i].tlen * options.textureScale.y);
         }
     }
-    var sealUv = array_1.clone(startSeal);
+    var sealUv = common_1.clone(startSeal);
     if (normal.dot(Vec3_1.Vec3.UnitZ) < 1 - 1e-4)
         common_1.rotateByUnitVectors(sealUv, normal, Vec3_1.Vec3.UnitZ);
-    var endSeal = array_1.clone(startSeal);
+    var endSeal = common_1.clone(startSeal);
     common_1.rotateByUnitVectors(startSeal, normal, path[0].tangent);
     if (options.fixedY) {
         var v = Vec3_1.Vec3.UnitX;
@@ -345,7 +345,7 @@ function extrudeNext(shape, followPath, options) {
         for (var i_1 = 1; i_1 < followPath.length - 1; i_1++) {
             var node = followPath[i_1];
             var dir = node.tangent;
-            var newShape = array_1.clone(shape);
+            var newShape = common_1.clone(shape);
             //节点平分线
             var pnormal = followPath[i_1 + 1].clone().sub(followPath[i_1]).normalize().add(followPath[i_1].clone().sub(followPath[i_1 - 1]).normalize()).normalize();
             var jointPlane = Plane_1.Plane.setFromPointNormal(node, pnormal);

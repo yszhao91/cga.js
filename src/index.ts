@@ -1,4 +1,4 @@
-import "./utils/array"
+export * from "./utils/array"
 export * from "./math/Vec2"
 export * from "./math/Vec3"
 export * from "./math/Vec4"
@@ -21,14 +21,13 @@ export * from "./struct/3d/Line"
 export * from "./struct/3d/Path"
 export * from "./struct/3d/Plane"
 export * from "./struct/3d/Point"
-export * from "./struct/3d/PolyLine"
+export * from "./struct/3d/Polyline"
 export * from "./struct/3d/Polygon"
 export * from "./struct/3d/Ray"
 export * from "./struct/3d/Segment"
 export * from "./struct/3d/Triangle"
- 
+
 export * from "./alg/delaunator"
 export * from "./alg/voronoi"
 
 export * from "./extends/threeaid"
- 

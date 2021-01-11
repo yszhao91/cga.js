@@ -2,7 +2,7 @@ import { Vec3 } from '../math/Vec3';
 import { Point } from '../struct/3d/Point';
 import { Vec2 } from '../math/Vec2';
 import { Polygon } from '../struct/3d/Polygon';
-import { Polyline } from '../struct/3d/PolyLine';
+import { Polyline } from '../struct/3d/Polyline';
 import { Path } from '../struct/3d/Path';
 /**
  *  常用shape几何操作

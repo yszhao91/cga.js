@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unique = exports.classify = exports.flat = exports.forall = exports.toFixed = exports.clone = void 0;
-var Math_1 = require("../math/Math");
+exports.unique = exports.classify = exports.flat = exports.forall = void 0;
 Array.prototype.get = function (index) {
     if (index < 0)
         index = this.length + index;
@@ -10,43 +9,6 @@ Array.prototype.get = function (index) {
 Array.prototype.last = function () {
     return this.get(-1);
 };
-/**
- * 数组深度复制
- * @param {Array} array
- */
-function clone(array) {
-    var result = new Array();
-    for (var i = 0; i < array.length; i++) {
-        var ele = array[i];
-        if (ele instanceof Number || ele instanceof String)
-            result[i] = ele;
-        else if (ele.clone) {
-            result[i] = ele.clone();
-        }
-        else if (ele instanceof Array)
-            result[i] = clone(ele);
-        else
-            throw ("数组有元素不能clone");
-    }
-    return result;
-}
-exports.clone = clone;
-/**
- * 数组中所有数字或者向量固定位数
- * @param {Array} array
- * @param {Number} precision
- */
-function toFixed(array, precision) {
-    if (precision === void 0) { precision = Math_1.gPrecision; }
-    for (var i = 0; i < array.length; i++) {
-        var e = array[i];
-        if (e instanceof Array)
-            toFixed(e);
-        else
-            array[i] = Math_1.toFixed(e, precision);
-    }
-}
-exports.toFixed = toFixed;
 /**
  * 遍历多级数组中所有对象
  * @param {Array} array

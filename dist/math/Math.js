@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toFixed = exports.radToDeg = exports.degToRad = exports.floorPowerOfTwo = exports.ceilPowerOfTwo = exports.isPowerOfTwo = exports.randFloat = exports.randInt = exports.smootherstep = exports.smoothstep = exports.lerp = exports.clamp = exports.approximateEqual = exports.sign = exports.gPrecision = void 0;
+exports.toFixedAry = exports.toFixed = exports.radToDeg = exports.degToRad = exports.floorPowerOfTwo = exports.ceilPowerOfTwo = exports.isPowerOfTwo = exports.randFloat = exports.randInt = exports.smootherstep = exports.smoothstep = exports.lerp = exports.clamp = exports.approximateEqual = exports.sign = exports.gPrecision = void 0;
 exports.gPrecision = 1e-4;
 var DEG2RAD = Math.PI / 180;
 var RAD2DEG = 180 / Math.PI;
@@ -93,3 +93,19 @@ function toFixed(obj, fractionDigits) {
     return obj;
 }
 exports.toFixed = toFixed;
+/**
+ * 数组中所有数字或者向量固定位数
+ * @param {Array} array
+ * @param {Number} precision
+ */
+function toFixedAry(array, precision) {
+    if (precision === void 0) { precision = exports.gPrecision; }
+    for (var i = 0; i < array.length; i++) {
+        var e = array[i];
+        if (e instanceof Array)
+            toFixedAry(e);
+        else
+            array[i] = toFixed(e, precision);
+    }
+}
+exports.toFixedAry = toFixedAry;

@@ -2,8 +2,7 @@ import { Vec3 } from '../math/Vec3';
 import { Point } from '../struct/3d/Point';
 import { Line } from '../struct/3d/Line';
 import { vectorCompare } from './sort';
-import { Plane } from '../struct/3d/Plane';
-import { clone } from '../utils/array';
+import { Plane } from '../struct/3d/Plane'; 
 import { Vec2 } from '../math/Vec2';
 import { Polygon } from '../struct/3d/Polygon';
 

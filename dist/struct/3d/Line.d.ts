@@ -1,9 +1,9 @@
 import { Vec3 } from "../../math/Vec3";
 import { DistanceResult } from '../../alg/result';
-import { Polyline } from '../../math/Polyline';
 import { Segment } from './Segment';
 import { Ray } from './Ray';
 import { Triangle } from './Triangle';
+import { Polyline } from "./Polyline";
 export declare class Line {
     origin: Vec3;
     end: Vec3;

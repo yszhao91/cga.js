@@ -33,3 +33,9 @@ export declare function toFixed(obj: {
     y: number | undefined;
     z: number | undefined;
 };
+/**
+ * 数组中所有数字或者向量固定位数
+ * @param {Array} array
+ * @param {Number} precision
+ */
+export declare function toFixedAry(array: Array<any>, precision?: number): void;

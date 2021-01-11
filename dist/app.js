@@ -7,7 +7,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Vec3_1 = require("./math/Vec3");
 var glview_1 = require("./glview");
-var PolyLine_1 = require("./struct/3d/PolyLine");
+var Polyline_1 = require("./struct/3d/Polyline");
 var glv = new glview_1.GLView({ container: document.body });
 glv.run();
 // var delaunay = new cga.Delaunay()
@@ -42,5 +42,5 @@ for (var i = 0; i < 10000; i++) {
 // var section = [-1, -1, -1, 1, 1, 1, 1, -1];
 // extrudeNext(section, path, { sectionClosed: true, pathClosed: false, vecdim: 2 })
 var pathx = [Vec3_1.v3(-20, 0, 0), Vec3_1.v3(-20, 0, 20), Vec3_1.v3(20, 0, 20), Vec3_1.v3(20, 0, 0)];
-var polyline = new PolyLine_1.Polyline(pathx);
+var polyline = new Polyline_1.Polyline(pathx);
 polyline.offset(1);
