@@ -1,7 +1,7 @@
 import { Quat, quat } from './Quat';
 import { Mat3 } from './Mat3';
 import { Mat4 } from './Mat4';
-import { clamp, gPrecision } from './Math';
+import { clamp, gPrecision, toRadians } from './Math';
 import { euler, Euler } from './Euler';
 import { DistanceResult } from '../alg/result';
 import { Line, line } from '../struct/3d/Line';
@@ -9,7 +9,7 @@ import { Ray } from '../struct/3d/Ray';
 import { Segment } from '../struct/3d/Segment';
 import { Plane } from '../struct/3d/Plane';
 import { buildAccessors } from '../render/thing';
-import { EventHandler } from '../render/eventhandler'; 
+import { EventHandler } from '../render/eventhandler';
 import { IDistanceResut } from '../struct/3d/Path';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
@@ -17,6 +17,7 @@ import { Rectangle } from '../struct/3d/Rectangle';
 import { Circle } from '../struct/3d/Circle';
 import { Disk } from '../struct/3d/Disk';
 import { Polyline } from '..';
+import { wgs84RadiiSquared } from '../gis/gis';
 
 export class Vec3 extends EventHandler {
   x!: number;
@@ -51,6 +52,37 @@ export class Vec3 extends EventHandler {
   }
   static get UnitZ() {
     return new Vec3(0, 0, 1);
+  }
+
+  static fromDegrees(longitude: number,
+    latitude: number,
+    height: number = 0,
+    ellipsoid: Vec3 = wgs84RadiiSquared,
+  ) {
+    longitude = toRadians(longitude);
+    latitude = toRadians(latitude);
+
+    return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
+  }
+
+  static fromRadians(longitude: number,
+    latitude: number,
+    height: number = 0,
+    ellipsoid: Vec3 = wgs84RadiiSquared) {
+
+    var cosLatitude = Math.cos(latitude);
+    scratchN.x = cosLatitude * Math.cos(longitude);
+    scratchN.y = Math.sin(latitude);
+    scratchN.z = cosLatitude * Math.sin(longitude);
+    scratchN.normalize();
+
+    scratchK.multiplyVecs(ellipsoid, scratchN);
+    var gamma = Math.sqrt(scratchN.dot(scratchK));
+    scratchK.divideScalar(gamma);
+    scratchN.multiplyScalar(height);
+
+    var result = new Vec3();
+    return result.addVecs(scratchK, scratchN);
   }
 
   set(x: number, y: number, z: number) {
@@ -1172,6 +1204,8 @@ export class Vec3 extends EventHandler {
 
 const _vec = v3();
 const _quat: Quat = quat();
+const scratchN = new Vec3();
+const scratchK = new Vec3();
 
 export function v3(x?: number, y?: number, z?: number) {
   return new Vec3(x, y, z);

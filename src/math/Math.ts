@@ -1,6 +1,102 @@
 export const gPrecision = 1e-4;
-const DEG2RAD = Math.PI / 180;
-const RAD2DEG = 180 / Math.PI;
+
+/**
+ * pi
+ *
+ * @type {Number}
+ * @constant
+ */
+export const PI = Math.PI;
+
+/**
+ * 1/pi
+ *
+ * @type {Number}
+ * @constant
+ */
+export const ONE_OVER_PI = 1.0 / Math.PI;
+
+/**
+ * pi/2
+ *
+ * @type {Number}
+ * @constant
+ */
+export const PI_OVER_TWO = Math.PI / 2.0;
+
+/**
+ * pi/3
+ *
+ * @type {Number}
+ * @constant
+ */
+export const PI_OVER_THREE = Math.PI / 3.0;
+
+/**
+ * pi/4
+ *
+ * @type {Number}
+ * @constant
+ */
+export const PI_OVER_FOUR = Math.PI / 4.0;
+
+/**
+ * pi/6
+ *
+ * @type {Number}
+ * @constant
+ */
+export const PI_OVER_SIX = Math.PI / 6.0;
+
+/**
+ * 3pi/2
+ *
+ * @type {Number}
+ * @constant
+ */
+export const THREE_PI_OVER_TWO = (3.0 * Math.PI) / 2.0;
+
+/**
+ * 2pi
+ *
+ * @type {Number}
+ * @constant
+ */
+export const TWO_PI = 2.0 * Math.PI;
+
+/**
+ * 1/2pi
+ *
+ * @type {Number}
+ * @constant
+ */
+export const ONE_OVER_TWO_PI = 1.0 / (2.0 * Math.PI);
+
+/**
+ * The number of radians in a degree.
+ *
+ * @type {Number}
+ * @constant
+ */
+export const RADIANS_PER_DEGREE = Math.PI / 180.0;
+
+/**
+ * The number of degrees in a radian.
+ *
+ * @type {Number}
+ * @constant
+ */
+export const DEGREES_PER_RADIAN = 180.0 / Math.PI;
+
+/**
+ * The number of radians in an arc second.
+ *
+ * @type {Number}
+ * @constant
+ */
+export const RADIANS_PER_ARCSECOND = RADIANS_PER_DEGREE / 3600.0;
+
+
 
 export function sign(value: number) {
     return value >= 0 ? 1 : -1;
@@ -64,13 +160,15 @@ export function floorPowerOfTwo(value: number) {
     return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
 }
 
-export function degToRad(degrees: number) {
-    return degrees * DEG2RAD;
+export function toRadians(degrees: number) {
+    return degrees * RADIANS_PER_DEGREE;
 }
 
-export function radToDeg(radians: number) {
-    return radians * RAD2DEG;
+export function ToDegrees(radians: number) {
+    return radians * DEGREES_PER_RADIAN;
 }
+
+
 
 /**
  * 数字或者向量固定位数
