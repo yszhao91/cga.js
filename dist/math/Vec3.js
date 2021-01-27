@@ -19,7 +19,7 @@ var Math_1 = require("./Math");
 var Segment_1 = require("../struct/3d/Segment");
 var thing_1 = require("../render/thing");
 var eventhandler_1 = require("../render/eventhandler");
-var gis_1 = require("../gis/gis");
+// import { wgs84RadiiSquared } from '../gis/gis';
 var Vec3 = /** @class */ (function (_super) {
     __extends(Vec3, _super);
     function Vec3(_x, _y, _z) {
@@ -76,28 +76,31 @@ var Vec3 = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Vec3.fromDegrees = function (longitude, latitude, height, ellipsoid) {
-        if (height === void 0) { height = 0; }
-        if (ellipsoid === void 0) { ellipsoid = gis_1.wgs84RadiiSquared; }
-        longitude = Math_1.toRadians(longitude);
-        latitude = Math_1.toRadians(latitude);
-        return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
-    };
-    Vec3.fromRadians = function (longitude, latitude, height, ellipsoid) {
-        if (height === void 0) { height = 0; }
-        if (ellipsoid === void 0) { ellipsoid = gis_1.wgs84RadiiSquared; }
-        var cosLatitude = Math.cos(latitude);
-        scratchN.x = cosLatitude * Math.cos(longitude);
-        scratchN.y = Math.sin(latitude);
-        scratchN.z = cosLatitude * Math.sin(longitude);
-        scratchN.normalize();
-        scratchK.multiplyVecs(ellipsoid, scratchN);
-        var gamma = Math.sqrt(scratchN.dot(scratchK));
-        scratchK.divideScalar(gamma);
-        scratchN.multiplyScalar(height);
-        var result = new Vec3();
-        return result.addVecs(scratchK, scratchN);
-    };
+    // static fromDegrees(longitude: number,
+    //   latitude: number,
+    //   height: number = 0,
+    //   ellipsoid: Vec3 = wgs84RadiiSquared,
+    // ) {
+    //   longitude = toRadians(longitude);
+    //   latitude = toRadians(latitude);
+    //   return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
+    // }
+    // static fromRadians(longitude: number,
+    //   latitude: number,
+    //   height: number = 0,
+    //   ellipsoid: Vec3 = wgs84RadiiSquared) {
+    //   var cosLatitude = Math.cos(latitude);
+    //   scratchN.x = cosLatitude * Math.cos(longitude);
+    //   scratchN.y = Math.sin(latitude);
+    //   scratchN.z = cosLatitude * Math.sin(longitude);
+    //   scratchN.normalize();
+    //   scratchK.multiplyVecs(ellipsoid, scratchN);
+    //   var gamma = Math.sqrt(scratchN.dot(scratchK));
+    //   scratchK.divideScalar(gamma);
+    //   scratchN.multiplyScalar(height);
+    //   var result = new Vec3();
+    //   return result.addVecs(scratchK, scratchN);
+    // }
     Vec3.prototype.set = function (x, y, z) {
         this.x = x;
         this.y = y;

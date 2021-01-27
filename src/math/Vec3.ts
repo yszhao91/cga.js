@@ -17,7 +17,7 @@ import { Rectangle } from '../struct/3d/Rectangle';
 import { Circle } from '../struct/3d/Circle';
 import { Disk } from '../struct/3d/Disk';
 import { Polyline } from '..';
-import { wgs84RadiiSquared } from '../gis/gis';
+// import { wgs84RadiiSquared } from '../gis/gis';
 
 export class Vec3 extends EventHandler {
   x!: number;
@@ -54,36 +54,36 @@ export class Vec3 extends EventHandler {
     return new Vec3(0, 0, 1);
   }
 
-  static fromDegrees(longitude: number,
-    latitude: number,
-    height: number = 0,
-    ellipsoid: Vec3 = wgs84RadiiSquared,
-  ) {
-    longitude = toRadians(longitude);
-    latitude = toRadians(latitude);
+  // static fromDegrees(longitude: number,
+  //   latitude: number,
+  //   height: number = 0,
+  //   ellipsoid: Vec3 = wgs84RadiiSquared,
+  // ) {
+  //   longitude = toRadians(longitude);
+  //   latitude = toRadians(latitude);
 
-    return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
-  }
+  //   return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
+  // }
 
-  static fromRadians(longitude: number,
-    latitude: number,
-    height: number = 0,
-    ellipsoid: Vec3 = wgs84RadiiSquared) {
+  // static fromRadians(longitude: number,
+  //   latitude: number,
+  //   height: number = 0,
+  //   ellipsoid: Vec3 = wgs84RadiiSquared) {
 
-    var cosLatitude = Math.cos(latitude);
-    scratchN.x = cosLatitude * Math.cos(longitude);
-    scratchN.y = Math.sin(latitude);
-    scratchN.z = cosLatitude * Math.sin(longitude);
-    scratchN.normalize();
+  //   var cosLatitude = Math.cos(latitude);
+  //   scratchN.x = cosLatitude * Math.cos(longitude);
+  //   scratchN.y = Math.sin(latitude);
+  //   scratchN.z = cosLatitude * Math.sin(longitude);
+  //   scratchN.normalize();
 
-    scratchK.multiplyVecs(ellipsoid, scratchN);
-    var gamma = Math.sqrt(scratchN.dot(scratchK));
-    scratchK.divideScalar(gamma);
-    scratchN.multiplyScalar(height);
+  //   scratchK.multiplyVecs(ellipsoid, scratchN);
+  //   var gamma = Math.sqrt(scratchN.dot(scratchK));
+  //   scratchK.divideScalar(gamma);
+  //   scratchN.multiplyScalar(height);
 
-    var result = new Vec3();
-    return result.addVecs(scratchK, scratchN);
-  }
+  //   var result = new Vec3();
+  //   return result.addVecs(scratchK, scratchN);
+  // }
 
   set(x: number, y: number, z: number) {
     this.x = x;

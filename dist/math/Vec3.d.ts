@@ -28,8 +28,6 @@ export declare class Vec3 extends EventHandler {
     static get UnitX(): Vec3;
     static get UnitY(): Vec3;
     static get UnitZ(): Vec3;
-    static fromDegrees(longitude: number, latitude: number, height?: number, ellipsoid?: Vec3): Vec3;
-    static fromRadians(longitude: number, latitude: number, height?: number, ellipsoid?: Vec3): Vec3;
     set(x: number, y: number, z: number): this;
     setScalar(scalar: number): this;
     setComponent(index: number, value: number): this;

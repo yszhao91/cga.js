@@ -5,9 +5,8 @@
 // // v.add(v3(10, 1230, 12));
 // // document.write(v.toString());
 Object.defineProperty(exports, "__esModule", { value: true });
-var Vec3_1 = require("./math/Vec3");
-var a = Vec3_1.Vec3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0);
-console.log(a);
+// var a = Vec3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0);
+// console.log(a);
 // var glv = new GLView({ container: document.body });
 // glv.run();
 // var delaunay = new cga.Delaunay()

@@ -102,8 +102,8 @@ import { extrudeNext } from './alg/extrude';
 import { Polyline } from './struct/3d/Polyline';
 
 
-var a = Vec3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0);
-console.log(a);
+// var a = Vec3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0);
+// console.log(a);
 
 // var glv = new GLView({ container: document.body });
 
