@@ -13,6 +13,8 @@ export * from "./alg/result"
 export * from "./alg/extrude"
 export * from "./alg/delaunay"
 
+export * from "./render/mesh"
+
 export * from "./struct/3d/Box"
 export * from "./struct/3d/Capsule"
 export * from "./struct/3d/Circle"
