@@ -10,10 +10,6 @@ import { gPrecision, toFixed as toFixedOne } from '../math/Math';
     return this.get(-1);
 };
 
-
-
-
-
  
 /**
  * 遍历多级数组中所有对象

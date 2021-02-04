@@ -5,6 +5,8 @@ import { gPrecision } from '../../math/Math';
 import { Ray } from './Ray';
 import { Triangle } from './Triangle';
 import { Polyline } from "./Polyline";
+import { Point } from "./Point";
+import { Orientation } from "../data/type";
 
 export class Line {
 
@@ -322,6 +324,14 @@ export class Line {
       closests: result?.closests,
       segmentIndex: maodian,
     }
+  }
+
+  orientationPoint(point: Point, normal = Vec3.UnitY) {
+    const _binormal = this.direction.clone().cross(normal);
+    const _distance = Number(this.distancePoint(point).distance)
+    if (!Number.isNaN(_distance) && _distance < gPrecision)
+      return Orientation.Common; 
+    return point.clone().sub(this.origin).dot(_binormal) > 0 ? Orientation.Positive : Orientation.Negative;
   }
 }
 

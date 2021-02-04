@@ -17,11 +17,11 @@ exports.Point = void 0;
 var Vec3_1 = require("../../math/Vec3");
 var Point = /** @class */ (function (_super) {
     __extends(Point, _super);
-    function Point(_x, _y, _z) {
-        if (_x === void 0) { _x = 0; }
-        if (_y === void 0) { _y = 0; }
-        if (_z === void 0) { _z = 0; }
-        return _super.call(this, _x, _y, _z) || this;
+    function Point(x, y, z) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        if (z === void 0) { z = 0; }
+        return _super.call(this, x, y, z) || this;
     }
     return Point;
 }(Vec3_1.Vec3));

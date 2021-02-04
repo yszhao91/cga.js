@@ -4,6 +4,7 @@ exports.line = exports.Line = void 0;
 var Vec3_1 = require("../../math/Vec3");
 var Segment_1 = require("./Segment");
 var Math_1 = require("../../math/Math");
+var type_1 = require("../data/type");
 var Line = /** @class */ (function () {
     function Line(origin, end) {
         if (origin === void 0) { origin = Vec3_1.v3(); }
@@ -297,6 +298,14 @@ var Line = /** @class */ (function () {
             closests: result === null || result === void 0 ? void 0 : result.closests,
             segmentIndex: maodian,
         };
+    };
+    Line.prototype.orientationPoint = function (point, normal) {
+        if (normal === void 0) { normal = Vec3_1.Vec3.UnitY; }
+        var _binormal = this.direction.clone().cross(normal);
+        var _distance = Number(this.distancePoint(point).distance);
+        if (!Number.isNaN(_distance) && _distance < Math_1.gPrecision)
+            return type_1.Orientation.Common;
+        return point.clone().sub(this.origin).dot(_binormal) > 0 ? type_1.Orientation.Positive : type_1.Orientation.Negative;
     };
     return Line;
 }());

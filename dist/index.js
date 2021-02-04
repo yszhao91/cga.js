@@ -39,4 +39,5 @@ __exportStar(require("./struct/3d/Segment"), exports);
 __exportStar(require("./struct/3d/Triangle"), exports);
 __exportStar(require("./alg/delaunator"), exports);
 __exportStar(require("./alg/voronoi"), exports);
+__exportStar(require("./alg/convexHull"), exports);
 __exportStar(require("./extends/threeaid"), exports);

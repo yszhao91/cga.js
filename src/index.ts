@@ -31,5 +31,6 @@ export * from "./struct/3d/Triangle"
 
 export * from "./alg/delaunator"
 export * from "./alg/voronoi"
+export * from "./alg/convexHull"
 
 export * from "./extends/threeaid"
