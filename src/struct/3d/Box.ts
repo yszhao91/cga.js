@@ -4,13 +4,24 @@ import { v3, Vec3 } from "../../math/Vec3";
  * 
  */
 export class Box {
-    min: Vec3 = v3(Infinity, Infinity, Infinity);
-    max: Vec3 = v3(-Infinity, -Infinity, -Infinity);
+    setFromBufferAttribute(morphAttribute: any) {
+        throw new Error("Method not implemented.");
+    }
+    expandByPoint(_vector: Vec3) {
+        throw new Error("Method not implemented.");
+    }
+    getCenter(center: any) {
+        throw new Error("Method not implemented.");
+    }
+    min: Vec3;
+    max: Vec3;
     _center: Vec3 = v3();
-    constructor(points: any) {
-        if (points) {
-            this.setFromPoints(points);
-        }
+    constructor(min: Vec3 = v3(Infinity, Infinity, Infinity), max: Vec3 = v3(-Infinity, -Infinity, -Infinity)) {
+        this.min = min;
+        this.max = max;
+        // if (points) {
+        //     this.setFromPoints(points);
+        // }
     }
 
     get center() {

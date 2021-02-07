@@ -20,6 +20,9 @@ import { Polyline } from '..';
 // import { wgs84RadiiSquared } from '../gis/gis';
 
 export class Vec3 extends EventHandler {
+  addVectors(min: any, min: Vec3) {
+      throw new Error("Method not implemented.");
+  }
   x!: number;
   y!: number;
   z!: number;
@@ -320,7 +323,7 @@ export class Vec3 extends EventHandler {
     );
   }
 
-  transformDirection(m: { elements: any; }) {
+  transformDirection(m: Mat4) {
     // input: Mat4 affine matrix
     // Vec interpreted as a direction
 

@@ -12,7 +12,7 @@ export function toGeometryBuffer(vertices: number[] | Vec3[], triangles: number[
     var buffer: IGeometryBuffer = toGeoBuffer(vertices, triangles, uvs)
 
     return buffer
-} 
+}
 
 /**
  * shape 挤压后转几何体
@@ -24,8 +24,6 @@ export function extrudeToGeometryBuffer(shape: Polygon | Polyline | Array<Vec3>,
     var extrudeRes = extrude(shape, arg_path, options);
     return toGeometryBuffer(extrudeRes.vertices, extrudeRes.triangles, extrudeRes.uvs);
 }
-
-
 
 
 /**
