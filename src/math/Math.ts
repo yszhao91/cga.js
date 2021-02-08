@@ -62,7 +62,7 @@ export const THREE_PI_OVER_TWO = (3.0 * Math.PI) / 2.0;
  * @type {Number}
  * @constant
  */
-export const TWO_PI = 2.0 * Math.PI;
+export const PI_TWO = 2.0 * Math.PI;
 
 /**
  * 1/2pi

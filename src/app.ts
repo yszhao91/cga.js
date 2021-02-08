@@ -93,22 +93,25 @@ import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial } from 'three';
 
-import { toGeometryBuffer } from './extends/threeaid copy';
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
-import { extrudeNext } from './alg/extrude';
+import { extrudeNext, linkSides } from './alg/extrude';
 import { Polyline } from './struct/3d/Polyline';
+import { PI, PI_OVER_TWO, PI_TWO } from "./math/Math";
+import { clone, scale, translate } from "./alg/common";
+import { BufferGeometry } from "./render/geometry";
+import { toGeoBuffer } from "./render/mesh";
 
 
 // var a = Vec3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0);
 // console.log(a);
 
-// var glv = new GLView({ container: document.body });
+var glv = new GLView({ container: document.body });
 
 
-// glv.run();
+glv.run();
 // var delaunay = new cga.Delaunay()
 
 // var vs = []
@@ -152,3 +155,51 @@ import { Polyline } from './struct/3d/Polyline';
 
 // polyline.offset(1)
 
+
+var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) => {
+    var bq: Vec3[] = []
+    var tq: Vec3[] = []
+    for (let i = 0; i < 33; i++) {
+        var x = Math.cos(PI_TWO / 32 * i)
+        var z = Math.sin(PI_TWO / 32 * i)
+        bq.push(v3(x, 0, z));
+    }
+    tq = clone(bq);
+
+    scale(bq, v3(bottomR, 1, bottomR))
+    var bq1 = clone(bq);
+    translate(bq1, v3(0, bh, 0))
+
+
+    scale(tq, v3(topR, 1, topR))
+    var tq1 = clone(tq);
+
+    translate(tq, v3(0, bh + gh, 0));
+    translate(tq1, v3(0, bh + gh + th, 0));
+
+
+    var sides = [bq, bq1, clone(bq1), tq, clone(tq), tq1];
+    var index = { index: 0 }
+
+    var triangles = linkSides(sides, true, false, index);
+
+    var sides1 = [...bq, ...bq1, ...clone(bq1), ...tq, ...clone(tq), ...tq1];
+    var geometry = toGeoBuffer(sides1, triangles)
+    return geometry;
+}
+
+
+var geometry = dizhu(1.8, 0.9, 0.3, 0.5, 10);
+geometry.computeVertexNormals();
+
+import * as THREE from "three"
+var tgeo = new THREE.BufferGeometry();
+tgeo.setAttribute('position', new THREE.Float32BufferAttribute(geometry.getAttribute('position').array, 3));
+tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribute('normal').array, 3));
+tgeo.setAttribute('uv', new THREE.Float32BufferAttribute(geometry.getAttribute('uv').array, 2));
+tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex()!.array, 1));
+
+var mesh = new Mesh(tgeo, new MeshStandardMaterial({ color: 0xff0000, side: DoubleSide }))
+var box = new THREE.BoxBufferGeometry()
+debugger
+glv.add(mesh)

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toFixedAry = exports.toFixed = exports.ToDegrees = exports.toRadians = exports.floorPowerOfTwo = exports.ceilPowerOfTwo = exports.isPowerOfTwo = exports.randFloat = exports.randInt = exports.smootherstep = exports.smoothstep = exports.lerp = exports.clamp = exports.approximateEqual = exports.sign = exports.RADIANS_PER_ARCSECOND = exports.DEGREES_PER_RADIAN = exports.RADIANS_PER_DEGREE = exports.ONE_OVER_TWO_PI = exports.TWO_PI = exports.THREE_PI_OVER_TWO = exports.PI_OVER_SIX = exports.PI_OVER_FOUR = exports.PI_OVER_THREE = exports.PI_OVER_TWO = exports.ONE_OVER_PI = exports.PI = exports.gPrecision = void 0;
+exports.toFixedAry = exports.toFixed = exports.ToDegrees = exports.toRadians = exports.floorPowerOfTwo = exports.ceilPowerOfTwo = exports.isPowerOfTwo = exports.randFloat = exports.randInt = exports.smootherstep = exports.smoothstep = exports.lerp = exports.clamp = exports.approximateEqual = exports.sign = exports.RADIANS_PER_ARCSECOND = exports.DEGREES_PER_RADIAN = exports.RADIANS_PER_DEGREE = exports.ONE_OVER_TWO_PI = exports.PI_TWO = exports.THREE_PI_OVER_TWO = exports.PI_OVER_SIX = exports.PI_OVER_FOUR = exports.PI_OVER_THREE = exports.PI_OVER_TWO = exports.ONE_OVER_PI = exports.PI = exports.gPrecision = void 0;
 exports.gPrecision = 1e-4;
 /**
  * pi
@@ -57,7 +57,7 @@ exports.THREE_PI_OVER_TWO = (3.0 * Math.PI) / 2.0;
  * @type {Number}
  * @constant
  */
-exports.TWO_PI = 2.0 * Math.PI;
+exports.PI_TWO = 2.0 * Math.PI;
 /**
  * 1/2pi
  *

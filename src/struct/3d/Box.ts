@@ -4,13 +4,19 @@ import { v3, Vec3 } from "../../math/Vec3";
  * 
  */
 export class Box {
+    makeEmpty() {
+        throw new Error("Method not implemented.");
+    }
+    clone(): Box | undefined {
+        throw new Error("Method not implemented.");
+    }
     setFromBufferAttribute(morphAttribute: any) {
         throw new Error("Method not implemented.");
     }
     expandByPoint(_vector: Vec3) {
         throw new Error("Method not implemented.");
     }
-    getCenter(center: any) {
+    getCenter(center: any): Vec3 {
         throw new Error("Method not implemented.");
     }
     min: Vec3;

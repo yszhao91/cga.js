@@ -1,15 +1,17 @@
+
 import { Mat3 } from "../math/Mat3";
 import { Mat4 } from "../math/Mat4";
 import { Vec2 } from "../math/Vec2";
 import { Vec3 } from "../math/Vec3";
 import { Vec4 } from "../math/Vec4";
+import { TypedArray } from "./types";
 
 
 var _vector = new Vec3();
 
 export class BufferAttribute {
     name: string;
-    array: ArrayLike<number>;
+    array: TypedArray;
     itemSize: number;
     // usage: Usage;
     updateRange: { offset: number; count: number };
@@ -24,9 +26,8 @@ export class BufferAttribute {
      * @param itemSize 单元长度，vec3是3，vec4是4
      * @param normalized 
      */
-    constructor(array: ArrayLike<number>, itemSize: number, normalized?: boolean) {
+    constructor(array: TypedArray, itemSize: number, normalized?: boolean) {
         this.name = '';
-
         this.array = array;
         this.itemSize = itemSize;
         this.count = array !== undefined ? array.length / itemSize : 0;
@@ -115,7 +116,7 @@ export class BufferAttribute {
 
     }
 
-    copyVector2sArray(vectors: { x: number; y: number }[]) {
+    copyVec2sArray(vectors: { x: number; y: number }[]) {
 
         var array = this.array, offset = 0;
 
@@ -125,7 +126,7 @@ export class BufferAttribute {
 
             if (vector === undefined) {
 
-                console.warn('THREE.BufferAttribute.copyVector2sArray(): vector is undefined', i);
+                console.warn('THREE.BufferAttribute.copyVec2sArray(): vector is undefined', i);
                 vector = new Vec2();
 
             }
@@ -139,7 +140,7 @@ export class BufferAttribute {
 
     }
 
-    copyVector3sArray(vectors: { x: number; y: number; z: number }[]) {
+    copyVec3sArray(vectors: { x: number; y: number; z: number }[]) {
 
         var array = this.array, offset = 0;
 
@@ -149,7 +150,7 @@ export class BufferAttribute {
 
             if (vector === undefined) {
 
-                console.warn('THREE.BufferAttribute.copyVector3sArray(): vector is undefined', i);
+                console.warn('THREE.BufferAttribute.copyVec3sArray(): vector is undefined', i);
                 vector = new Vec3();
 
             }
@@ -164,7 +165,7 @@ export class BufferAttribute {
 
     }
 
-    copyVector4sArray(vectors: { x: number; y: number; z: number; w: number }[]) {
+    copyVec4sArray(vectors: { x: number; y: number; z: number; w: number }[]) {
 
         var array = this.array, offset = 0;
 
@@ -174,7 +175,7 @@ export class BufferAttribute {
 
             if (vector === undefined) {
 
-                console.warn('THREE.BufferAttribute.copyVector4sArray(): vector is undefined', i);
+                console.warn('THREE.BufferAttribute.copyVec4sArray(): vector is undefined', i);
                 vector = new Vec4();
 
             }
@@ -190,7 +191,7 @@ export class BufferAttribute {
 
     }
 
-    applyMatrix3(m: Mat3) {
+    applyMat3(m: Mat3) {
 
         for (var i = 0, l = this.count; i < l; i++) {
 
@@ -198,7 +199,7 @@ export class BufferAttribute {
             _vector.y = this.getY(i);
             _vector.z = this.getZ(i);
 
-            _vector.applyMatrix3(m);
+            _vector.applyMat3(m);
 
             this.setXYZ(i, _vector.x, _vector.y, _vector.z);
 
@@ -208,7 +209,7 @@ export class BufferAttribute {
 
     }
 
-    applyMatrix4(m: Mat4) {
+    applyMat4(m: Mat4) {
 
         for (var i = 0, l = this.count; i < l; i++) {
 
@@ -216,7 +217,7 @@ export class BufferAttribute {
             _vector.y = this.getY(i);
             _vector.z = this.getZ(i);
 
-            _vector.applyMatrix4(m);
+            _vector.applyMat4(m);
 
             this.setXYZ(i, _vector.x, _vector.y, _vector.z);
 
@@ -226,7 +227,7 @@ export class BufferAttribute {
 
     }
 
-    applyNormalMatrix(m: Mat3) {
+    applyNormalMat(m: Mat3) {
 
         for (var i = 0, l = this.count; i < l; i++) {
 
@@ -234,7 +235,7 @@ export class BufferAttribute {
             _vector.y = this.getY(i);
             _vector.z = this.getZ(i);
 
-            _vector.applyNormalMatrix(m);
+            _vector.applyNormalMat(m);
 
             this.setXYZ(i, _vector.x, _vector.y, _vector.z);
 
@@ -244,7 +245,7 @@ export class BufferAttribute {
 
     }
 
-    transformDirection(m) {
+    transformDirection(m: Mat4) {
 
         for (var i = 0, l = this.count; i < l; i++) {
 
@@ -262,7 +263,7 @@ export class BufferAttribute {
 
     }
 
-    set(value, offset) {
+    set(value: ArrayLike<number>, offset: number) {
 
         if (offset === undefined) offset = 0;
 
@@ -391,7 +392,9 @@ export class BufferAttribute {
 export class Int8BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
-        super(array, itemSize, normalized);
+        if (Array.isArray(array))
+            array = new Int8Array(array)
+        super(new Int8Array(array), itemSize, normalized);
     }
 
 }
@@ -400,6 +403,8 @@ export class Int8BufferAttribute extends BufferAttribute {
 export class Uint8BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Uint8Array(array)
         super(array, itemSize, normalized);
     }
 
@@ -409,6 +414,8 @@ export class Uint8BufferAttribute extends BufferAttribute {
 export class Uint8ClampedBufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Uint8ClampedArray(array)
         super(array, itemSize, normalized);
     }
 
@@ -418,6 +425,8 @@ export class Uint8ClampedBufferAttribute extends BufferAttribute {
 export class Int16BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Int16Array(array)
         super(array, itemSize, normalized);
     }
 
@@ -426,6 +435,8 @@ export class Int16BufferAttribute extends BufferAttribute {
 export class Uint16BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Uint16Array(array)
         super(array, itemSize)
     }
 
@@ -435,6 +446,8 @@ export class Uint16BufferAttribute extends BufferAttribute {
 export class Int32BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Int32Array(array)
         super(array, itemSize, normalized);
     }
 
@@ -443,6 +456,8 @@ export class Int32BufferAttribute extends BufferAttribute {
 export class Uint32BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Uint32Array(array)
         super(array, itemSize, normalized);
     }
 
@@ -451,6 +466,8 @@ export class Uint32BufferAttribute extends BufferAttribute {
 export class Float32BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Float32Array(array)
         super(array, itemSize, normalized);
     }
 
@@ -459,6 +476,8 @@ export class Float32BufferAttribute extends BufferAttribute {
 export class Float64BufferAttribute extends BufferAttribute {
 
     constructor(array: any, itemSize: number, normalized: boolean = false) {
+        if (Array.isArray(array))
+            array = new Float64Array(array)
         super(array, itemSize, normalized);
     }
 

@@ -20,9 +20,6 @@ import { Polyline } from '..';
 // import { wgs84RadiiSquared } from '../gis/gis';
 
 export class Vec3 extends EventHandler {
-  addVectors(min: any, min: Vec3) {
-      throw new Error("Method not implemented.");
-  }
   x!: number;
   y!: number;
   z!: number;
@@ -256,6 +253,10 @@ export class Vec3 extends EventHandler {
 
   applyAxisAngle(axis: any, angle: any) {
     return this.applyQuat(_quat.setFromAxisAngle(axis, angle));
+  }
+
+  applyNormalMat(m: Mat3) {
+    return this.applyMat3(m).normalize();
   }
 
   applyMat3(m: Mat3) {
@@ -688,7 +689,7 @@ export class Vec3 extends EventHandler {
     return v.x === this.x && v.y === this.y && v.z === this.z;
   }
 
-  fromArray(array: { [x: string]: number; }, offset: number | undefined) {
+  fromArray(array: ArrayLike<number>, offset?: number) {
     if (offset === undefined) offset = 0;
 
     this.x = array[offset];
@@ -707,7 +708,7 @@ export class Vec3 extends EventHandler {
     return array;
   }
 
-  fromBufferAttribute(attribute: { getX: (arg0: any) => number; getY: (arg0: any) => number; getZ: (arg0: any) => number; }, index: any, offset: undefined) {
+  fromBufferAttribute(attribute: { getX: (arg0: any) => number; getY: (arg0: any) => number; getZ: (arg0: any) => number; }, index: any, offset?: number) {
     if (offset !== undefined) {
       console.warn(
         "Vec3: offset has been removed from .fromBufferAttribute()."

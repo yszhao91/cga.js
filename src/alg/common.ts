@@ -24,7 +24,7 @@ const _vector = v3();
  * @param {Array} array
  */
 export function clone(array: any | any[]) {
-    var result = new Array() 
+    var result = new Array()
     for (let i = 0; i < array.length; i++) {
         var ele = array[i];
         if (ele instanceof Number || ele instanceof String)
@@ -173,7 +173,7 @@ export function rotateByUnitVectors(points: any | Vec3[], vFrom: Vec3, vTo: Vec3
 export function scale(points: any | Vec3[], _scale: Vec3, ref = true): Vec3[] | any {
     if (ref) {
         points.flat(Infinity).forEach((point: Vec3 | any) => {
-            point.scale.multiply(_scale);
+            point.multiply(_scale);
         });
         return points;
     }

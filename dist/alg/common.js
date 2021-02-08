@@ -173,7 +173,7 @@ function scale(points, _scale, ref) {
     if (ref === void 0) { ref = true; }
     if (ref) {
         points.flat(Infinity).forEach(function (point) {
-            point.scale.multiply(_scale);
+            point.multiply(_scale);
         });
         return points;
     }

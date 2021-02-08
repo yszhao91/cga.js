@@ -54,7 +54,7 @@ export declare const THREE_PI_OVER_TWO: number;
  * @type {Number}
  * @constant
  */
-export declare const TWO_PI: number;
+export declare const PI_TWO: number;
 /**
  * 1/2pi
  *

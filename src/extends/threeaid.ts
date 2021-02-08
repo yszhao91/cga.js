@@ -1,4 +1,4 @@
-import { toGeoBuffer, IGeometryBuffer, indexable } from '../render/mesh';
+import { toGeoBuffer, indexable } from '../render/mesh';
 import { Vec3 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
 import { extrude, IExtrudeOptions, linkSide, linkSides } from '../alg/extrude';
@@ -6,10 +6,11 @@ import { Polyline } from '../struct/3d/Polyline';
 import { Polygon } from '../struct/3d/Polygon';
 import { triangulation } from '../alg/trianglution';
 import { flat } from '../utils/array';
+import { BufferGeometry, IBufferGeometry } from '@/render/geometry';
 
 export function toGeometryBuffer(vertices: number[] | Vec3[], triangles: number[], uvs: Vec2[] | number[] = []) {
 
-    var buffer: IGeometryBuffer = toGeoBuffer(vertices, triangles, uvs)
+    var buffer: BufferGeometry = toGeoBuffer(vertices, triangles, uvs)
 
     return buffer
 }

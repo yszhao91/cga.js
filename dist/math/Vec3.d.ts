@@ -46,6 +46,7 @@ export declare class Vec3 extends EventHandler {
     multiplyVecs(a: Vec3, b: Vec3): this;
     applyEuler(euler: Euler): this;
     applyAxisAngle(axis: any, angle: any): this;
+    applyNormalMat(m: Mat3): this;
     applyMat3(m: Mat3): this;
     applyMat4(m: Mat4): this;
     applyQuat(q: {
@@ -62,9 +63,7 @@ export declare class Vec3 extends EventHandler {
         projectionMatrixInverse: any;
         matrixWorld: any;
     }): this;
-    transformDirection(m: {
-        elements: any;
-    }): this;
+    transformDirection(m: Mat4): this;
     divide(v: Vec3): this;
     divideScalar(scalar: number): this;
     min(v: Vec3): this;
@@ -126,15 +125,13 @@ export declare class Vec3 extends EventHandler {
         elements: any;
     }, index: number): this;
     equals(v: Vec3): boolean;
-    fromArray(array: {
-        [x: string]: number;
-    }, offset: number | undefined): this;
+    fromArray(array: ArrayLike<number>, offset?: number): this;
     toArray(array?: number[], offset?: number): number[];
     fromBufferAttribute(attribute: {
         getX: (arg0: any) => number;
         getY: (arg0: any) => number;
         getZ: (arg0: any) => number;
-    }, index: any, offset: undefined): this;
+    }, index: any, offset?: number): this;
     toFixed(fractionDigits: number | undefined): this;
     distancePoint(point: Vec3): DistanceResult;
     distanceVec3(point: Vec3): DistanceResult;

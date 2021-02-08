@@ -230,6 +230,9 @@ var Vec3 = /** @class */ (function (_super) {
     Vec3.prototype.applyAxisAngle = function (axis, angle) {
         return this.applyQuat(_quat.setFromAxisAngle(axis, angle));
     };
+    Vec3.prototype.applyNormalMat = function (m) {
+        return this.applyMat3(m).normalize();
+    };
     Vec3.prototype.applyMat3 = function (m) {
         var x = this.x, y = this.y, z = this.z;
         var e = m.elements;

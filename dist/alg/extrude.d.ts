@@ -18,10 +18,13 @@ export declare function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClo
 /**
  * 缝合shape集合
  * @param {Array<Array<Point|Vec3>} shapes  路基 点集的集合， 每个shape的点数量一致
- * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+ * @param {Boolean} isClosed 每一个shape是否是封闭的界面 默认false
+ * @param {Boolean} isClosed 每一个shape是否是封闭的首尾 默认false
  * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
-export declare function linkSides(shapes: Array<Array<Vec3 | Point>>, isClosed?: boolean, isClosed2?: boolean): any[];
+export declare function linkSides(shapes: Array<Array<Vec3 | Point>>, isClosed?: boolean, isClosed2?: boolean, index?: {
+    index: number;
+}): any[];
 /**
  * 缝合集合
  * @param sides 圈

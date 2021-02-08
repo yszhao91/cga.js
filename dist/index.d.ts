@@ -28,3 +28,5 @@ export * from "./struct/3d/Triangle";
 export * from "./alg/delaunator";
 export * from "./alg/voronoi";
 export * from "./extends/threeaid";
+export * from "./render/geometry";
+export * from "./render/mesh";

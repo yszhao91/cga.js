@@ -26,6 +26,16 @@ var Vec = /** @class */ (function (_super) {
         }
         return _this;
     }
+    Vec.max = function (array) {
+        if (array.length === 0)
+            return -Infinity;
+        var max = array[0];
+        for (var i = 1, l = array.length; i < l; ++i) {
+            if (array[i] > max)
+                max = array[i];
+        }
+        return max;
+    };
     return Vec;
 }(Array));
 exports.Vec = Vec;

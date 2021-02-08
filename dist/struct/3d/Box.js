@@ -6,14 +6,31 @@ var Vec3_1 = require("../../math/Vec3");
  *
  */
 var Box = /** @class */ (function () {
-    function Box(points) {
-        this.min = Vec3_1.v3(Infinity, Infinity, Infinity);
-        this.max = Vec3_1.v3(-Infinity, -Infinity, -Infinity);
+    function Box(min, max) {
+        if (min === void 0) { min = Vec3_1.v3(Infinity, Infinity, Infinity); }
+        if (max === void 0) { max = Vec3_1.v3(-Infinity, -Infinity, -Infinity); }
         this._center = Vec3_1.v3();
-        if (points) {
-            this.setFromPoints(points);
-        }
+        this.min = min;
+        this.max = max;
+        // if (points) {
+        //     this.setFromPoints(points);
+        // }
     }
+    Box.prototype.makeEmpty = function () {
+        throw new Error("Method not implemented.");
+    };
+    Box.prototype.clone = function () {
+        throw new Error("Method not implemented.");
+    };
+    Box.prototype.setFromBufferAttribute = function (morphAttribute) {
+        throw new Error("Method not implemented.");
+    };
+    Box.prototype.expandByPoint = function (_vector) {
+        throw new Error("Method not implemented.");
+    };
+    Box.prototype.getCenter = function (center) {
+        throw new Error("Method not implemented.");
+    };
     Object.defineProperty(Box.prototype, "center", {
         get: function () {
             return this._center.add(this.min, this.max).multiplyScalar(0.5);

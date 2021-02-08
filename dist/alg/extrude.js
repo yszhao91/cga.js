@@ -97,14 +97,18 @@ exports.linkSide = linkSide;
 /**
  * 缝合shape集合
  * @param {Array<Array<Point|Vec3>} shapes  路基 点集的集合， 每个shape的点数量一致
- * @param {Boolean} isClosed 每一个shape是否是封闭的圈 默认false
+ * @param {Boolean} isClosed 每一个shape是否是封闭的界面 默认false
+ * @param {Boolean} isClosed 每一个shape是否是封闭的首尾 默认false
  * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
-function linkSides(shapes, isClosed, isClosed2) {
+function linkSides(shapes, isClosed, isClosed2, index) {
     if (isClosed === void 0) { isClosed = false; }
     if (isClosed2 === void 0) { isClosed2 = false; }
     var length = isClosed2 ? shapes.length : shapes.length - 1;
     var triangles = [];
+    debugger;
+    if (index)
+        mesh_1.indexable(shapes, index);
     for (var i = 0; i < length; i++) {
         triangles.push.apply(triangles, linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
     }
