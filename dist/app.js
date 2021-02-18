@@ -107,7 +107,6 @@ tgeo.setAttribute('position', new THREE.Float32BufferAttribute(geometry.getAttri
 tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribute('normal').array, 3));
 tgeo.setAttribute('uv', new THREE.Float32BufferAttribute(geometry.getAttribute('uv').array, 2));
 tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex().array, 1));
-var mesh = new three_1.Mesh(tgeo, new three_1.MeshStandardMaterial({ color: 0xff0000, side: three_1.DoubleSide }));
+var mesh = new three_1.Mesh(tgeo, new three_1.MeshStandardMaterial({ color: 0xff0000, side: three_1.FrontSide }));
 var box = new THREE.BoxBufferGeometry();
-debugger;
 glv.add(mesh);

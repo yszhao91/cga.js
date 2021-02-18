@@ -85,7 +85,6 @@ export class BufferGeometry {
     }
 
     setIndex(index: BufferAttribute | TypedArray | number[]) {
-        debugger
         if (Array.isArray(index)) {
             this.index = new (Vec.max(index as any) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute)(index, 1);
         } else if (index instanceof BufferAttribute) {

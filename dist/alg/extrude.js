@@ -106,7 +106,6 @@ function linkSides(shapes, isClosed, isClosed2, index) {
     if (isClosed2 === void 0) { isClosed2 = false; }
     var length = isClosed2 ? shapes.length : shapes.length - 1;
     var triangles = [];
-    debugger;
     if (index)
         mesh_1.indexable(shapes, index);
     for (var i = 0; i < length; i++) {

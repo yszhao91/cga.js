@@ -93,7 +93,7 @@ import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide } from 'three';
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
@@ -199,7 +199,7 @@ tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribu
 tgeo.setAttribute('uv', new THREE.Float32BufferAttribute(geometry.getAttribute('uv').array, 2));
 tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex()!.array, 1));
 
-var mesh = new Mesh(tgeo, new MeshStandardMaterial({ color: 0xff0000, side: DoubleSide }))
+var mesh = new Mesh(tgeo, new MeshStandardMaterial({ color: 0xff0000, side: FrontSide }))
 var box = new THREE.BoxBufferGeometry()
-debugger
+
 glv.add(mesh)

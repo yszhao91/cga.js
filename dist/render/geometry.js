@@ -42,7 +42,6 @@ var BufferGeometry = /** @class */ (function () {
         return this.index;
     };
     BufferGeometry.prototype.setIndex = function (index) {
-        debugger;
         if (Array.isArray(index)) {
             this.index = new (Vec_1.Vec.max(index) > 65535 ? buffer_attribute_1.Uint32BufferAttribute : buffer_attribute_1.Uint16BufferAttribute)(index, 1);
         }

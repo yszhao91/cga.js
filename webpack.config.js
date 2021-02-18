@@ -26,7 +26,7 @@ module.exports = {
     contentBase: "./dist", //本地服务器所加载的页面所在的目录
     historyApiFallback: true, //不跳转
     inline: true,
-    port: 9025,
+    port: 9029,
     open: true,
     hot: true
   },

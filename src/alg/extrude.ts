@@ -101,8 +101,7 @@ export function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClosed: boo
  */
 export function linkSides(shapes: Array<Array<Vec3 | Point>>, isClosed = false, isClosed2 = false, index?: { index: number }) {
     var length = isClosed2 ? shapes.length : shapes.length - 1;
-    var triangles = [];
-    debugger
+    var triangles = []; 
     if (index)
         indexable(shapes, index)
     for (var i = 0; i < length; i++) {

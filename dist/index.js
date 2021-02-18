@@ -41,5 +41,6 @@ __exportStar(require("./alg/delaunator"), exports);
 __exportStar(require("./alg/voronoi"), exports);
 __exportStar(require("./extends/threeaid"), exports);
 //Geometry 
+__exportStar(require("./render/buffer-attribute"), exports);
 __exportStar(require("./render/geometry"), exports);
 __exportStar(require("./render/mesh"), exports);

@@ -35,5 +35,6 @@ export * from "./alg/voronoi"
 export * from "./extends/threeaid"
 
 //Geometry 
+export * from "./render/buffer-attribute"
 export * from "./render/geometry"
 export * from "./render/mesh"
