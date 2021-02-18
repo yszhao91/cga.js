@@ -12,7 +12,7 @@ import { verctorToNumbers } from "..";
 
 
 export interface IGeometry {
-    vertices: number[];
+    position: number[];
     normals?: number[];
     indices?: number[];
     uvs?: number[];
@@ -21,7 +21,7 @@ export interface IGeometry {
 }
 
 export interface IBufferGeometry {
-    vertices: Float32Array | undefined;
+    position: Float32Array | undefined;
     indices?: Uint32Array | Uint16Array
     normals?: Float32Array;
     uvs?: Float32Array;
@@ -29,11 +29,6 @@ export interface IBufferGeometry {
     tangents?: Float32Array;
 }
 
-
-/**
- * @author alteredq / http://alteredqualia.com/
- * @author mrdoob / http://mrdoob.com/
- */
 
 var _bufferGeometryId = 1; // BufferGeometry uses odd numbers as Id
 

@@ -1,11 +1,11 @@
 import { Vec3 } from "../math/Vec3";
 import { Vec2 } from "../math/Vec2";
-import { forall } from '../utils/array';
-import { BufferGeometry, IBufferGeometry } from "./geometry";
-import { BufferAttribute, Float32BufferAttribute } from "./buffer-attribute";
-import { Vec4 } from "@/math/Vec4";
+import { flat, forall } from '../utils/array';
+import { BufferGeometry } from "./geometry";
+import { BufferAttribute } from "./buffer-attribute";
+import { Vec4 } from "../math/Vec4";
 import { TypedArray } from "./types";
-import { Float64BufferAttribute } from "_three@0.116.1@three";
+import { triangulation } from "../alg/trianglution";
 
 
 
@@ -48,4 +48,23 @@ export function toGeoBuffer(vertices: BufferAttribute | Array<number | Vec2 | Ve
 }
 
 
-Float64BufferAttribute
+
+/**
+ * 三角剖分后转成几何体
+ * 只考虑XY平面
+ * @param {*} boundary 
+ * @param {*} hole 
+ * @param {*} options 
+ */
+export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }): BufferGeometry {
+    var triangles = triangulation(boundary, holes, options)
+    var vertices = [...boundary, ...flat(holes)]
+    var uvs: any = [];
+
+    vertices.forEach(v => {
+        uvs.push(v.x, v.z);
+    })
+    var geometry = toGeoBuffer(vertices, triangles, uvs);
+
+    return geometry;
+}

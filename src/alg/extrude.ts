@@ -7,7 +7,7 @@ import { Path } from '../struct/3d/Path';
 import { clone, rotateByUnitVectors } from './common';
 import { projectOnPlane, translate } from './pointset';
 import { indexable } from '../render/mesh';
-import { triangulation } from './trianglution';
+import { AxisPlane, triangulation } from './trianglution';
 import { flat } from '../utils/array';
 import { recognitionCCW, recognitionPolygonNormal, recognitionPlane } from './recognition';
 import { Plane } from '../struct/3d/Plane';
@@ -95,19 +95,44 @@ export function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClosed: boo
 /**
  * 缝合shape集合
  * @param {Array<Array<Point|Vec3>} shapes  路基 点集的集合， 每个shape的点数量一致
+ * @param {Boolean} sealStart 每一个shape是否是封闭的界面 默认false
+ * @param {Boolean} isClosed 每一个shape是否是封闭的界面 默认false
  * @param {Boolean} isClosed 每一个shape是否是封闭的界面 默认false
  * @param {Boolean} isClosed 每一个shape是否是封闭的首尾 默认false
  * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
-export function linkSides(shapes: Array<Array<Vec3 | Point>>, isClosed = false, isClosed2 = false, index?: { index: number }) {
+export function linkSides(shapes: Array<Array<Vec3 | Point>>, sealStart: boolean = true, sealEnd: boolean = true, isClosed = false, isClosed2 = false, index?: { index: number }) {
     var length = isClosed2 ? shapes.length : shapes.length - 1;
-    var triangles = []; 
+    var triangles: any = [];
     if (index)
         indexable(shapes, index)
     for (var i = 0; i < length; i++) {
         triangles.push(...linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
     }
 
+    if (sealStart) {
+        shapes.push(clone(shapes[0]));
+        var startTris = triangulation(shapes[shapes.length - 1], undefined, { feature: AxisPlane.XZ });
+        if (index) {
+            startTris.forEach((v, i) => {
+                startTris[i] = v + index?.index;
+            })
+            index.index += shapes[shapes.length - 1].length
+        }
+        triangles.push(...startTris);
+    }
+    if (sealEnd) {
+        shapes.push(clone(shapes[shapes.length - 2]));
+        var endTris = triangulation(shapes[shapes.length - 1], undefined, { feature: AxisPlane.XZ });
+        if (index) {
+            endTris.forEach((v, i) => {
+                endTris[i] = v + index?.index;
+            })
+            index.index += shapes[shapes.length - 1].length
+        }
+        triangles.push(...endTris.reverse());
+    }
+    triangles.shapes = flat(shapes);
     return triangles;
 }
 
@@ -252,7 +277,7 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
     }
     translate(endSeal, path.get(-1));
 
-    var sealStartTris = triangulation(sealUv, [], { normal });
+    var sealStartTris = triangulation(sealUv, [], { normal: normal! });
     sealStartTris.reverse();
 
     if (options.sealStart)

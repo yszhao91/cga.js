@@ -5,6 +5,19 @@ import { clone, rotateByUnitVectors } from './common';
 import { gPrecision } from '../math/Math';
 import { verctorToNumbers } from './pointset';
 
+export enum AxisPlane {
+    XY = 'xy',
+    XZ = 'xz',
+    YZ = 'yz',
+    XYZ = 'xyz',
+}
+
+export interface ITriangulationOption {
+    feature?: AxisPlane;
+    dim?: number;
+    normal?: Vec3;
+}
+
 /** 
  * 三角剖分  earcut.js
  * @param {Array} boundary 边界
@@ -12,13 +25,15 @@ import { verctorToNumbers } from './pointset';
  * @param {options:{feature,dim,normal}} feature 选择平平面 
  * @returns {Array<Number>} 三角形索引数组
  */
-export function triangulation(inboundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
-    options = { feature: "xyz", dim: 3, ...options }
+export function triangulation(inboundary: any, holes: any[] = [], options: ITriangulationOption = { normal: Vec3.UnitZ }) {
+    options = { feature: AxisPlane.XYZ, dim: 3, ...options }
+    if (options.feature !== AxisPlane.XYZ)
+        options.dim = 2;
     let boundary = null;
     let feature = options.feature;
     let dim = options.dim;
     let normal = options.normal;
-    if (normal.dot(Vec3.UnitZ) < 1 - gPrecision) {
+    if (normal && normal.dot(Vec3.UnitZ) < 1 - gPrecision) {
         boundary = clone(inboundary);
         rotateByUnitVectors(boundary, normal, Vec3.UnitZ);
     } else {

@@ -93,7 +93,7 @@ import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, GeometryUtils, SceneUtils } from 'three';
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
@@ -177,14 +177,18 @@ var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) 
     translate(tq, v3(0, bh + gh, 0));
     translate(tq1, v3(0, bh + gh + th, 0));
 
-
     var sides = [bq, bq1, clone(bq1), tq, clone(tq), tq1];
     var index = { index: 0 }
 
-    var triangles = linkSides(sides, true, false, index);
+    var triangles = linkSides(sides, true, true, true, false, index);
 
     var sides1 = [...bq, ...bq1, ...clone(bq1), ...tq, ...clone(tq), ...tq1];
-    var geometry = toGeoBuffer(sides1, triangles)
+    var geometry = toGeoBuffer(triangles.shapes, triangles);
+    var geos = []
+
+
+    geos.push(geometry)
+
     return geometry;
 }
 
@@ -199,7 +203,7 @@ tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribu
 tgeo.setAttribute('uv', new THREE.Float32BufferAttribute(geometry.getAttribute('uv').array, 2));
 tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex()!.array, 1));
 
-var mesh = new Mesh(tgeo, new MeshStandardMaterial({ color: 0xff0000, side: FrontSide }))
+var mesh = new Mesh(tgeo, new MeshStandardMaterial({ color: 0xff0000, side: DoubleSide }))
 var box = new THREE.BoxBufferGeometry()
 
 glv.add(mesh)

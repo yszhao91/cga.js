@@ -44,7 +44,7 @@ export function linkToGeometry(shape: Polygon | Polyline | Array<Vec3>, shape1: 
     return geometry;
 }
 
-/**
+/** 
  * 多个轮廓缝合
  * @param shape 
  * @param isClose 
@@ -60,23 +60,23 @@ export function linksToGeometry(shape: (Polygon | Polyline | Array<Vec3>)[], isC
     return geometry
 }
 
-/**
- * 三角剖分后转成几何体
- * 只考虑XY平面
- * @param {*} boundary 
- * @param {*} hole 
- * @param {*} options 
- */
-export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
-    var triangles = triangulation(boundary, holes, options)
-    var vertices = [...boundary, ...flat(holes)]
-    var uvs: any = [];
-    vertices.reduce((acc, v) => {
-        acc.push(v.x, v.y);
-        return acc;
-    }, uvs);
+// /**
+//  * 三角剖分后转成几何体
+//  * 只考虑XY平面
+//  * @param {*} boundary 
+//  * @param {*} hole 
+//  * @param {*} options 
+//  */
+// export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
+//     var triangles = triangulation(boundary, holes, options)
+//     var vertices = [...boundary, ...flat(holes)]
+//     var uvs: any = [];
+//     vertices.reduce((acc, v) => {
+//         acc.push(v.x, v.y);
+//         return acc;
+//     }, uvs);
 
-    var geometry = toGeometryBuffer(vertices, triangles, uvs);
+//     var geometry = toGeometryBuffer(vertices, triangles, uvs);
 
-    return geometry;
-}
+//     return geometry;
+// }
