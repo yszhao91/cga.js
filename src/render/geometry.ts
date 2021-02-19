@@ -643,7 +643,7 @@ export class BufferGeometry {
 
     computeBoundingSphere() {
 
-        if (this.boundingSphere === null) {
+        if (!this.boundingSphere) {
 
             this.boundingSphere = new Sphere();
 
