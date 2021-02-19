@@ -93,7 +93,7 @@ import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Geometry, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, GeometryUtils, SceneUtils } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, } from 'three';
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
@@ -157,38 +157,33 @@ glv.run();
 
 
 var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) => {
-    var bq: Vec3[] = []
-    var tq: Vec3[] = []
+    var bq: cga.Vec3[] = []
+    var tq: cga.Vec3[] = []
     for (let i = 0; i < 33; i++) {
-        var x = Math.cos(PI_TWO / 32 * i)
-        var z = Math.sin(PI_TWO / 32 * i)
-        bq.push(v3(x, 0, z));
+        var x = Math.cos(cga.PI_TWO / 32 * i)
+        var z = Math.sin(cga.PI_TWO / 32 * i)
+        bq.push(cga.v3(x, 0, z));
     }
-    tq = clone(bq);
+    tq = cga.clone(bq);
 
-    scale(bq, v3(bottomR, 1, bottomR))
-    var bq1 = clone(bq);
-    translate(bq1, v3(0, bh, 0))
-
-
-    scale(tq, v3(topR, 1, topR))
-    var tq1 = clone(tq);
-
-    translate(tq, v3(0, bh + gh, 0));
-    translate(tq1, v3(0, bh + gh + th, 0));
-
-    var sides = [bq, bq1, clone(bq1), tq, clone(tq), tq1];
-    var index = { index: 0 }
-
-    var triangles = linkSides(sides, true, true, true, false, index);
-
-    var sides1 = [...bq, ...bq1, ...clone(bq1), ...tq, ...clone(tq), ...tq1];
-    var geometry = toGeoBuffer(triangles.shapes, triangles);
-    var geos = []
+    cga.scale(bq, cga.v3(bottomR, 1, bottomR))
+    var bq1 = cga.clone(bq);
+    cga.translate(bq1, cga.v3(0, bh, 0))
 
 
-    geos.push(geometry)
+    cga.scale(tq, cga.v3(topR, 1, topR))
+    var tq1 = cga.clone(tq);
 
+    cga.translate(tq, cga.v3(0, bh + gh, 0));
+    cga.translate(tq1, cga.v3(0, bh + gh + th, 0));
+
+    var sides = [bq, bq1, cga.clone(bq1), tq, cga.clone(tq), tq1];
+    var index = { index: 0 };
+
+    var triangles = cga.linkSides(sides, true, true, true, false, index);
+
+    var vetices = triangles.shapes;
+    var geometry = cga.toGeoBuffer(vetices, triangles);
     return geometry;
 }
 
