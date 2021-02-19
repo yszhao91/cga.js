@@ -542,17 +542,23 @@ export class Mat4 {
     return this;
   }
 
-  setPosition(x: number | Vec3 | any, y: number, z: number) {
+  setPosition(x: number | Vec3 | any, y?: number, z?: number) {
     var te = this.elements;
 
     if (x.isVec3) {
       te[12] = x.x;
       te[13] = x.y;
       te[14] = x.z;
-    } else {
+    } else if (y !== undefined && z !== undefined) {
       te[12] = x;
       te[13] = y;
       te[14] = z;
+    } else {
+      if (x.x !== undefined && x.y !== undefined && x.z !== undefined) {
+        te[12] = x.x;
+        te[13] = x.y;
+        te[14] = x.z;
+      }
     }
 
     return this;
@@ -841,7 +847,7 @@ export class Mat4 {
     return this;
   }
 
-  compose(position: Vec3, Quat: { _x: any; _y: any; _z: any; _w: any; }, scale: Euler|Vec3) {
+  compose(position: Vec3, Quat: { _x: any; _y: any; _z: any; _w: any; }, scale: Euler | Vec3) {
     var te = this.elements;
 
     var x = Quat._x,

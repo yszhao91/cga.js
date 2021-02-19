@@ -8,3 +8,5 @@ git add -A
 git commit -m 'xtorcga' 
 
 git push origin master 
+
+cnpm sync xtorcga
