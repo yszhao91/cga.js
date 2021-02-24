@@ -1,6 +1,6 @@
-import { BufferGeometry } from '@/render/geometry';
-import { Plane } from '@/struct/3d/Plane';
-import { Triangle } from '@/struct/3d/Triangle';
+import { BufferGeometry } from '../render/geometry';
+import { Plane } from '../struct/3d/Plane';
+import { Triangle } from '../struct/3d/Triangle';
 import { v3 } from '../math/Vec3';
 
 export function splitPlaneGeometry(plane: Plane, geometry: BufferGeometry) {

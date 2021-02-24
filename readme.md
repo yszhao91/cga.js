@@ -2,7 +2,7 @@
 
 inspire by Wild Magic
 threejs/cga.js 开发交流群：284389784
-2020 年 12 月 10 日 开发很久 typescript 全新版本更新 可以根据自己的需要编译成 js 版 
+2020 年 12 月 10 日 开发很久 typescript 全新版本更新 可以根据自己的需要编译成 js 版
 
 ## 概要
 
@@ -14,25 +14,25 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 
 案例：
 
-[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/xtorcga/)
+[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/cga.js/)
 
-[文档与演示（github）](https://yszhao91.github.io/xtorcga/)
+[文档与演示（github）](https://yszhao91.github.io/cga.js/)
 
-- [点与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html](http://dcgraph.gitee.io/xtorcga/guide/distPointAll.html)
+- [点与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distPointAll.html](http://dcgraph.gitee.io/cga.js/guide/distPointAll.html)
 
-- [线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html](http://dcgraph.gitee.io/xtorcga/guide/distLineAll.html)
+- [线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distLineAll.html](http://dcgraph.gitee.io/cga.js/guide/distLineAll.html)
 
-- [射线与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html](http://dcgraph.gitee.io/xtorcga/guide/distRayAll.html)
+- [射线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distRayAll.html](http://dcgraph.gitee.io/cga.js/guide/distRayAll.html)
 
-- [线段与其他元素的距离 http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html](http://dcgraph.gitee.io/xtorcga/guide/distSegmentAll.html)
-- [常用 https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/xtorcga/guide/%E5%B8%B8%E7%94%A8.html)
+- [线段与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html)
+- [常用 https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html)
 
 ## 安装
 
 ```
-npm install xtorcga-D
+npm install xtorcga -D
 国内
-cnpm install xtorcga-D
+cnpm install xtorcga -D
 ```
 
 ## 使用
@@ -129,7 +129,7 @@ npm run dev  //运行项目，自己更改源码测试
 > ![三角剖分](./docs/.vuepress/public/delaunay.png)
 
 > ```js
-> var vs=[];
+> var vs = [];
 > var data = [];
 > for (let i = 0; i < 10000; i++) {
 >   var x = Math.random() * 1000 - 500;
@@ -137,11 +137,11 @@ npm run dev  //运行项目，自己更改源码测试
 >   vs.push(new Vec3(x, y, 0));
 >   data.push(x, y);
 > }
-> 
+>
 > var delaunator = Delaunator.from(data);
 > // 或者
 > var delaunator = Delaunator.fromVecs(vs);
-> var index = delaunator.triangles;//三角形索引
+> var index = delaunator.triangles; //三角形索引
 > ```
 
 ### voronoi 图构建

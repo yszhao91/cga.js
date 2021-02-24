@@ -1,4 +1,4 @@
-import { Vec3 } from '../math/Vec3';
+import { Vec3 } from '../src/math/Vec3';
 
 export const wgs84OneOverRadii = new Vec3(
     1.0 / 6378137.0,

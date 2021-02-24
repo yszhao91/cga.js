@@ -10,14 +10,14 @@ const path = require("path");
 const resolve = dir => path.resolve(__dirname, dir);
 
 module.exports = {
-  entry: __dirname + "/src/app.ts", //已多次提及的唯一入口文件
+  entry: __dirname + "/index.ts", //已多次提及的唯一入口文件
   output: {
     path: __dirname + "/dist",
     filename: "[name].[hash].js"
   },
   resolve: {
     alias: {
-      "@/*": __dirname + "/src/*",
+      "@/*": __dirname + "/*",
     },
     extensions: [".tsx", ".ts", ".js"]//解析类型
   },
@@ -26,7 +26,7 @@ module.exports = {
     contentBase: "./dist", //本地服务器所加载的页面所在的目录
     historyApiFallback: true, //不跳转
     inline: true,
-    port: 9029,
+    port: 2021,
     open: true,
     hot: true
   },

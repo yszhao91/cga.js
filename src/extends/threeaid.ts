@@ -6,7 +6,7 @@ import { Polyline } from '../struct/3d/Polyline';
 import { Polygon } from '../struct/3d/Polygon';
 import { triangulation } from '../alg/trianglution';
 import { flat } from '../utils/array';
-import { BufferGeometry, IBufferGeometry } from '@/render/geometry';
+import { BufferGeometry, IBufferGeometry } from '../render/geometry';
 
 export function toGeometryBuffer(vertices: number[] | Vec3[], triangles: number[], uvs: Vec2[] | number[] = []) {
 
