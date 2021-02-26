@@ -24,9 +24,9 @@ export class UrlTemplateImageryProvider {
             console.error("requestImage must not be called before the imagery provider is ready.")
         }
         //>>includeEnd('debug');
-        return ImageryProvider.loadImage(
-            this,
-            buildImageResource(this, x, y, level, request)
-        );
+        // return ImageryProvider.loadImage(
+        //     this,
+        //     buildImageResource(this, x, y, level, request)
+        // );
     }
 }

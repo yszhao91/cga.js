@@ -8,21 +8,21 @@ export class ImageryProvider {
     }
 
     static loadImage(imageryProvider: any, url: string) {
-        var resource = Resource.createIfNeeded(url);
-        if (
-            isDefined(imageryProvider) &&
-            isDefined(imageryProvider.tileDiscardPolicy)
-        ) {
-            return resource.fetchImage({
-                preferBlob: true,
-                preferImageBitmap: true,
-                flipY: true,
-            });
-        }
+        // var resource = Resource.createIfNeeded(url);
+        // if (
+        //     isDefined(imageryProvider) &&
+        //     isDefined(imageryProvider.tileDiscardPolicy)
+        // ) {
+        //     return resource.fetchImage({
+        //         preferBlob: true,
+        //         preferImageBitmap: true,
+        //         flipY: true,
+        //     });
+        // }
 
-        return resource.fetchImage({
-            preferImageBitmap: true,
-            flipY: true,
-        });
+        // return resource.fetchImage({
+        //     preferImageBitmap: true,
+        //     flipY: true,
+        // });
     }
 }

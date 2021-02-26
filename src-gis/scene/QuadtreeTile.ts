@@ -1,4 +1,4 @@
-import { Undefinable } from "@/utils/types";
+import { Undefinable } from "src/utils/types";
 import { Rectangle } from "src-gis/core/Rectangle";
 import { GeographicTilingScheme } from "./GeographicTilingScheme";
 // * The state of a {@link QuadtreeTile} in the tile load pipeline.

@@ -2,14 +2,15 @@
   "name": "xtorcga",
   "version": "0.0.34-1",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "release": "tsc && npm publish && git.sh",
     "dev": "webpack-dev-server",
     "build:dev": "webpack --mode development",
     "build:prod": "webpack --mode production",
     "build": "tsc && rollup -c",
+    "rollup": "rollup -c",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
     "deploy": "deploy.sh"

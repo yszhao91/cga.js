@@ -8,7 +8,7 @@ import { BufferAttribute, Float32BufferAttribute, Uint16BufferAttribute, Uint32B
 import { isBufferArray, TypedArray } from "./types";
 import { Vec2 } from "../math/Vec2";
 import { Vec4 } from "../math/Vec4";
-import { verctorToNumbers } from "..";
+import { verctorToNumbers } from "../alg/common";
 
 
 export interface IGeometry {

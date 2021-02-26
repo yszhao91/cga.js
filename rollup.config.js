@@ -31,11 +31,13 @@ const plugins = [
         // namedExports: {
         //     'node_modules/eventemitter2/lib/eventemitter2.js': ['EventEmitter2']
         // }
+        // 'namedExports': {
+        //     './dist/src/index.js': ['__moduleExports']
+        // }
     })
 ];
 
-if (MIN)
-{
+if (MIN) {
     plugins.push(uglify({
         output: {
             comments: /@license/
@@ -45,11 +47,11 @@ if (MIN)
 }
 
 export default {
-    input: path.join('dist', 'index.js'),
+    input: path.join('dist', 'src/index.js'),
     external: ['lodash'],
     plugins: plugins,
     output: {
-        file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
+        file: path.join(DIST ? 'dist' : 'build', 'cga_gis' + (MIN ? '.min' : '') + '.js'),
         format: 'iife',
         // format: 'umd',
         name: 'cga',
