@@ -51,7 +51,7 @@ export default {
     external: ['lodash'],
     plugins: plugins,
     output: {
-        file: path.join(DIST ? 'dist' : 'build', 'cga_gis' + (MIN ? '.min' : '') + '.js'),
+        file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
         format: 'iife',
         // format: 'umd',
         name: 'cga',
