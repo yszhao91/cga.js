@@ -34,9 +34,6 @@
     "gis"
   ],
   "license": "MIT",
-  "dependencies": {
-    "three": "^0.125.2"
-  },
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@types/earcut": "^2.1.1",
@@ -54,6 +51,7 @@
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-gzip": "^2.2.0",
+    "three": "^0.125.2",
     "rollup-plugin-node-resolve": "^5.0.1",
     "rollup-plugin-uglify": "^6.0.4",
     "rollup-watch": "^4.3.1",
