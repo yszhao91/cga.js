@@ -1,6 +1,6 @@
 import { EndType, JoinType } from "../../alg/extrude";
 import { gPrecision } from "../../math/Math";
-import { Vec3 } from "../../math/Vec3";
+import { IVec3, Vec3 } from "../../math/Vec3";
 import { ArrayEx } from "../data/ArrayEx";
 import { Line } from "./Line";
 import { Segment } from "./Segment";
@@ -12,7 +12,7 @@ import { Segment } from "./Segment";
 export class Polyline extends ArrayEx {
     isCoPlanar: boolean;
     isPolyline: boolean = true;
-    constructor(vs: any[] = [], public normal: Vec3 = Vec3.UnitY) {
+    constructor(vs: Array<Vec3 | IVec3> = [], public normal: Vec3 = Vec3.UnitY) {
         super();
         Object.setPrototypeOf(this, Polyline.prototype);
         this.push(...vs);

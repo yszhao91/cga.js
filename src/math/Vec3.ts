@@ -9,7 +9,7 @@ import { Ray } from '../struct/3d/Ray';
 import { Segment } from '../struct/3d/Segment';
 import { Plane } from '../struct/3d/Plane';
 import { buildAccessors } from '../render/thing';
-import { EventHandler } from '../render/eventhandler'; 
+import { EventHandler } from '../render/eventhandler';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
 import { Rectangle } from '../struct/3d/Rectangle';
@@ -17,8 +17,18 @@ import { Circle } from '../struct/3d/Circle';
 import { Disk } from '../struct/3d/Disk';
 import { Polyline } from '..';
 // import { wgs84RadiiSquared } from '../gis/gis';
+export interface IVec2 {
+  x: number;
+  y: number;
+}
+export interface IVec3 extends IVec2 {
+  z: number;
+}
+export interface IVec4 extends IVec3 {
+  w: number;
+}
 
-export class Vec3 extends EventHandler {
+export class Vec3 extends EventHandler implements IVec3 {
   x!: number;
   y!: number;
   z!: number;

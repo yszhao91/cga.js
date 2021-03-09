@@ -1,8 +1,17 @@
+/*
+ * @Author       : 赵耀圣
+ * @Date         : 2020-12-10 15:01:42
+ * @QQ           : 549184003
+ * @LastEditTime : 2021-03-09 16:22:54
+ * @FilePath     : \cga.js\src\struct\3d\Path.ts
+ */
 
-import { Vec3 } from '../../math/Vec3';
+
+import { IVec3, Vec3 } from '../../math/Vec3';
 import { Point } from './Point';
 import { clamp } from '../../math/Math';
 import { Polyline } from './Polyline';
+import { isDefined } from 'src/utils/types';
 // import { Polyline } from './PolyLine';
 
 export interface IDistanceResut {
@@ -12,7 +21,7 @@ export interface IDistanceResut {
 
 export class Path extends Polyline {
     _closed: boolean;
-    constructor(vs: any[]) { 
+    constructor(vs: Array<Vec3 | IVec3>) {
         super(vs);
         Object.setPrototypeOf(this, Path.prototype);
         this._closed = false;
@@ -199,5 +208,48 @@ export class Path extends Polyline {
         }
 
 
+    }
+
+
+    /**
+     * @description : 计算一段线段的总长度
+     * @param        {ArrayLike} ps
+     * @return       {number}   总长度
+     */
+    static totalMileages(ps: ArrayLike<Vec3>): number {
+        var alldisance = 0
+        for (let i = 0, len = ps.length - 1; i < len; i++) {
+            alldisance += ps[i + 1].distanceTo(ps[i]);
+        }
+
+        return alldisance;
+    }
+
+    /**
+     * @description : 获取没一点的里程  里程是指从第一个点出发的长度
+     * @param        {ArrayLike} ps 里程上的点集
+     * @param        {boolean} normalize 是否归一化
+     * @return       {number[]}  每一个点的里程数组 
+     * @example     : 
+     */
+    static getPerMileages(ps: ArrayLike<Vec3>, normalize: boolean = false, totalMileage?: number): number[] {
+        const res: number[] = [];
+
+        let mileages = 0
+        res.push(mileages);
+        for (let i = 0, len = ps.length - 1; i < len; i++) {
+            mileages += ps[i + 1].distanceTo(ps[i]);
+            res.push(mileages);
+        }
+
+        if (normalize) {
+            const tl = isDefined(totalMileage) ? totalMileage : this.totalMileages(ps);
+
+            for (let i = 0, len = ps.length; i < len; i++) {
+                res[i] /= tl!;
+            }
+        }
+
+        return res;
     }
 }

@@ -1,4 +1,13 @@
-import { Vec3, v3 } from '../math/Vec3';
+/*
+ * @Description  : 挤压相关方法
+ * @Author       : 赵耀圣
+ * @QQ           : 549184003
+ * @Date         : 2020-12-10 15:01:42
+ * @LastEditTime : 2021-03-09 16:30:06
+ * @FilePath     : \cga.js\src\alg\extrude.ts
+ */
+
+import { Vec3, v3, IVec3 } from '../math/Vec3';
 import { Point } from '../struct/3d/Point';
 import { Vec2 } from '../math/Vec2';
 import { Polygon } from '../struct/3d/Polygon';
@@ -12,6 +21,15 @@ import { flat } from '../utils/array';
 import { recognitionCCW, recognitionPolygonNormal, recognitionPlane } from './recognition';
 import { Plane } from '../struct/3d/Plane';
 import { linksToGeometry } from '../extends/threeaid';
+import { isDefined, isUndefined } from 'src/utils/types';
+
+export interface ILinkSideOption {
+    side0: { x: number, y: number, z: number, index?: number }[];
+    side1: { x: number, y: number, z: number, index?: number }[];
+    isClosed?: boolean;
+    autoUV?: boolean;
+    uvScalars?: number[]
+}
 /**
  *  常用shape几何操作
  */
@@ -23,7 +41,11 @@ import { linksToGeometry } from '../extends/threeaid';
  * @param {Boolean} isClosed 
  * @returns {Array<Vec3>} 三角形数组，每三个为一个三角形 
  */
-export function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClosed: boolean = false) {
+export function linkSide(sideOptions: ILinkSideOption) {
+    sideOptions = { isClosed: true, autoUV: true, ...sideOptions };
+    const side0 = sideOptions.side0;
+    const side1 = sideOptions.side1;
+    const isClosed = sideOptions.isClosed;
     if (side0.length !== side1.length)
         throw ("拉伸两边的点数量不一致  linkSide");
 
@@ -54,7 +76,7 @@ export function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClosed: boo
             triangles.push(v01);
         }
     } else {
-        if (side0[0].index !== undefined) {
+        if (isDefined(side0[0].index)) {
             //含索引的顶点
             for (var i = 0; i < length; i++) {
                 var v00 = side0[i];
@@ -87,6 +109,13 @@ export function linkSide(side0: Vec3[] | any, side1: Vec3[] | any, isClosed: boo
                 triangles.push(v11);
             }
         }
+        //uv
+        let uvScalars = sideOptions.uvScalars || [];
+        if (sideOptions.autoUV) {
+            if (sideOptions.uvScalars!.length !== side0.length) {
+                uvScalars = Path.getPerMileages(side0 as any, true)
+            }
+        }
     }
 
     return triangles;
@@ -107,7 +136,7 @@ export function linkSides(shapes: Array<Array<Vec3 | Point>>, sealStart: boolean
     if (index)
         indexable(shapes, index)
     for (var i = 0; i < length; i++) {
-        triangles.push(...linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
+        triangles.push(...linkSide({ side0: shapes[i], side1: shapes[(i + 1) % shapes.length], isClosed }));
     }
 
     if (sealStart) {
@@ -133,6 +162,8 @@ export function linkSides(shapes: Array<Array<Vec3 | Point>>, sealStart: boolean
         triangles.push(...endTris.reverse());
     }
     triangles.shapes = flat(shapes);
+
+
     return triangles;
 }
 
@@ -169,6 +200,35 @@ const defaultExtrudeOption: IExtrudeNextOptions = {
     sealEnd: false,
     normal: Vec3.UnitZ,
     vecdim: 3,
+}
+
+export interface IExtrudeOptionsEx {
+    shape: Array<Vec3 | IVec3>;//shape默认的矩阵为正交矩阵
+    path: Array<Vec3 | IVec3>;
+    ups?: Array<Vec3 | IVec3>;
+    fixedY?: boolean;
+    isClosed?: boolean;//闭合为多边形 界面
+    isClosed2?: boolean;//首尾闭合为圈
+    textureEnable?: boolean;
+    smoothAngle?: number;
+    sealStart?: boolean;
+    sealEnd?: boolean;
+    normal?: Vec3,
+}
+
+/**
+ * @description : 挤压形状生成几何体
+ * @param        {IExtrudeOptionsEx} options
+ * @return       {*} 
+ * @example     : 
+ */
+export function extrudeEx(options: IExtrudeOptionsEx): any {
+    const path = new Path(options.path);
+    const shapes = [];
+    for (let index = 0; index < options.path.length; index++) {
+        const point = options.path[index];
+
+    }
 }
 
 /**
@@ -363,83 +423,83 @@ export enum EndType {
     Butt
 }
 
-/**
- * 
- * @param shape 
- * @param followPath 
- * @param options 
- */
-export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<number>, followPath: Array<Vec3> | Path, options: IExtrudeNextOptions = defaultExtrudeOption) {
+// /**
+//  * 
+//  * @param shape 
+//  * @param followPath 
+//  * @param options 
+//  */
+// export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<number>, followPath: Array<Vec3> | Path, options: IExtrudeNextOptions = defaultExtrudeOption) {
 
-    var shapeAry: Array<Vec3> = [];
-    if (!isNaN(shape[0])) {
-        //数字数组转向量数据
-        var axis = ['x', 'y', 'z'];
-        for (let i = 0; i < shape.length; i += options.vecdim!) {
-            var pt: any = new Vec3();
-            for (let j = 0; j < options.vecdim!; j++) {
-                pt[axis[j]] = shape[i + j];
-            }
-            shapeAry.push(pt);
-        }
-        shape = shapeAry;
-    }
+//     var shapeAry: Array<Vec3> = [];
+//     if (!isNaN(shape[0])) {
+//         //数字数组转向量数据
+//         var axis = ['x', 'y', 'z'];
+//         for (let i = 0; i < shape.length; i += options.vecdim!) {
+//             var pt: any = new Vec3();
+//             for (let j = 0; j < options.vecdim!; j++) {
+//                 pt[axis[j]] = shape[i + j];
+//             }
+//             shapeAry.push(pt);
+//         }
+//         shape = shapeAry;
+//     }
 
-    //截面所在的平面
+//     //截面所在的平面
 
-    if (!recognitionCCW(shape as Vec3[])) {
-        //逆时针
-        shape.reverse();
-    }
-    if (!options.normal) {
-        //识别法线
-        options.normal = recognitionPlane(shape).normal;
-    }
-    //旋转到xy平面
+//     if (!recognitionCCW(shape as Vec3[])) {
+//         //逆时针
+//         shape.reverse();
+//     }
+//     if (!options.normal) {
+//         //识别法线
+//         options.normal = recognitionPlane(shape).normal;
+//     }
+//     //旋转到xy平面
 
-    if (options.center) {
-        //偏移
-        translate(shape, options.center)
-    }
+//     if (options.center) {
+//         //偏移
+//         translate(shape, options.center)
+//     }
 
-    const shapepath = new Path(shape);
-    let insertNum = 0;
-    for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
-        if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
-            shape.splice(i + insertNum++, 0, shapepath[i].clone());
-    }
+//     const shapepath = new Path(shape);
+//     let insertNum = 0;
+//     for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+//         if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
+//             shape.splice(i + insertNum++, 0, shapepath[i].clone());
+//     }
 
-    if (options.sealStart) {
+//     if (options.sealStart) {
 
-    }
+//     }
 
-    if (options.sealEnd) {
+//     if (options.sealEnd) {
 
-    }
+//     }
 
 
-    //计算截面uv 
-    for (let i = 0; i < shape.length; i++) {
-        const pt = shape[i];
-        pt.u = pt.tlen;
+//     //计算截面uv 
+//     for (let i = 0; i < shape.length; i++) {
+//         const pt = shape[i];
+//         pt.u = pt.tlen;
 
-        var linkShapes = [];
-        for (let i = 1; i < followPath.length - 1; i++) {
-            const node = followPath[i];
-            var dir = node.tangent;
-            var newShape = clone(shape);
+//         var linkShapes = [];
+//         for (let i = 1; i < followPath.length - 1; i++) {
+//             const node = followPath[i];
+//             var dir = node.tangent;
+//             var newShape = clone(shape);
 
-            //节点平分线
-            const pnormal = followPath[i + 1].clone().sub(followPath[i]).normalize().add(followPath[i].clone().sub(followPath[i - 1]).normalize()).normalize();
-            const jointPlane = Plane.setFromPointNormal(node, pnormal);
-            jointPlane.negate();
-            var projectDir = v3().subVecs(node, followPath[i - 1]).normalize();
+//             //节点平分线
+//             const pnormal = followPath[i + 1].clone().sub(followPath[i]).normalize().add(followPath[i].clone().sub(followPath[i - 1]).normalize()).normalize();
+//             const jointPlane = Plane.setFromPointNormal(node, pnormal);
+//             jointPlane.negate();
+//             var projectDir = v3().subVecs(node, followPath[i - 1]).normalize();
 
-            projectOnPlane(newShape, jointPlane, projectDir);
+//             projectOnPlane(newShape, jointPlane, projectDir);
 
-            linkShapes.push(newShape);
-        }
+//             linkShapes.push(newShape);
+//         }
 
-        linksToGeometry(linkShapes);
-    }
-}
+//         linksToGeometry(linkShapes);
+//     }
+// }
