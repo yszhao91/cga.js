@@ -97,7 +97,7 @@ import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, Line
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
-import { extrudeNext, linkSides } from './alg/extrude';
+import { extrudeEx, linkSides } from './alg/extrude';
 import { Polyline } from './struct/3d/Polyline';
 import { PI, PI_OVER_TWO, PI_TWO } from "./math/Math";
 import { clone, scale, translate } from "./alg/common";
@@ -180,14 +180,14 @@ var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) 
     var sides = [bq, bq1, cga.clone(bq1), tq, cga.clone(tq), tq1];
     var index = { index: 0 };
 
-    var triangles = cga.linkSides(sides, true, true, true, false, index);
-
+    var triangles = cga.linkSides({ shapes: sides, index });
+    debugger
     var vetices = triangles.shapes;
     var geometry = cga.toGeoBuffer(vetices, triangles);
     return geometry;
 }
 
-
+debugger
 var geometry = dizhu(1.8, 0.9, 0.3, 0.5, 10);
 geometry.computeVertexNormals();
 

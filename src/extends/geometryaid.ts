@@ -1,3 +1,11 @@
+/*
+ * @Description  : 
+ * @Author       : 赵耀圣
+ * @Q群           : 632839661
+ * @Date         : 2020-12-10 15:01:42
+ * @LastEditTime : 2021-03-10 17:30:02
+ * @FilePath     : \cga.js\src\extends\geometryaid.ts
+ */
 import { toGeoBuffer, indexable } from '../render/mesh';
 import { Vec3 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
@@ -34,10 +42,10 @@ export function extrudeToGeometryBuffer(shape: Polygon | Polyline | Array<Vec3>,
  * @param {*} options 
  * @param {*} material 
  */
-export function linkToGeometry(shape: Polygon | Polyline | Array<Vec3>, shape1: Polygon | Polyline | Array<Vec3>, isClose: boolean = false) {
+export function linkToGeometry(shape: Polygon | Polyline | Array<Vec3>, shape1: Polygon | Polyline | Array<Vec3>, shapeClose: boolean = false) {
     const vertices = [...shape, ...shape1];
     indexable(vertices)
-    const tris = linkSide(shape, shape1, isClose)
+    const tris = linkSides({ shapes: [shape, shape1], shapeClosed: shapeClose })
 
     const geometry = toGeometryBuffer(vertices, tris);
 
@@ -46,18 +54,18 @@ export function linkToGeometry(shape: Polygon | Polyline | Array<Vec3>, shape1: 
 
 /** 
  * 多个轮廓缝合
- * @param shape 
+ * @param shapes 
  * @param isClose 
  * @param material 
  */
-export function linksToGeometry(shape: (Polygon | Polyline | Array<Vec3>)[], isClose: boolean = false) {
-    const vertices = flat(shape);
+export function linksToGeometry(shapes: (Polygon | Polyline | Array<Vec3>)[], pathClosed: boolean = true, shapeClosed: boolean = true) {
+    const vertices = flat(shapes);
     indexable(vertices)
-    const tris = linkSides(shape, isClose)
+    const tris = linkSides({ shapes, shapeClosed: pathClosed });
 
     const geometry = toGeometryBuffer(vertices, tris)
 
-    return geometry
+    return geometry;
 }
 
 // /**

@@ -13,11 +13,11 @@ import { verctorToNumbers } from "../alg/common";
 
 export interface IGeometry {
     position: number[];
-    normals?: number[];
-    indices?: number[];
-    uvs?: number[];
-    uvs2?: number[];
-    tangents?: number[];
+    normal?: number[];
+    index?: number[];
+    uv?: number[];
+    uv2?: number[];
+    tangent?: number[];
 }
 
 export interface IBufferGeometry {

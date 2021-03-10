@@ -2,7 +2,7 @@
  * @Author       : 赵耀圣
  * @Date         : 2020-12-10 15:01:42
  * @QQ           : 549184003
- * @LastEditTime : 2021-03-09 16:22:54
+ * @LastEditTime : 2021-03-10 17:41:20
  * @FilePath     : \cga.js\src\struct\3d\Path.ts
  */
 
@@ -11,7 +11,7 @@ import { IVec3, Vec3 } from '../../math/Vec3';
 import { Point } from './Point';
 import { clamp } from '../../math/Math';
 import { Polyline } from './Polyline';
-import { isDefined } from 'src/utils/types';
+import { isDefined } from '../../utils/types';
 // import { Polyline } from './PolyLine';
 
 export interface IDistanceResut {

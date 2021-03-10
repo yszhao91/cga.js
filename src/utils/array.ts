@@ -1,3 +1,11 @@
+/*
+ * @Description  : 
+ * @Author       : 赵耀圣
+ * @Q群           : 632839661
+ * @Date         : 2020-12-10 15:01:42
+ * @LastEditTime : 2021-03-10 17:53:50
+ * @FilePath     : \cga.js\src\utils\array.ts
+ */
 import { gPrecision, toFixed as toFixedOne } from '../math/Math';
 
 (Array.prototype as any).get = function (index: number): any {
@@ -14,7 +22,7 @@ import { gPrecision, toFixed as toFixedOne } from '../math/Math';
 
 
 
- 
+
 /**
  * 遍历多级数组中所有对象
  * @param {Array} array 

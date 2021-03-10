@@ -10,7 +10,7 @@ const path = require("path");
 const resolve = dir => path.resolve(__dirname, dir);
 
 module.exports = {
-  entry: __dirname + "/index.ts", //已多次提及的唯一入口文件
+  entry: __dirname + "/src/app.ts", //已多次提及的唯一入口文件
   output: {
     path: __dirname + "/dist",
     filename: "[name].[hash].js"
