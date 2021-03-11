@@ -78,12 +78,12 @@ module.exports = {
     ]
   },
   plugins: [
-    // new copyWebpackPlugin([
-    //   {
-    //     from: __dirname + "/src/assets", //打包的静态资源目录地址
-    //     to: "./assets" //打包到dist下面的public
-    //   }
-    // ]),
+    new copyWebpackPlugin([
+      {
+        from: __dirname + "/src/assets", //打包的静态资源目录地址
+        to: "./assets" //打包到dist下面的public
+      }
+    ]),
     // new TsconfigPathsPlugin({/* options: see below */ }),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({

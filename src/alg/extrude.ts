@@ -3,11 +3,11 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-10 18:00:48
+ * @LastEditTime : 2021-03-11 10:53:02
  * @FilePath     : \cga.js\src\alg\extrude.ts
  */
 
-import { Vec3, v3, IVec3 } from '../math/Vec3';
+import { Vec3, v3, IVec3, IVec2 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
 import { Polygon } from '../struct/3d/Polygon';
 import { Polyline } from '../struct/3d/Polyline';
@@ -18,7 +18,7 @@ import { indexable } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
 import { flat } from '../utils/array';
 import { recognitionCCW, } from './recognition';
-import { isDefined } from '../utils/types';
+import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
 
@@ -44,17 +44,15 @@ export function linkSide(sideOptions: ILinkSideOption) {
     sideOptions = { shapeClosed: true, autoUV: true, ...sideOptions };
     const side0: any = sideOptions.side0;
     const side1: any = sideOptions.side1;
-    const isClosed = sideOptions.shapeClosed;
+    const shapeClosed = sideOptions.shapeClosed;
     if (side0.length !== side1.length)
         throw ("拉伸两边的点数量不一致  linkSide");
 
     if (side0.length < 2 || side1.length < 2)
         return [];
 
-    var sidelength = side0.length;
-
     var orgLen = side0.length;
-    var length = isClosed ? side0.length : side0.length - 1;
+    var length = shapeClosed ? side0.length : side0.length - 1;
 
     var triangles = [];
 
@@ -122,13 +120,17 @@ export function linkSide(sideOptions: ILinkSideOption) {
  * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
  */
 export interface ILinkSideOptions {
-    shapes: Array<Array<IVec3 | number | any>>;
+    shapes: Array<Array<IVec3 | any | IVec3>>;
+    orgShape: Array<IVec3 | any | IVec3>;
     sealStart?: boolean,//开始封面
     sealEnd?: boolean;//结束封面
     shapeClosed?: boolean,//shape是否闭合
     pathClosed?: boolean,//路径是否闭合
     index?: { index: number },
+    autoIndex?: boolean
     generateUV?: boolean
+    axisPlane?: AxisPlane
+    holes?: Array<Array<IVec3 | any | IVec3>>[]
 }
 
 /**
@@ -147,22 +149,23 @@ export interface ILinkSideOptions {
  * @example     : 
  * 
  */
-export function linkSides(options: ILinkSideOptions) {
+export function linkSides(options: ILinkSideOptions): IGeometry {
     options = {
         sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
         generateUV: true,
+        autoIndex: true,
+        axisPlane: AxisPlane.XY,
         ...options
     }
+
+    if (options.autoIndex)
+        options.index = options.index || { index: 0 };
+
     const shapes = options.shapes;
-    var length = options.shapeClosed ? shapes.length : shapes.length - 1;
+    var length = options.pathClosed ? shapes.length : shapes.length - 1;
     var triangles: any = [];
 
     const index = options.index;
-
-    if (options.sealStart)
-        shapes.unshift(clone(shapes[0]));
-    if (options.sealEnd)
-        shapes.push(clone(shapes[shapes.length - 1]));
 
     if (index)
         indexable(shapes, index)
@@ -173,18 +176,18 @@ export function linkSides(options: ILinkSideOptions) {
 
     if (options.sealStart) {
         shapes.push(clone(shapes[0]));
-        var startTris = triangulation(shapes[shapes.length - 1], undefined, { feature: AxisPlane.XZ });
+        var startTris = triangulation(shapes[shapes.length - 1], undefined, { feature: options.axisPlane });
         if (index) {
             startTris.forEach((v, i) => {
                 startTris[i] = v + index?.index;
             })
-            index.index += shapes[shapes.length - 1].length
+            index.index += shapes[shapes.length - 2].length
         }
         triangles.push(...startTris);
     }
     if (options.sealEnd) {
         shapes.push(clone(shapes[shapes.length - 2]));
-        var endTris = triangulation(shapes[shapes.length - 1], undefined, { feature: AxisPlane.XZ });
+        var endTris = triangulation(shapes[shapes.length - 1], undefined, { feature: options.axisPlane });
         if (index) {
             endTris.forEach((v, i) => {
                 endTris[i] = v + index?.index;
@@ -195,11 +198,11 @@ export function linkSides(options: ILinkSideOptions) {
     }
     triangles.shapes = flat(shapes);
 
+    var uvs = []
     if (options.generateUV) {
-        //生成UV
+        //生成UV 
         const uBasicScalar = new Array(shapes[0].length).fill(0);
-        var uvs = []
-        for (let i = 0; i < shapes.length; i++) {
+        for (let i = 0; i < shapes.length - 2; i++) {
             const shape: Vec3[] = shapes[i] as unknown as Vec3[];
             if (isNaN(shape[0] as any)) {
                 //不是索引才生产纹理，其他都是顶点
@@ -210,33 +213,61 @@ export function linkSides(options: ILinkSideOptions) {
                         return e + shape[k].distanceTo(shapes[i - 1][k]);
                     });
                 else
-                    uScalar = new Array(shapes.length).fill(0);
+                    uScalar = new Array(shapes[0].length).fill(0);
 
                 for (let l = 0; l < uBasicScalar.length; l++) {
                     uvs.push(uScalar[l], vScalar[l]);
                 }
+                if (vScalar.length !== uScalar.length)
+                    throw ("UV不相等")
 
             }
             else
                 console.error("索引无法生成纹理")
         }
-        triangles.uv = uvs;
-    }
 
-    if (isDefined(shapes[0][0].index)) {
-        //收集索引
-        var indices = [];
-        for (let i = 0; i < shapes.length; i++) {
-            const shape = shapes[i];
-            for (let j = 0; j < shape.length; j++) {
-                const v = shape[j];
-                indices.push(v.index);
-            }
+        //前后纹理
+        var sealUvs: any = []
+        switch (options.axisPlane) {
+            case AxisPlane.XY:
+                options.orgShape.map(e => {
+                    sealUvs.push(e.x, e.y)
+                })
+                break;
+            case AxisPlane.XZ:
+                options.orgShape.map(e => {
+                    sealUvs.push(e.x, e.z)
+                })
+                break;
+            case AxisPlane.YZ:
+                options.orgShape.map(e => {
+                    sealUvs.push(e.y, e.z)
+                })
+                break;
+
+            default:
+                break;
         }
-        triangles.index = indices
+        uvs.push(...sealUvs, ...sealUvs);
     }
 
-    return triangles;
+    var indices = triangles || [];
+    // if (isDefined(shapes[0][0].index)) {
+    //     //收集索引
+    //     for (let i = 0; i < shapes.length; i++) {
+    //         const shape = shapes[i];
+    //         for (let j = 0; j < shape.length; j++) {
+    //             const v = shape[j];
+    //             indices.push(v.index);
+    //         }
+    //     }
+    // }
+
+    const positions = verctorToNumbers(shapes);
+    shapes.pop();
+    shapes.pop();
+
+    return { position: positions, index: indices, uv: uvs };
 }
 
 
@@ -252,20 +283,17 @@ export interface IExtrudeOptions {
     normal?: Vec3,
 }
 
-const defaultExtrudeOption: IExtrudeNextOptions = {
-    sectionClosed: false,
-    pathClosed: false,
+const defaultExtrudeOption: IExtrudeOptions = {
     textureEnable: true,
     textureScale: new Vec2(1, 1),
     smoothAngle: Math.PI / 180 * 30,
     sealStart: false,
     sealEnd: false,
     normal: Vec3.UnitZ,
-    vecdim: 3,
 }
 
 export interface IExtrudeOptionsEx {
-    shape: Array<Vec3 | IVec3>;//shape默认的矩阵为正交矩阵
+    shape: Array<Vec3 | IVec3 | Vec2 | IVec2>;//shape默认的矩阵为正交矩阵
     path: Array<Vec3 | IVec3>;
     ups?: Array<Vec3 | IVec3>;
     up?: Vec3 | IVec3;
@@ -276,6 +304,10 @@ export interface IExtrudeOptionsEx {
     sealStart?: boolean;
     sealEnd?: boolean;
     normal?: Vec3,
+    autoIndex?: boolean,
+    axisPlane?: AxisPlane,
+    generateUV?: boolean,
+    index?: { index: number }
 }
 
 const _matrix = m4();
@@ -283,14 +315,41 @@ const _vec1 = v3();
 /**
  * @description : 挤压形状生成几何体
  * @param        {IExtrudeOptionsEx} options
- * @return       {*} 
+ *   IExtrudeOptionsEx {
+ *    shape: Array<Vec3 | IVec3 | Vec2 | IVec2>;//shape默认的矩阵为正交矩阵
+ *    path: Array<Vec3 | IVec3>;//挤压路径
+ *    ups?: Array<Vec3 | IVec3>;
+ *    up?: Vec3 | IVec3;
+ *    shapeClosed?: boolean;//闭合为多边形 界面
+ *    pathClosed?: boolean;//首尾闭合为圈
+ *    textureEnable?: boolean;
+ *    smoothAngle?: number;
+ *    sealStart?: boolean;
+ *    sealEnd?: boolean;
+ *    normal?: Vec3,//面的法线
+ *    autoIndex?: boolean,
+ *    index?: { index: number }
+ *}
+ * @return       {IGeometry} 
  * @example     : 
+ *  
  */
 export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
+    options = {
+        sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
+        generateUV: true,
+        autoIndex: true,
+        axisPlane: AxisPlane.XY, ...options
+    }
     const path = new Path(options.path);
     const shapes = [];
-    const shape = options.shape;
+    let shape: any = options.shape;
     const ups = options.ups || [];
+    if (isUndefined(shape[0].z)) {
+        shape = shape.map((e: any) => v3(e.x, e.y, 0));
+        options.normal = options.normal || Vec3.UnitZ;
+
+    }
     for (let i = 0; i < options.path.length; i++) {
         const point = path[i];
         const direction = (point as any).direction;
@@ -304,22 +363,19 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         shapes.push(new_shape);
     }
 
-    const data = linkSides({
+    const geo: IGeometry = linkSides({
         shapes,
+        orgShape: options.shape,
         sealStart: options.sealStart,
         sealEnd: options.sealEnd,
         shapeClosed: options.shapeClosed,
-        pathClosed: options.pathClosed
+        pathClosed: options.pathClosed,
+        axisPlane: options.axisPlane,
+        autoIndex: options.autoIndex,
+        generateUV: options.generateUV,
     })
 
-    const positions = verctorToNumbers(data);
-    const uv = verctorToNumbers(data.uv) || [];
-
-    return {
-        position: positions,
-        uv: uv,
-        index: data.index
-    }
+    return geo;
 }
 
 /**
@@ -390,10 +446,10 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
         shapeArray.push(newShape);
     }
 
-    const index = { index: 0 };
+    const gindex = { index: 0 };
     var vertices = flat(shapeArray);
-    indexable(vertices, index);
-    var triangles = linkSides({ shapes: shapeArray, shapeClosed: options.shapeClosed, pathClosed: options.isClosed2 });
+    indexable(vertices, gindex);
+    var { index } = linkSides({ shapes: shapeArray, shapeClosed: options.shapeClosed, pathClosed: options.isClosed2, orgShape: shape });
     shapepath = new Path(shape);
     var uvs = [];
 
@@ -432,9 +488,9 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
     sealStartTris.reverse();
 
     if (options.sealStart)
-        indexable(startSeal, index);
+        indexable(startSeal, gindex);
     if (options.sealEnd)
-        indexable(endSeal, index);
+        indexable(endSeal, gindex);
     var sealEndTris = []
     var hasVLen = vertices.length;
     if (options.sealStart)
@@ -453,7 +509,7 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
 
     if (options.sealStart) {
         vertices.push(...startSeal);
-        triangles.push(...sealStartTris);
+        index!.push(...sealStartTris);
         for (let i = 0; i < sealUv.length; i++)
             uvs.push(sealUv[i].x, sealUv[i].y);
     }
@@ -461,33 +517,19 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
     if (options.sealEnd) {
         vertices.push(...endSeal);
         sealEndTris.reverse();
-        triangles.push(...sealEndTris);
+        index!.push(...sealEndTris);
         for (let i = 0; i < sealUv.length; i++)
             uvs.push(sealUv[i].x, sealUv[i].y);
     }
 
     return {
         vertices,
-        triangles,
+        index,
         uvs
     };
 
 }
 
-
-export interface IExtrudeNextOptions {
-    sectionClosed?: boolean;//闭合为多边形 界面
-    pathClosed?: boolean;//首尾闭合为圈
-    textureEnable?: boolean;
-    textureScale?: Vec2;
-    smoothAngle?: number;
-    sealStart?: boolean;//section闭合就考虑是否封前后面
-    sealEnd?: boolean;
-    normal?: Vec3;
-    center?: Vec3;// 沿着路线推进是 始终在路线上，
-    smooth?: boolean;//是否拐点平滑
-    vecdim?: number;//当圈数据为数字数组，这里是向量的维数
-}
 
 /**
  * 是否逆时针

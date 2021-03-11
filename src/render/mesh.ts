@@ -1,3 +1,11 @@
+/*
+ * @Description  : 
+ * @Author       : 赵耀圣
+ * @Q群           : 632839661
+ * @Date         : 2020-12-10 15:01:42
+ * @LastEditTime : 2021-03-11 09:09:57
+ * @FilePath     : \cga.js\src\render\mesh.ts
+ */
 import { Vec3 } from "../math/Vec3";
 import { Vec2 } from "../math/Vec2";
 import { flat, forall } from '../utils/array';
@@ -42,10 +50,12 @@ export function triangListToBuffer(vertices: Vec3[], triangleList: Vec3[]) {
 export function toGeoBuffer(vertices: BufferAttribute | Array<number | Vec2 | Vec3 | Vec4> | TypedArray, indices: number[] | Uint32Array | Uint16Array, uvs?: BufferAttribute | TypedArray | Array<Vec2 | number>): BufferGeometry {
     const geometry = new BufferGeometry();
     geometry.addAttribute('position', vertices, 3)
-    geometry.addAttribute('uv', new Float32Array(geometry.getAttribute('position').array.length / 3 * 2), 2)
+    geometry.addAttribute('uv', uvs || new Float32Array(geometry.getAttribute('position').array.length / 3 * 2), 2)
     geometry.setIndex(indices)
     return geometry;
 }
+
+
 
 
 

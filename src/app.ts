@@ -180,15 +180,17 @@ var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) 
     var sides = [bq, bq1, cga.clone(bq1), tq, cga.clone(tq), tq1];
     var index = { index: 0 };
 
-    var triangles = cga.linkSides({ shapes: sides, index });
-    debugger
-    var vetices = triangles.shapes;
-    var geometry = cga.toGeoBuffer(vetices, triangles);
+    var geo = cga.linkSides({ shapes: sides, index, orgShape: bq });
+
+    var geometry = cga.toGeometryBuffer(geo);
     return geometry;
 }
 
-debugger
-var geometry = dizhu(1.8, 0.9, 0.3, 0.5, 10);
+var shape = [v3(-5, 0, 0), v3(5, 0, 0), v3(5, 10, 0), v3(-5, 10, 0)]
+var geo = extrudeEx({ shape: shape, path: [v3(), v3(10, 0, 10), v3(200, 0, 150)], sealStart: true })
+
+// var geo = dizhu(1.8, 0.9, 0.3, 0.5, 10);
+var geometry = cga.toGeometryBuffer(geo);
 geometry.computeVertexNormals();
 
 import * as THREE from "three"
@@ -198,7 +200,9 @@ tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribu
 tgeo.setAttribute('uv', new THREE.Float32BufferAttribute(geometry.getAttribute('uv').array, 2));
 tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex()!.array, 1));
 
-var mesh = new Mesh(tgeo, new MeshStandardMaterial({ color: 0xff0000, side: DoubleSide }))
-var box = new THREE.BoxBufferGeometry()
+var map = new THREE.TextureLoader().load("./assets/color.jpg");
+map.repeat.set(0.4, 0.4)
+map.wrapT = map.wrapS = THREE.MirroredRepeatWrapping;
+var mesh = new Mesh(tgeo, new MeshStandardMaterial({ side: DoubleSide, map }));
 
-glv.add(mesh)
+glv.add(mesh);
