@@ -1,8 +1,18 @@
+/*
+ * @Description  : 
+ * @Author       : 赵耀圣
+ * @Q群           : 632839661
+ * @Date         : 2020-12-10 15:01:42
+ * @LastEditTime : 2021-03-11 16:35:50
+ * @FilePath     : \cga.js\src\struct\3d\Plane.ts
+ */
 import { Vec3 } from '../../math/Vec3';
 import { approximateEqual, sign, gPrecision } from "../../math/Math";
 import { Segment } from './Segment';
 import { Orientation } from '../data/type';
 import { Triangle } from './Triangle';
+import { IGeometry } from '../../render/geometry';
+import { ISplitResult } from '../../alg/split';
 
 class Plane {
     normal: Vec3;
@@ -143,8 +153,8 @@ class Plane {
      * 切割三角形 编码完成  等待测试
      * @param {Triangle} triangle 
      */
-    splitTriangle(triangle: Triangle | Vec3[]) {
-        const result: any = {
+    splitTriangle(triangle: Triangle | Vec3[]): ISplitResult {
+        const result: ISplitResult = {
             negative: [],
             positive: [], common: [], orientation: Orientation.None
         };
@@ -165,7 +175,7 @@ class Plane {
                 consis++
         }
 
-        // var hasConsis = consis > 0;
+        var hasConsis = consis > 0;
         var hasFront = pos > 0;
         var hasBack = neg > 0;
 
@@ -194,7 +204,8 @@ class Plane {
                         result.common.push(triangle[i]);
                     }
 
-                    var intersectPoint = this.intersectSegmentLw([triangle[i], triangle[(i + 1) % 3]]);
+                    var intersectPoint = this.intersectSegmentLw([triangle[i],
+                    triangle[(i + 1) % 3]]);
                     if (intersectPoint) {
                         if (!Array.isArray(intersectPoint))
                             result.common.push(intersectPoint);
@@ -227,6 +238,35 @@ class Plane {
     }
 
 
+    //静态API
+
+
+    /**
+     * @description : 平面分割几何体
+     * @param        {Plane} plane
+     * @param        {IGeometry} geometry
+     * @return       {IGeometry[]} 返回多个几何体  
+     * @example     : 
+     */
+    static splitGeometry(plane: Plane, geometry: IGeometry) {
+        var indices = geometry.index!;
+        var positions = geometry.position!;
+        for (let i = 0; i < indices.length; i += 3) {
+            const index_a = indices[i * 3] * 3;
+            const index_b = indices[i * 3 + 1] * 3;
+            const index_c = indices[i * 3 + 2] * 3;
+            _v1.set(positions[index_a], positions[index_a + 1], positions[index_a + 2]);
+            _v2.set(positions[index_b], positions[index_b + 1], positions[index_b + 2]);
+            _v3.set(positions[index_c], positions[index_c + 1], positions[index_c + 2]);
+            var data: ISplitResult = plane.splitTriangle(_tris);
+
+        }
+    }
+
 }
 
+const _v1 = new Vec3();
+const _v2 = new Vec3();
+const _v3 = new Vec3();
+const _tris = [_v1, _v2, _v3];
 export { Plane }

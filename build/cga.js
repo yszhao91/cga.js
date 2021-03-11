@@ -2376,7 +2376,6 @@ var cga = (function () {
 
 
 
-	 // import { wgs84RadiiSquared } from '../gis/gis';
 
 
 	var Vec3 =
@@ -7035,7 +7034,52 @@ var cga = (function () {
 	unwrapExports(Polyline_1);
 	var Polyline_2 = Polyline_1.Polyline;
 
+	var types = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.isString = exports.isFinite = exports.isUndefined = exports.isDefined = void 0;
+
+	function isDefined(value) {
+	  return value !== undefined && value !== null;
+	}
+
+	exports.isDefined = isDefined; //Method
+
+	function isUndefined(value) {
+	  return value === undefined;
+	}
+
+	exports.isUndefined = isUndefined;
+
+	function isFinite(value) {
+	  return typeof value == 'number' && globalThis.isFinite(value);
+	}
+
+	exports.isFinite = isFinite;
+
+	function isString(value) {
+	  return typeof value == 'string';
+	}
+
+	exports.isString = isString;
+	});
+
+	unwrapExports(types);
+	var types_1 = types.isString;
+	var types_2 = types.isFinite;
+	var types_3 = types.isUndefined;
+	var types_4 = types.isDefined;
+
 	var Path_1 = createCommonjsModule(function (module, exports) {
+	/*
+	 * @Author       : 赵耀圣
+	 * @Date         : 2020-12-10 15:01:42
+	 * @QQ           : 549184003
+	 * @LastEditTime : 2021-03-10 17:41:20
+	 * @FilePath     : \cga.js\src\struct\3d\Path.ts
+	 */
 
 	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
 	  var extendStatics = function (d, b) {
@@ -7065,6 +7109,8 @@ var cga = (function () {
 	  value: true
 	});
 	exports.Path = void 0;
+
+
 
 
 
@@ -7307,6 +7353,55 @@ var cga = (function () {
 	      if (!this.get(-1).direction) this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();else this.get(-1).direction.copy(pt.direction);
 	      this.push(pt);
 	    }
+	  };
+	  /**
+	   * @description : 计算一段线段的总长度
+	   * @param        {ArrayLike} ps
+	   * @return       {number}   总长度
+	   */
+
+
+	  Path.totalMileages = function (ps) {
+	    var alldisance = 0;
+
+	    for (var i = 0, len = ps.length - 1; i < len; i++) {
+	      alldisance += ps[i + 1].distanceTo(ps[i]);
+	    }
+
+	    return alldisance;
+	  };
+	  /**
+	   * @description : 获取没一点的里程  里程是指从第一个点出发的长度
+	   * @param        {ArrayLike} ps 里程上的点集
+	   * @param        {boolean} normalize 是否归一化
+	   * @return       {number[]}  每一个点的里程数组
+	   * @example     :
+	   */
+
+
+	  Path.getPerMileages = function (ps, normalize, totalMileage) {
+	    if (normalize === void 0) {
+	      normalize = false;
+	    }
+
+	    var res = [];
+	    var mileages = 0;
+	    res.push(mileages);
+
+	    for (var i = 0, len = ps.length - 1; i < len; i++) {
+	      mileages += ps[i + 1].distanceTo(ps[i]);
+	      res.push(mileages);
+	    }
+
+	    if (normalize) {
+	      var tl = types.isDefined(totalMileage) ? totalMileage : this.totalMileages(ps);
+
+	      for (var i = 0, len = ps.length; i < len; i++) {
+	        res[i] /= tl;
+	      }
+	    }
+
+	    return res;
 	  };
 
 	  return Path;
@@ -8460,7 +8555,7 @@ var cga = (function () {
 	var bufferAttribute_9 = bufferAttribute.Int8BufferAttribute;
 	var bufferAttribute_10 = bufferAttribute.BufferAttribute;
 
-	var types = createCommonjsModule(function (module, exports) {
+	var types$1 = createCommonjsModule(function (module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -8473,8 +8568,8 @@ var cga = (function () {
 	};
 	});
 
-	unwrapExports(types);
-	var types_1 = types.isBufferArray;
+	unwrapExports(types$1);
+	var types_1$1 = types$1.isBufferArray;
 
 	var geometry = createCommonjsModule(function (module, exports) {
 
@@ -8587,7 +8682,7 @@ var cga = (function () {
 	      }
 	    } else if (attribute instanceof bufferAttribute.BufferAttribute) {
 	      this.attributes[name] = attribute;
-	    } else if (types.isBufferArray(attribute)) {
+	    } else if (types$1.isBufferArray(attribute)) {
 	      this.setAttribute(name, new bufferAttribute.BufferAttribute(attribute, itemSize));
 	    }
 
@@ -10188,6 +10283,14 @@ var cga = (function () {
 	  value: true
 	});
 	exports.trianglutionToGeometryBuffer = exports.toGeoBuffer = exports.triangListToBuffer = exports.indexable = void 0;
+	/*
+	 * @Description  :
+	 * @Author       : 赵耀圣
+	 * @Q群           : 632839661
+	 * @Date         : 2020-12-10 15:01:42
+	 * @LastEditTime : 2021-03-11 09:09:57
+	 * @FilePath     : \cga.js\src\render\mesh.ts
+	 */
 
 
 
@@ -10237,7 +10340,7 @@ var cga = (function () {
 	function toGeoBuffer(vertices, indices, uvs) {
 	  var geometry$1 = new geometry.BufferGeometry();
 	  geometry$1.addAttribute('position', vertices, 3);
-	  geometry$1.addAttribute('uv', new Float32Array(geometry$1.getAttribute('position').array.length / 3 * 2), 2);
+	  geometry$1.addAttribute('uv', uvs || new Float32Array(geometry$1.getAttribute('position').array.length / 3 * 2), 2);
 	  geometry$1.setIndex(indices);
 	  return geometry$1;
 	}
@@ -10270,7 +10373,7 @@ var cga = (function () {
 	  vertices.forEach(function (v) {
 	    uvs.push(v.x, v.z);
 	  });
-	  var geometry = toGeoBuffer(vertices, triangles);
+	  var geometry = toGeoBuffer(vertices, triangles, uvs);
 	  return geometry;
 	}
 
@@ -10378,118 +10481,15 @@ var cga = (function () {
 	var recognition_2 = recognition.recognitionCCW;
 	var recognition_3 = recognition.recognitionPlane;
 
-	var threeaid = createCommonjsModule(function (module, exports) {
-
-	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
-	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-
-	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
-
-	  return r;
-	};
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.linksToGeometry = exports.linkToGeometry = exports.extrudeToGeometryBuffer = exports.toGeometryBuffer = void 0;
-
-
-
-
-
-
-
-	function toGeometryBuffer(vertices, triangles, uvs) {
-	  if (uvs === void 0) {
-	    uvs = [];
-	  }
-
-	  var buffer = mesh.toGeoBuffer(vertices, triangles, uvs);
-	  return buffer;
-	}
-
-	exports.toGeometryBuffer = toGeometryBuffer;
-	/**
-	 * shape 挤压后转几何体
-	 * @param {*} shape
-	 * @param {*} arg_path
-	 * @param {*} options
-	 */
-
-	function extrudeToGeometryBuffer(shape, arg_path, options) {
-	  var extrudeRes = extrude_1.extrude(shape, arg_path, options);
-	  return toGeometryBuffer(extrudeRes.vertices, extrudeRes.triangles, extrudeRes.uvs);
-	}
-
-	exports.extrudeToGeometryBuffer = extrudeToGeometryBuffer;
-	/**
-	 * 两个轮廓缝合
-	 * @param {*} shape
-	 * @param {*} arg_path
-	 * @param {*} options
-	 * @param {*} material
-	 */
-
-	function linkToGeometry(shape, shape1, isClose) {
-	  if (isClose === void 0) {
-	    isClose = false;
-	  }
-
-	  var vertices = __spreadArrays(shape, shape1);
-
-	  mesh.indexable(vertices);
-	  var tris = extrude_1.linkSide(shape, shape1, isClose);
-	  var geometry = toGeometryBuffer(vertices, tris);
-	  return geometry;
-	}
-
-	exports.linkToGeometry = linkToGeometry;
-	/**
-	 * 多个轮廓缝合
-	 * @param shape
-	 * @param isClose
-	 * @param material
-	 */
-
-	function linksToGeometry(shape, isClose) {
-	  if (isClose === void 0) {
-	    isClose = false;
-	  }
-
-	  var vertices = array.flat(shape);
-	  mesh.indexable(vertices);
-	  var tris = extrude_1.linkSides(shape, isClose);
-	  var geometry = toGeometryBuffer(vertices, tris);
-	  return geometry;
-	}
-
-	exports.linksToGeometry = linksToGeometry; // /**
-	//  * 三角剖分后转成几何体
-	//  * 只考虑XY平面
-	//  * @param {*} boundary 
-	//  * @param {*} hole 
-	//  * @param {*} options 
-	//  */
-	// export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
-	//     var triangles = triangulation(boundary, holes, options)
-	//     var vertices = [...boundary, ...flat(holes)]
-	//     var uvs: any = [];
-	//     vertices.reduce((acc, v) => {
-	//         acc.push(v.x, v.y);
-	//         return acc;
-	//     }, uvs);
-	//     var geometry = toGeometryBuffer(vertices, triangles, uvs);
-	//     return geometry;
-	// }
-	});
-
-	unwrapExports(threeaid);
-	var threeaid_1 = threeaid.linksToGeometry;
-	var threeaid_2 = threeaid.linkToGeometry;
-	var threeaid_3 = threeaid.extrudeToGeometryBuffer;
-	var threeaid_4 = threeaid.toGeometryBuffer;
-
 	var extrude_1 = createCommonjsModule(function (module, exports) {
+	/*
+	 * @Description  : 挤压相关方法
+	 * @Author       : 赵耀圣
+	 * @QQ           : 549184003
+	 * @Date         : 2020-12-10 15:01:42
+	 * @LastEditTime : 2021-03-11 10:53:02
+	 * @FilePath     : \cga.js\src\alg\extrude.ts
+	 */
 
 	var __assign = commonjsGlobal && commonjsGlobal.__assign || function () {
 	  __assign = Object.assign || function (t) {
@@ -10505,12 +10505,18 @@ var cga = (function () {
 	  return __assign.apply(this, arguments);
 	};
 
+	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
+	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+	  return r;
+	};
+
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.extrudeNext = exports.EndType = exports.JoinType = exports.isCCW = exports.extrude = exports.links = exports.linkSides = exports.linkSide = void 0;
-
-
+	exports.EndType = exports.JoinType = exports.isCCW = exports.extrude = exports.extrudeEx = exports.linkSides = exports.linkSide = void 0;
 
 
 
@@ -10538,24 +10544,25 @@ var cga = (function () {
 	 */
 
 	/**
-	 * 缝合两个边
-	 * @param {Array} side0
-	 * @param {Array} side1
-	 * @param {Boolean} isClosed
-	 * @returns {Array<Vec3>} 三角形数组，每三个为一个三角形
+	 * @description : 缝合两个边 不提供uv生成  uv有@linkSides 生成
+	 * @param        { ILinkSideOption } sideOptions
+	 * @returns      { Array<Vec3>} 三角形数组，每三个为一个三角形
+	 * @example     :
 	 */
 
 
-	function linkSide(side0, side1, isClosed) {
-	  if (isClosed === void 0) {
-	    isClosed = false;
-	  }
-
+	function linkSide(sideOptions) {
+	  sideOptions = __assign({
+	    shapeClosed: true,
+	    autoUV: true
+	  }, sideOptions);
+	  var side0 = sideOptions.side0;
+	  var side1 = sideOptions.side1;
+	  var shapeClosed = sideOptions.shapeClosed;
 	  if (side0.length !== side1.length) throw "拉伸两边的点数量不一致  linkSide";
 	  if (side0.length < 2 || side1.length < 2) return [];
-	  var sidelength = side0.length;
 	  var orgLen = side0.length;
-	  var length = isClosed ? side0.length : side0.length - 1;
+	  var length = shapeClosed ? side0.length : side0.length - 1;
 	  var triangles = [];
 
 	  if (side0[0] instanceof Number) {
@@ -10573,7 +10580,7 @@ var cga = (function () {
 	      triangles.push(v01);
 	    }
 	  } else {
-	    if (side0[0].index !== undefined) {
+	    if (types.isDefined(side0[0].index)) {
 	      //含索引的顶点
 	      for (var i = 0; i < length; i++) {
 	        var v00 = side0[i];
@@ -10609,60 +10616,69 @@ var cga = (function () {
 
 	exports.linkSide = linkSide;
 	/**
-	 * 缝合shape集合
-	 * @param {Array<Array<Point|Vec3>} shapes  路基 点集的集合， 每个shape的点数量一致
-	 * @param {Boolean} sealStart 每一个shape是否是封闭的界面 默认false
-	 * @param {Boolean} isClosed 每一个shape是否是封闭的界面 默认false
-	 * @param {Boolean} isClosed 每一个shape是否是封闭的界面 默认false
-	 * @param {Boolean} isClosed 每一个shape是否是封闭的首尾 默认false
-	 * @returns {Array} 返回三角形集合 如果有所用范围索引，否则返回顶点
+	 * @description : 链接多个shape 生成几何体
+	 * @param        {ILinkSideOptions} optionsILinkSideOptions {
+	 *   shapes: Array<Array<IVec3 | number | any>>;
+	 *   sealStart?: boolean,//开始封面
+	 *   sealEnd?: boolean;//结束封面
+	 *   shapeClosed?: boolean,//shape是否闭合
+	 *   pathClosed?: boolean,//路径是否闭合
+	 *   index?: { index: number },
+	 *   generateUV?: boolean
+	 *   }
+	 *
+	 * @return       {*}
+	 * @example     :
+	 *
 	 */
 
-	function linkSides(shapes, sealStart, sealEnd, isClosed, isClosed2, index) {
-	  if (sealStart === void 0) {
-	    sealStart = true;
-	  }
-
-	  if (sealEnd === void 0) {
-	    sealEnd = true;
-	  }
-
-	  if (isClosed === void 0) {
-	    isClosed = false;
-	  }
-
-	  if (isClosed2 === void 0) {
-	    isClosed2 = false;
-	  }
-
-	  var length = isClosed2 ? shapes.length : shapes.length - 1;
+	function linkSides(options) {
+	  options = __assign({
+	    sealEnd: true,
+	    sealStart: true,
+	    shapeClosed: true,
+	    pathClosed: false,
+	    generateUV: true,
+	    autoIndex: true,
+	    axisPlane: trianglution.AxisPlane.XY
+	  }, options);
+	  if (options.autoIndex) options.index = options.index || {
+	    index: 0
+	  };
+	  var shapes = options.shapes;
+	  var length = options.pathClosed ? shapes.length : shapes.length - 1;
 	  var triangles = [];
+	  var index = options.index;
 	  if (index) mesh.indexable(shapes, index);
 
 	  for (var i = 0; i < length; i++) {
-	    triangles.push.apply(triangles, linkSide(shapes[i], shapes[(i + 1) % shapes.length], isClosed));
+	    triangles.push.apply(triangles, linkSide({
+	      side0: shapes[i],
+	      side1: shapes[(i + 1) % shapes.length],
+	      shapeClosed: options.shapeClosed
+	    }));
 	  }
 
-	  if (sealStart) {
+	  if (options.sealStart) {
 	    shapes.push(common.clone(shapes[0]));
 	    var startTris = trianglution.triangulation(shapes[shapes.length - 1], undefined, {
-	      feature: trianglution.AxisPlane.XZ
+	      feature: options.axisPlane
 	    });
 
 	    if (index) {
 	      startTris.forEach(function (v, i) {
 	        startTris[i] = v + (index === null || index === void 0 ? void 0 : index.index);
 	      });
-	      index.index += shapes[shapes.length - 1].length;
+	      index.index += shapes[shapes.length - 2].length;
 	    }
 
 	    triangles.push.apply(triangles, startTris);
 	  }
 
-	  if (sealEnd) {
+	  if (options.sealEnd) {
 	    shapes.push(common.clone(shapes[shapes.length - 2]));
 	    var endTris = trianglution.triangulation(shapes[shapes.length - 1], undefined, {
-	      feature: trianglution.AxisPlane.XZ
+	      feature: options.axisPlane
 	    });
 
 	    if (index) {
@@ -10676,42 +10692,171 @@ var cga = (function () {
 	  }
 
 	  triangles.shapes = array.flat(shapes);
-	  return triangles;
+	  var uvs = [];
+
+	  if (options.generateUV) {
+	    //生成UV 
+	    var uBasicScalar = new Array(shapes[0].length).fill(0);
+
+	    var _loop_1 = function (i_1) {
+	      var shape = shapes[i_1];
+
+	      if (isNaN(shape[0])) {
+	        //不是索引才生产纹理，其他都是顶点
+	        vScalar = Path_1.Path.getPerMileages(shape, false);
+	        if (i_1 > 0) uScalar = uBasicScalar.map(function (e, k) {
+	          return e + shape[k].distanceTo(shapes[i_1 - 1][k]);
+	        });else uScalar = new Array(shapes[0].length).fill(0);
+
+	        for (var l = 0; l < uBasicScalar.length; l++) {
+	          uvs.push(uScalar[l], vScalar[l]);
+	        }
+
+	        if (vScalar.length !== uScalar.length) throw "UV不相等";
+	      } else console.error("索引无法生成纹理");
+	    };
+
+	    var vScalar, uScalar;
+
+	    for (var i_1 = 0; i_1 < shapes.length - 2; i_1++) {
+	      _loop_1(i_1);
+	    } //前后纹理
+
+
+	    var sealUvs = [];
+
+	    switch (options.axisPlane) {
+	      case trianglution.AxisPlane.XY:
+	        options.orgShape.map(function (e) {
+	          sealUvs.push(e.x, e.y);
+	        });
+	        break;
+
+	      case trianglution.AxisPlane.XZ:
+	        options.orgShape.map(function (e) {
+	          sealUvs.push(e.x, e.z);
+	        });
+	        break;
+
+	      case trianglution.AxisPlane.YZ:
+	        options.orgShape.map(function (e) {
+	          sealUvs.push(e.y, e.z);
+	        });
+	        break;
+	    }
+
+	    uvs.push.apply(uvs, __spreadArrays(sealUvs, sealUvs));
+	  }
+
+	  var indices = triangles || []; // if (isDefined(shapes[0][0].index)) {
+	  //     //收集索引
+	  //     for (let i = 0; i < shapes.length; i++) {
+	  //         const shape = shapes[i];
+	  //         for (let j = 0; j < shape.length; j++) {
+	  //             const v = shape[j];
+	  //             indices.push(v.index);
+	  //         }
+	  //     }
+	  // }
+
+	  var positions = common.verctorToNumbers(shapes);
+	  shapes.pop();
+	  shapes.pop();
+	  return {
+	    position: positions,
+	    index: indices,
+	    uv: uvs
+	  };
 	}
 
 	exports.linkSides = linkSides;
-	/**
-	 * 缝合集合
-	 * @param sides 圈
-	 * @param closed1 圈自身是否缝合
-	 * @param closed2 圈拉伸后首尾是否缝合
-	 */
-
-	function links(sides, closed1, closed2) {
-	  if (closed1 === void 0) {
-	    closed1 = false;
-	  }
-
-	  if (closed2 === void 0) {
-	    closed2 = false;
-	  }
-
-	  closed1 = sides[0] instanceof Polyline_1.Polyline ? true :  closed1;
-	  return linkSides(sides, closed1, closed2);
-	}
-
-	exports.links = links;
 	var defaultExtrudeOption = {
-	  sectionClosed: false,
-	  pathClosed: false,
 	  textureEnable: true,
 	  textureScale: new Vec2_1.Vec2(1, 1),
 	  smoothAngle: Math.PI / 180 * 30,
 	  sealStart: false,
 	  sealEnd: false,
-	  normal: Vec3_1.Vec3.UnitZ,
-	  vecdim: 3
+	  normal: Vec3_1.Vec3.UnitZ
 	};
+
+	var _matrix = Mat4_1.m4();
+
+	var _vec1 = Vec3_1.v3();
+	/**
+	 * @description : 挤压形状生成几何体
+	 * @param        {IExtrudeOptionsEx} options
+	 *   IExtrudeOptionsEx {
+	 *    shape: Array<Vec3 | IVec3 | Vec2 | IVec2>;//shape默认的矩阵为正交矩阵
+	 *    path: Array<Vec3 | IVec3>;//挤压路径
+	 *    ups?: Array<Vec3 | IVec3>;
+	 *    up?: Vec3 | IVec3;
+	 *    shapeClosed?: boolean;//闭合为多边形 界面
+	 *    pathClosed?: boolean;//首尾闭合为圈
+	 *    textureEnable?: boolean;
+	 *    smoothAngle?: number;
+	 *    sealStart?: boolean;
+	 *    sealEnd?: boolean;
+	 *    normal?: Vec3,//面的法线
+	 *    autoIndex?: boolean,
+	 *    index?: { index: number }
+	 *}
+	 * @return       {IGeometry}
+	 * @example     :
+	 *
+	 */
+
+
+	function extrudeEx(options) {
+	  options = __assign({
+	    sealEnd: true,
+	    sealStart: true,
+	    shapeClosed: true,
+	    pathClosed: false,
+	    generateUV: true,
+	    autoIndex: true,
+	    axisPlane: trianglution.AxisPlane.XY
+	  }, options);
+	  var path = new Path_1.Path(options.path);
+	  var shapes = [];
+	  var shape = options.shape;
+	  var ups = options.ups || [];
+
+	  if (types.isUndefined(shape[0].z)) {
+	    shape = shape.map(function (e) {
+	      return Vec3_1.v3(e.x, e.y, 0);
+	    });
+	    options.normal = options.normal || Vec3_1.Vec3.UnitZ;
+	  }
+
+	  for (var i = 0; i < options.path.length; i++) {
+	    var point = path[i];
+	    var direction = point.direction;
+	    var up = ups[i] || Vec3_1.Vec3.UnitY;
+	    var binormal = Vec3_1.v3().crossVecs(direction, up);
+
+	    _matrix.makeBasis(binormal, up, direction);
+
+	    _matrix.setPosition(point);
+
+	    var new_shape = pointset.applyMat4(shape, _matrix, false);
+	    shapes.push(new_shape);
+	  }
+
+	  var geo = linkSides({
+	    shapes: shapes,
+	    orgShape: options.shape,
+	    sealStart: options.sealStart,
+	    sealEnd: options.sealEnd,
+	    shapeClosed: options.shapeClosed,
+	    pathClosed: options.pathClosed,
+	    axisPlane: options.axisPlane,
+	    autoIndex: options.autoIndex,
+	    generateUV: options.generateUV
+	  });
+	  return geo;
+	}
+
+	exports.extrudeEx = extrudeEx;
 	/**
 	 * 挤压
 	 * @param {Polygon|Array<Point|Vec3> }  shape   多边形或顶点数组
@@ -10727,6 +10872,8 @@ var cga = (function () {
 	 */
 
 	function extrude(shape, arg_path, options) {
+	  var _a, _b;
+
 	  if (options === void 0) {
 	    options = defaultExtrudeOption;
 	  }
@@ -10749,7 +10896,7 @@ var cga = (function () {
 	    if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath[i].clone());
 	  }
 
-	  if (options.isClosed) {
+	  if (options.shapeClosed) {
 	    var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
 	    var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
 	    if (Math.acos(dir1.dot(dir2)) > options.smoothAngle) shape.push(shape.get(-1).clone()); //新加起始点纹理拉伸
@@ -10779,12 +10926,17 @@ var cga = (function () {
 	    shapeArray.push(newShape);
 	  }
 
-	  var index = {
+	  var gindex = {
 	    index: 0
 	  };
 	  var vertices = array.flat(shapeArray);
-	  mesh.indexable(vertices, index);
-	  var triangles = linkSides(shapeArray, options.isClosed, options.isClosed2);
+	  mesh.indexable(vertices, gindex);
+	  var index = linkSides({
+	    shapes: shapeArray,
+	    shapeClosed: options.shapeClosed,
+	    pathClosed: options.isClosed2,
+	    orgShape: shape
+	  }).index;
 	  shapepath = new Path_1.Path(shape);
 	  var uvs = [];
 
@@ -10823,8 +10975,8 @@ var cga = (function () {
 	    normal: normal
 	  });
 	  sealStartTris.reverse();
-	  if (options.sealStart) mesh.indexable(startSeal, index);
-	  if (options.sealEnd) mesh.indexable(endSeal, index);
+	  if (options.sealStart) mesh.indexable(startSeal, gindex);
+	  if (options.sealEnd) mesh.indexable(endSeal, gindex);
 	  var sealEndTris = [];
 	  var hasVLen = vertices.length;
 	  if (options.sealStart) for (var i = 0; i < sealStartTris.length; i++) {
@@ -10842,7 +10994,8 @@ var cga = (function () {
 
 	  if (options.sealStart) {
 	    vertices.push.apply(vertices, startSeal);
-	    triangles.push.apply(triangles, sealStartTris);
+
+	    (_a = index).push.apply(_a, sealStartTris);
 
 	    for (var i = 0; i < sealUv.length; i++) uvs.push(sealUv[i].x, sealUv[i].y);
 	  }
@@ -10850,14 +11003,15 @@ var cga = (function () {
 	  if (options.sealEnd) {
 	    vertices.push.apply(vertices, endSeal);
 	    sealEndTris.reverse();
-	    triangles.push.apply(triangles, sealEndTris);
+
+	    (_b = index).push.apply(_b, sealEndTris);
 
 	    for (var i = 0; i < sealUv.length; i++) uvs.push(sealUv[i].x, sealUv[i].y);
 	  }
 
 	  return {
 	    vertices: vertices,
-	    triangles: triangles,
+	    index: index,
 	    uvs: uvs
 	  };
 	}
@@ -10895,103 +11049,80 @@ var cga = (function () {
 	  EndType[EndType["Square"] = 0] = "Square";
 	  EndType[EndType["Round"] = 1] = "Round";
 	  EndType[EndType["Butt"] = 2] = "Butt";
-	})(EndType = exports.EndType || (exports.EndType = {}));
-	/**
-	 *
-	 * @param shape
-	 * @param followPath
-	 * @param options
-	 */
-
-
-	function extrudeNext(shape, followPath, options) {
-	  if (options === void 0) {
-	    options = defaultExtrudeOption;
-	  }
-
-	  var shapeAry = [];
-
-	  if (!isNaN(shape[0])) {
-	    //数字数组转向量数据
-	    var axis = ['x', 'y', 'z'];
-
-	    for (var i = 0; i < shape.length; i += options.vecdim) {
-	      var pt = new Vec3_1.Vec3();
-
-	      for (var j = 0; j < options.vecdim; j++) {
-	        pt[axis[j]] = shape[i + j];
-	      }
-
-	      shapeAry.push(pt);
-	    }
-
-	    shape = shapeAry;
-	  } //截面所在的平面
-
-
-	  if (!recognition.recognitionCCW(shape)) {
-	    //逆时针
-	    shape.reverse();
-	  }
-
-	  if (!options.normal) {
-	    //识别法线
-	    options.normal = recognition.recognitionPlane(shape).normal;
-	  } //旋转到xy平面
-
-
-	  if (options.center) {
-	    //偏移
-	    pointset.translate(shape, options.center);
-	  }
-
-	  var shapepath = new Path_1.Path(shape);
-	  var insertNum = 0;
-
-	  for (var i = 1; i < shapepath.length - 1; i++) {
-	    //大角度插入点 角度过大为了呈现flat shader的效果
-	    if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath[i].clone());
-	  }
-
-	  if (options.sealStart) ;
-
-	  if (options.sealEnd) ; //计算截面uv 
-
-
-	  for (var i = 0; i < shape.length; i++) {
-	    var pt_1 = shape[i];
-	    pt_1.u = pt_1.tlen;
-	    var linkShapes = [];
-
-	    for (var i_1 = 1; i_1 < followPath.length - 1; i_1++) {
-	      var node = followPath[i_1];
-	      var dir = node.tangent;
-	      var newShape = common.clone(shape); //节点平分线
-
-	      var pnormal = followPath[i_1 + 1].clone().sub(followPath[i_1]).normalize().add(followPath[i_1].clone().sub(followPath[i_1 - 1]).normalize()).normalize();
-	      var jointPlane = Plane_1.Plane.setFromPointNormal(node, pnormal);
-	      jointPlane.negate();
-	      var projectDir = Vec3_1.v3().subVecs(node, followPath[i_1 - 1]).normalize();
-	      pointset.projectOnPlane(newShape, jointPlane, projectDir);
-	      linkShapes.push(newShape);
-	    }
-
-	    threeaid.linksToGeometry(linkShapes);
-	  }
-	}
-
-	exports.extrudeNext = extrudeNext;
+	})(EndType = exports.EndType || (exports.EndType = {})); // /**
+	//  * 
+	//  * @param shape 
+	//  * @param followPath 
+	//  * @param options 
+	//  */
+	// export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<number>, followPath: Array<Vec3> | Path, options: IExtrudeNextOptions = defaultExtrudeOption) {
+	//     var shapeAry: Array<Vec3> = [];
+	//     if (!isNaN(shape[0])) {
+	//         //数字数组转向量数据
+	//         var axis = ['x', 'y', 'z'];
+	//         for (let i = 0; i < shape.length; i += options.vecdim!) {
+	//             var pt: any = new Vec3();
+	//             for (let j = 0; j < options.vecdim!; j++) {
+	//                 pt[axis[j]] = shape[i + j];
+	//             }
+	//             shapeAry.push(pt);
+	//         }
+	//         shape = shapeAry;
+	//     }
+	//     //截面所在的平面
+	//     if (!recognitionCCW(shape as Vec3[])) {
+	//         //逆时针
+	//         shape.reverse();
+	//     }
+	//     if (!options.normal) {
+	//         //识别法线
+	//         options.normal = recognitionPlane(shape).normal;
+	//     }
+	//     //旋转到xy平面
+	//     if (options.center) {
+	//         //偏移
+	//         translate(shape, options.center)
+	//     }
+	//     const shapepath = new Path(shape);
+	//     let insertNum = 0;
+	//     for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+	//         if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
+	//             shape.splice(i + insertNum++, 0, shapepath[i].clone());
+	//     }
+	//     if (options.sealStart) {
+	//     }
+	//     if (options.sealEnd) {
+	//     }
+	//     //计算截面uv 
+	//     for (let i = 0; i < shape.length; i++) {
+	//         const pt = shape[i];
+	//         pt.u = pt.tlen;
+	//         var linkShapes = [];
+	//         for (let i = 1; i < followPath.length - 1; i++) {
+	//             const node = followPath[i];
+	//             var dir = node.tangent;
+	//             var newShape = clone(shape);
+	//             //节点平分线
+	//             const pnormal = followPath[i + 1].clone().sub(followPath[i]).normalize().add(followPath[i].clone().sub(followPath[i - 1]).normalize()).normalize();
+	//             const jointPlane = Plane.setFromPointNormal(node, pnormal);
+	//             jointPlane.negate();
+	//             var projectDir = v3().subVecs(node, followPath[i - 1]).normalize();
+	//             projectOnPlane(newShape, jointPlane, projectDir);
+	//             linkShapes.push(newShape);
+	//         }
+	//         linksToGeometry(linkShapes);
+	//     }
+	// }
 	});
 
 	unwrapExports(extrude_1);
-	var extrude_2 = extrude_1.extrudeNext;
-	var extrude_3 = extrude_1.EndType;
-	var extrude_4 = extrude_1.JoinType;
-	var extrude_5 = extrude_1.isCCW;
-	var extrude_6 = extrude_1.extrude;
-	var extrude_7 = extrude_1.links;
-	var extrude_8 = extrude_1.linkSides;
-	var extrude_9 = extrude_1.linkSide;
+	var extrude_2 = extrude_1.EndType;
+	var extrude_3 = extrude_1.JoinType;
+	var extrude_4 = extrude_1.isCCW;
+	var extrude_5 = extrude_1.extrude;
+	var extrude_6 = extrude_1.extrudeEx;
+	var extrude_7 = extrude_1.linkSides;
+	var extrude_8 = extrude_1.linkSide;
 
 	var delaunator = createCommonjsModule(function (module, exports) {
 
@@ -13131,6 +13262,125 @@ var cga = (function () {
 	unwrapExports(Triangle_1);
 	var Triangle_2 = Triangle_1.Triangle;
 
+	var geometryaid = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.linksToGeometry = exports.linkToGeometry = exports.extrudeToGeometryBuffer = exports.toGeometryBuffer = void 0;
+	/*
+	 * @Description  :
+	 * @Author       : 赵耀圣
+	 * @Q群           : 632839661
+	 * @Date         : 2020-12-10 15:01:42
+	 * @LastEditTime : 2021-03-11 10:54:11
+	 * @FilePath     : \cga.js\src\extends\geometryaid.ts
+	 */
+
+
+
+
+
+
+
+
+
+	function toGeometryBuffer(geo) {
+	  var buffer = mesh.toGeoBuffer(geo.position, geo.index, geo.uv);
+	  return buffer;
+	}
+
+	exports.toGeometryBuffer = toGeometryBuffer;
+	/**
+	 * shape 挤压后转几何体
+	 * @param {*} shape
+	 * @param {*} arg_path
+	 * @param {*} options
+	 */
+
+	function extrudeToGeometryBuffer(shape, arg_path, options) {
+	  var extrudeRes = extrude_1.extrude(shape, arg_path, options);
+	  return mesh.toGeoBuffer(extrudeRes.vertices, extrudeRes.index, extrudeRes.uvs);
+	}
+
+	exports.extrudeToGeometryBuffer = extrudeToGeometryBuffer;
+	/**
+	 * 两个轮廓缝合
+	 * @param {*} shape
+	 * @param {*} arg_path
+	 * @param {*} options
+	 * @param {*} material
+	 */
+
+	function linkToGeometry(shape, shape1, axisPlane, shapeClose) {
+	  if (axisPlane === void 0) {
+	    axisPlane = trianglution.AxisPlane.XY;
+	  }
+
+	  if (shapeClose === void 0) {
+	    shapeClose = false;
+	  }
+
+	  var geo = extrude_1.linkSides({
+	    shapes: [shape, shape1],
+	    shapeClosed: shapeClose,
+	    orgShape: shape,
+	    axisPlane: axisPlane
+	  });
+	  var geometry = toGeometryBuffer(geo);
+	  return geometry;
+	}
+
+	exports.linkToGeometry = linkToGeometry;
+	/**
+	 * 多个轮廓缝合
+	 * @param shapes
+	 * @param isClose
+	 * @param material
+	 */
+
+	function linksToGeometry(shapes, pathClosed, shapeClosed) {
+	  if (pathClosed === void 0) {
+	    pathClosed = true;
+	  }
+
+	  var vertices = array.flat(shapes);
+	  mesh.indexable(vertices);
+	  var geo = extrude_1.linkSides({
+	    shapes: shapes,
+	    shapeClosed: pathClosed,
+	    orgShape: shapes[0]
+	  });
+	  var geometry = toGeometryBuffer(geo);
+	  return geometry;
+	}
+
+	exports.linksToGeometry = linksToGeometry; // /**
+	//  * 三角剖分后转成几何体
+	//  * 只考虑XY平面
+	//  * @param {*} boundary 
+	//  * @param {*} hole 
+	//  * @param {*} options 
+	//  */
+	// export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
+	//     var triangles = triangulation(boundary, holes, options)
+	//     var vertices = [...boundary, ...flat(holes)]
+	//     var uvs: any = [];
+	//     vertices.reduce((acc, v) => {
+	//         acc.push(v.x, v.y);
+	//         return acc;
+	//     }, uvs);
+	//     var geometry = toGeometryBuffer(vertices, triangles, uvs);
+	//     return geometry;
+	// }
+	});
+
+	unwrapExports(geometryaid);
+	var geometryaid_1 = geometryaid.linksToGeometry;
+	var geometryaid_2 = geometryaid.linkToGeometry;
+	var geometryaid_3 = geometryaid.extrudeToGeometryBuffer;
+	var geometryaid_4 = geometryaid.toGeometryBuffer;
+
 	var src = createCommonjsModule(function (module, exports) {
 
 	var __createBinding = commonjsGlobal && commonjsGlobal.__createBinding || (Object.create ? function (o, m, k, k2) {
@@ -13212,7 +13462,7 @@ var cga = (function () {
 
 	__exportStar(voronoi, exports);
 
-	__exportStar(threeaid, exports); //Geometry 
+	__exportStar(geometryaid, exports); //Geometry 
 
 
 	__exportStar(bufferAttribute, exports);
