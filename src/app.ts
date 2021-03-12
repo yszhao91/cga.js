@@ -93,7 +93,7 @@ import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, WebGLRenderTarget, MeshNormalMaterial, MeshDepthMaterial, DepthTexture, MeshPhongMaterial, CanvasTexture, } from 'three';
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
@@ -186,7 +186,7 @@ var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) 
     return geometry;
 }
 
-var shape = [v3(-5, 0, 0), v3(5, 0, 0), v3(5, 10, 0), v3(-5, 10, 0)]
+var shape = [v3(-5, 0, 0), v3(5, 0, 0), v3(5, 0, 0), v3(5, 10, 0), v3(5, 10, 0), v3(-5, 10, 0), v3(-5, 10, 0)]
 var geo = extrudeEx({ shape: shape, path: [v3(), v3(10, 0, 10), v3(200, 0, 150)], sealStart: true })
 
 // var geo = dizhu(1.8, 0.9, 0.3, 0.5, 10);
@@ -194,6 +194,8 @@ var geometry = cga.toGeometryBuffer(geo);
 geometry.computeVertexNormals();
 
 import * as THREE from "three"
+import { diamondMaterial } from "./diamondMaterialShader";
+import { BreathLight } from "./effect/breath-light";
 var tgeo = new THREE.BufferGeometry();
 tgeo.setAttribute('position', new THREE.Float32BufferAttribute(geometry.getAttribute('position').array, 3));
 tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribute('normal').array, 3));
@@ -203,6 +205,98 @@ tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex()!.array, 1));
 var map = new THREE.TextureLoader().load("./assets/color.jpg");
 map.repeat.set(0.4, 0.4)
 map.wrapT = map.wrapS = THREE.MirroredRepeatWrapping;
-var mesh = new Mesh(tgeo, new MeshStandardMaterial({ side: DoubleSide, map }));
-
+var renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, { depthTexture: new DepthTexture(window.innerWidth, window.innerHeight) })
+var normalMaterial = new MeshNormalMaterial();
+var mesh = new Mesh(tgeo, normalMaterial);
 glv.add(mesh);
+// var mesh1 = new Mesh(new PlaneBufferGeometry(100, 100), new MeshBasicMaterial({ map: renderTarget.depthTexture, side: DoubleSide }));
+// glv.add(mesh1);
+// glv.addUpdates(() => {
+//     glv.renderer.setRenderTarget(renderTarget);
+//     glv.render();
+//     glv.renderer.setRenderTarget(null);
+// })
+
+
+
+class LabelTexture {
+    width: number;
+    height: number;
+    sideColor: string;
+    areaColor: string;
+    canvas: HTMLCanvasElement = document.createElement('canvas');
+    ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
+    fontsize: number = 100;
+    constructor(width: number = 1, height: number = 1, sideColor: string = "#1f9ccf", areaColor: string = "#1f9cff1f") {
+        this.width = width;
+        this.height = height;
+        this.sideColor = sideColor;
+        this.areaColor = areaColor
+    }
+
+    draw(x: number, y: number, width: number, height: number, text: string = "我是测试", lineWidth?: number) {
+        this.ctx.font = 'Bold ' + this.fontsize + 'px ' + this.fontface;
+
+        // get size data (height depends only on font size)
+        var metrics = this.ctx.measureText(text);
+        var textWidth = metrics.width;
+        var margin = 5;
+        var spriteWidth = 2 * margin + textWidth + 2 * this.borderThickness;
+        var spriteHeight = this.fontsize * 1.4 + 2 * this.borderThickness;
+
+        this.ctx.canvas.width = spriteWidth;
+        this.ctx.canvas.height = spriteHeight;
+        this.ctx.font = 'Bold ' + this.fontsize + 'px ' + this.fontface;
+
+        // // background color
+        // this.ctx.fillStyle = 'rgba(' + this.backgroundColor.r + ',' + this.backgroundColor.g + ',' +
+        //     this.backgroundColor.b + ',' + this.backgroundColor.a + ')';
+        // // border color
+        // this.ctx.strokeStyle = 'rgba(' + this.borderColor.r + ',' + this.borderColor.g + ',' +
+        //     this.borderColor.b + ',' + this.borderColor.a + ')';
+
+        this.ctx.lineWidth = this.borderThickness;
+        this.roundRect(this.ctx, this.borderThickness / 2, this.borderThickness / 2,
+            textWidth + this.borderThickness + 2 * margin, this.fontsize * 1.4 + this.borderThickness, 6);
+
+        // text color
+        this.ctx.strokeStyle = 'rgba(0, 0, 0, 1.0)';
+        this.ctx.strokeText(this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
+
+        this.ctx.fillStyle = 'rgba(' + this.textColor.r + ',' + this.textColor.g + ',' + this.textColor.b + ',' + this.textColor.a + ')';
+        this.ctx.fillText(this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
+
+        var texture = new THREE.Texture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.needsUpdate = true;
+
+        this.sprite.material.map = texture;
+
+        this.sprite.scale.set(spriteWidth * 0.01, spriteHeight * 0.01, 1.0);
+    }
+
+    THREE.TextSprite.prototype.roundRect = function (ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    };
+}
+
+
+glv.add(new BreathLight())
+var label = new LabelTexture()
+label.draw(0, 0, 100, 10, "我爱你")
+
+var mesh1 = new Mesh(new PlaneBufferGeometry(100, 10), new MeshBasicMaterial({ map: new CanvasTexture(label.canvas), side: DoubleSide, transparent: true }));
+glv.add(mesh1);

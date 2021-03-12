@@ -532,6 +532,9 @@ export class GLView {
 
 
     run() {
+        for (let i = 0; i < this.updates.length; i++) {
+            this.updates[i]();
+        }
         this.render();
         requestAnimationFrame(this.run.bind(this));
     }

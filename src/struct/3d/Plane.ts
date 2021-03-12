@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @Q群           : 632839661
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-11 16:35:50
+ * @LastEditTime : 2021-03-12 10:13:55
  * @FilePath     : \cga.js\src\struct\3d\Plane.ts
  */
 import { Vec3 } from '../../math/Vec3';
@@ -259,7 +259,15 @@ class Plane {
             _v2.set(positions[index_b], positions[index_b + 1], positions[index_b + 2]);
             _v3.set(positions[index_c], positions[index_c + 1], positions[index_c + 2]);
             var data: ISplitResult = plane.splitTriangle(_tris);
+            if (data.common.length > 0) {
+                //共面处理
+            }
+            if (data.negative.length > 0) {
 
+            }
+            if (data.positive.length > 0) {
+
+            }
         }
     }
 

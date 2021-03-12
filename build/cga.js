@@ -3,8 +3,11 @@
 *CGA Lib |cga.js |alex Zhao | Zhao yaosheng
 *@license free for all
 */
-var cga = (function () {
-	'use strict';
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global = global || self, global.cga = factory());
+}(this, (function () { 'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -6036,6 +6039,14 @@ var cga = (function () {
 	  value: true
 	});
 	exports.Plane = void 0;
+	/*
+	 * @Description  :
+	 * @Author       : 赵耀圣
+	 * @Q群           : 632839661
+	 * @Date         : 2020-12-10 15:01:42
+	 * @LastEditTime : 2021-03-11 16:35:50
+	 * @FilePath     : \cga.js\src\struct\3d\Plane.ts
+	 */
 
 
 
@@ -6187,9 +6198,7 @@ var cga = (function () {
 	    for (var i_1 = 0; i_1 < triangle.length; i_1++) {
 	      var orientation = orientations[i_1];
 	      if (orientation === type.Orientation.Positive) pos++;else if (orientation === type.Orientation.Negative) neg++;
-	    } // var hasConsis = consis > 0;
-
-
+	    }
 	    var hasFront = pos > 0;
 	    var hasBack = neg > 0;
 	    var negTris = result.positive,
@@ -6250,12 +6259,48 @@ var cga = (function () {
 	    if (Math.abs(signDistance) < _Math.gPrecision) return type.Orientation.Intersect;else if (signDistance < 0) return type.Orientation.Negative;else
 	      /* if (signDistance > 0) */
 	      return type.Orientation.Positive;
+	  }; //静态API
+
+	  /**
+	   * @description : 平面分割几何体
+	   * @param        {Plane} plane
+	   * @param        {IGeometry} geometry
+	   * @return       {IGeometry[]} 返回多个几何体
+	   * @example     :
+	   */
+
+
+	  Plane.splitGeometry = function (plane, geometry) {
+	    var indices = geometry.index;
+	    var positions = geometry.position;
+
+	    for (var i = 0; i < indices.length; i += 3) {
+	      var index_a = indices[i * 3] * 3;
+	      var index_b = indices[i * 3 + 1] * 3;
+	      var index_c = indices[i * 3 + 2] * 3;
+
+	      _v1.set(positions[index_a], positions[index_a + 1], positions[index_a + 2]);
+
+	      _v2.set(positions[index_b], positions[index_b + 1], positions[index_b + 2]);
+
+	      _v3.set(positions[index_c], positions[index_c + 1], positions[index_c + 2]);
+
+	      var data = plane.splitTriangle(_tris);
+	    }
 	  };
 
 	  return Plane;
 	}();
 
 	exports.Plane = Plane;
+
+	var _v1 = new Vec3_1.Vec3();
+
+	var _v2 = new Vec3_1.Vec3();
+
+	var _v3 = new Vec3_1.Vec3();
+
+	var _tris = [_v1, _v2, _v3];
 	});
 
 	unwrapExports(Plane_1);
@@ -13476,4 +13521,4 @@ var cga = (function () {
 
 	return index;
 
-}());
+})));

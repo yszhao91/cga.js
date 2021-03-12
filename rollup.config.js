@@ -1,3 +1,11 @@
+/*
+ * @Description  : 
+ * @Author       : 赵耀圣
+ * @Q群           : 632839661
+ * @Date         : 2020-12-10 14:57:48
+ * @LastEditTime : 2021-03-12 09:31:54
+ * @FilePath     : \cga.js\rollup.config.js
+ */
 // Libs
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
@@ -52,7 +60,7 @@ export default {
     plugins: plugins,
     output: {
         file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
-        format: 'iife',
+        format: 'umd',
         // format: 'umd',
         name: 'cga',
         banner: banner,

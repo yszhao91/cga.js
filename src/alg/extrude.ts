@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-11 10:53:02
+ * @LastEditTime : 2021-03-12 15:00:52
  * @FilePath     : \cga.js\src\alg\extrude.ts
  */
 
@@ -183,7 +183,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             })
             index.index += shapes[shapes.length - 2].length
         }
-        triangles.push(...startTris);
+        triangles.push(...startTris.reverse());
     }
     if (options.sealEnd) {
         shapes.push(clone(shapes[shapes.length - 2]));
@@ -194,7 +194,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             })
             index.index += shapes[shapes.length - 1].length
         }
-        triangles.push(...endTris.reverse());
+        triangles.push(...endTris);
     }
     triangles.shapes = flat(shapes);
 
