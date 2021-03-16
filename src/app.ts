@@ -222,7 +222,7 @@ map.repeat.set(0.4, 0.4)
 map.wrapT = map.wrapS = THREE.MirroredRepeatWrapping;
 var renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, { depthTexture: new DepthTexture(window.innerWidth, window.innerHeight) })
 var normalMaterial = new MeshNormalMaterial();
-var mesh = new Mesh(tgeo, new MeshPhongMaterial({ map: map, side: DoubleSide }));
+var mesh = new Mesh(tgeo, new MeshPhongMaterial({ map: map, side: FrontSide }));
 glv.add(mesh);
 // var mesh1 = new Mesh(new PlaneBufferGeometry(100, 100), new MeshBasicMaterial({ map: renderTarget.depthTexture, side: DoubleSide }));
 // glv.add(mesh1);

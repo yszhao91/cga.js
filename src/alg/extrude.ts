@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-16 17:36:39
+ * @LastEditTime : 2021-03-16 19:31:29
  * @FilePath     : \cga.js\src\alg\extrude.ts
  */
 
@@ -115,7 +115,7 @@ export function linkSide(options: ILinkSideOption) {
         const holes1 = options.holes1;
         for (let h = 0; h < holes0.length; h++) {
             const holeTriangles: any = linkSide({ side0: holes0[h], side1: holes1[h] })
-
+            holeTriangles.reverse();
             triangles.push(...holeTriangles);
         }
     }
@@ -244,7 +244,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                     index.index += h.length
                 })
         }
-        triangles.push(...endTris);
+        triangles.push(...endTris.reverse());
     }
     triangles.shapes = allVertics;
 
