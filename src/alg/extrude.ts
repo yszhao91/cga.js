@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-12 15:00:52
+ * @LastEditTime : 2021-03-16 17:36:39
  * @FilePath     : \cga.js\src\alg\extrude.ts
  */
 
@@ -25,9 +25,12 @@ import { IGeometry } from '../render/geometry';
 export interface ILinkSideOption {
     side0: { x: number, y: number, z: number, index?: number }[] | number[];//可能是点  也可能是索引
     side1: { x: number, y: number, z: number, index?: number }[] | number[];
+    holes0?: Array<Array<Vec3>>;
+    holes1?: Array<Array<Vec3>>;
     shapeClosed?: boolean;
     autoUV?: boolean;
-    uvScalars?: number[]
+    uvScalars?: number[],
+    segs?: []
 }
 /**
  *  常用shape几何操作
@@ -36,15 +39,15 @@ export interface ILinkSideOption {
 
 /**  
  * @description : 缝合两个边 不提供uv生成  uv有@linkSides 生成
- * @param        { ILinkSideOption } sideOptions
+ * @param        { ILinkSideOption } options
  * @returns      { Array<Vec3>} 三角形数组，每三个为一个三角形
  * @example     : 
  */
-export function linkSide(sideOptions: ILinkSideOption) {
-    sideOptions = { shapeClosed: true, autoUV: true, ...sideOptions };
-    const side0: any = sideOptions.side0;
-    const side1: any = sideOptions.side1;
-    const shapeClosed = sideOptions.shapeClosed;
+export function linkSide(options: ILinkSideOption) {
+    options = { shapeClosed: true, autoUV: true, ...options };
+    const side0: any = options.side0;
+    const side1: any = options.side1;
+    const shapeClosed = options.shapeClosed;
     if (side0.length !== side1.length)
         throw ("拉伸两边的点数量不一致  linkSide");
 
@@ -107,6 +110,15 @@ export function linkSide(sideOptions: ILinkSideOption) {
             }
         }
     }
+    if (options.holes0 && options.holes1) {
+        const holes0 = options.holes0;
+        const holes1 = options.holes1;
+        for (let h = 0; h < holes0.length; h++) {
+            const holeTriangles: any = linkSide({ side0: holes0[h], side1: holes1[h] })
+
+            triangles.push(...holeTriangles);
+        }
+    }
 
     return triangles;
 }
@@ -121,7 +133,8 @@ export function linkSide(sideOptions: ILinkSideOption) {
  */
 export interface ILinkSideOptions {
     shapes: Array<Array<IVec3 | any | IVec3>>;
-    orgShape: Array<IVec3 | any | IVec3>;
+    orgShape?: Array<IVec3 | any | IVec3>;
+    orgHoles?: any;
     sealStart?: boolean,//开始封面
     sealEnd?: boolean;//结束封面
     shapeClosed?: boolean,//shape是否闭合
@@ -162,92 +175,174 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
         options.index = options.index || { index: 0 };
 
     const shapes = options.shapes;
+    const holess = options.holes;
+    const hasHole: boolean = !!(holess && holess.length > 0);
+
     var length = options.pathClosed ? shapes.length : shapes.length - 1;
     var triangles: any = [];
 
     const index = options.index;
 
+    var allVertics = [shapes];
+    if (holess && holess.length > 0)
+        allVertics.push(holess);
+
+    var orgShape = options.orgShape || shapes[0]
+    var orgHoles = options.orgHoles || (holess && holess[0])
     if (index)
-        indexable(shapes, index)
+        indexable(allVertics, index);
 
     for (var i = 0; i < length; i++) {
-        triangles.push(...linkSide({ side0: shapes[i], side1: shapes[(i + 1) % shapes.length], shapeClosed: options.shapeClosed }));
+        if (holess)
+            triangles.push(...linkSide({ side0: shapes[i], side1: shapes[(i + 1) % shapes.length], holes0: holess[i], holes1: holess[(i + 1) % shapes.length], shapeClosed: options.shapeClosed }));
+        else
+            triangles.push(...linkSide({ side0: shapes[i], side1: shapes[(i + 1) % shapes.length], shapeClosed: options.shapeClosed }));
     }
 
+
     if (options.sealStart) {
-        shapes.push(clone(shapes[0]));
-        var startTris = triangulation(shapes[shapes.length - 1], undefined, { feature: options.axisPlane });
+        const startShape = clone(shapes[0]);
+        allVertics.push(startShape);
+
+        if (holess && holess[0]) {
+            var startHoles = clone(holess[0])
+            allVertics.push(startHoles)
+        }
+
+        var startTris = triangulation(startShape, startHoles, { feature: options.axisPlane });
         if (index) {
             startTris.forEach((v, i) => {
                 startTris[i] = v + index?.index;
             })
+
             index.index += shapes[shapes.length - 2].length
+            if (holess && holess[0])
+                startHoles.forEach((h: any) => {
+                    index.index += h.length
+                })
         }
         triangles.push(...startTris.reverse());
     }
+
     if (options.sealEnd) {
-        shapes.push(clone(shapes[shapes.length - 2]));
-        var endTris = triangulation(shapes[shapes.length - 1], undefined, { feature: options.axisPlane });
+        const endShape = clone(shapes[shapes.length - 1]);
+        allVertics.push(endShape);
+
+        if (holess && holess[0]) {
+            var endHoles = clone(clone(holess[holess.length - 1]));
+            allVertics.push(endHoles)
+        }
+        var endTris = triangulation(endShape, endHoles, { feature: options.axisPlane });
         if (index) {
             endTris.forEach((v, i) => {
                 endTris[i] = v + index?.index;
             })
+
             index.index += shapes[shapes.length - 1].length
+            if (holess && holess[0])
+                endHoles.forEach((h: any) => {
+                    index.index += h.length
+                })
         }
         triangles.push(...endTris);
     }
-    triangles.shapes = flat(shapes);
+    triangles.shapes = allVertics;
 
     var uvs = []
     if (options.generateUV) {
         //生成UV 
-        const uBasicScalar = new Array(shapes[0].length).fill(0);
-        for (let i = 0; i < shapes.length - 2; i++) {
+        // let uBasicScalar = new Array(shapes[0].length).fill(0);
+        let uBasicScalar = 0;
+        for (let i = 0; i < shapes.length; i++) {
             const shape: Vec3[] = shapes[i] as unknown as Vec3[];
+            const lastshape: Vec3[] = shapes[i - 1] as unknown as Vec3[];
             if (isNaN(shape[0] as any)) {
                 //不是索引才生产纹理，其他都是顶点
                 var vScalar = Path.getPerMileages(shape, false);
-                var uScalar
-                if (i > 0)
-                    uScalar = uBasicScalar.map((e, k) => {
-                        return e + shape[k].distanceTo(shapes[i - 1][k]);
-                    });
-                else
-                    uScalar = new Array(shapes[0].length).fill(0);
+                var uScalar = 0;
+                // if (i > 0)
+                //     uScalar = uBasicScalar.map((e, k) => {
+                //         return e + shape[k].distanceTo(lastshape[k]);
+                //     });
+                // else
+                //     uScalar = new Array(shapes[0].length).fill(0);
 
-                for (let l = 0; l < uBasicScalar.length; l++) {
-                    uvs.push(uScalar[l], vScalar[l]);
+                if (i > 0)
+                    uScalar = uBasicScalar + shape[0].distanceTo(lastshape[0]);
+
+
+                for (let l = 0; l < shape.length; l++) {
+                    uvs.push(uScalar, vScalar[l]);
                 }
-                if (vScalar.length !== uScalar.length)
-                    throw ("UV不相等")
+                uBasicScalar = uScalar;
 
             }
             else
                 console.error("索引无法生成纹理")
         }
 
+        if (holess) {
+            uBasicScalar = 0;
+            for (let i = 0; i < holess.length; i++) {
+                const holes = holess[i];
+                const lastHole: any = holess[i - 1];
+                var uScalar = 0;
+                if (i > 0)
+                    uScalar = uBasicScalar + holes[0][0].distanceTo(lastHole[0][0]);
+
+                for (let j = 0; j < holes.length; j++) {
+                    const hole: any = holes[j];
+
+                    var vScalar = Path.getPerMileages(hole, false);
+                    for (let l = 0; l < hole.length; l++) {
+                        uvs.push(uScalar, vScalar[l]);
+                    }
+                }
+                uBasicScalar = uScalar;
+            }
+        }
+
         //前后纹理
         var sealUvs: any = []
         switch (options.axisPlane) {
             case AxisPlane.XY:
-                options.orgShape.map(e => {
+                orgShape.map(e => {
                     sealUvs.push(e.x, e.y)
                 })
+                if (orgHoles)
+                    orgHoles.forEach((h: any) => {
+                        h.forEach((e: any) => {
+                            sealUvs.push(e.x, e.y)
+                        })
+                    })
                 break;
             case AxisPlane.XZ:
-                options.orgShape.map(e => {
+                orgShape.map(e => {
                     sealUvs.push(e.x, e.z)
                 })
+                if (orgHoles)
+                    orgHoles.forEach((h: any) => {
+                        h.forEach((e: any) => {
+                            sealUvs.push(e.x, e.z)
+                        })
+                    })
                 break;
             case AxisPlane.YZ:
-                options.orgShape.map(e => {
+                orgShape.map(e => {
                     sealUvs.push(e.y, e.z)
                 })
+                if (orgHoles)
+                    orgHoles.forEach((h: any) => {
+                        h.forEach((e: any) => {
+                            sealUvs.push(e.y, e.z)
+                        })
+                    })
                 break;
 
             default:
                 break;
         }
+
         uvs.push(...sealUvs, ...sealUvs);
     }
 
@@ -263,7 +358,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
     //     }
     // }
 
-    const positions = verctorToNumbers(shapes);
+    const positions = verctorToNumbers(allVertics);
     shapes.pop();
     shapes.pop();
 
@@ -307,7 +402,8 @@ export interface IExtrudeOptionsEx {
     autoIndex?: boolean,
     axisPlane?: AxisPlane,
     generateUV?: boolean,
-    index?: { index: number }
+    index?: { index: number },
+    holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[]
 }
 
 const _matrix = m4();
@@ -329,6 +425,7 @@ const _vec1 = v3();
  *    normal?: Vec3,//面的法线
  *    autoIndex?: boolean,
  *    index?: { index: number }
+ *   holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[]
  *}
  * @return       {IGeometry} 
  * @example     : 
@@ -350,6 +447,8 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         options.normal = options.normal || Vec3.UnitZ;
 
     }
+
+    var newholes = [];
     for (let i = 0; i < options.path.length; i++) {
         const point = path[i];
         const direction = (point as any).direction;
@@ -361,11 +460,18 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
 
         var new_shape = applyMat4(shape, _matrix, false);
         shapes.push(new_shape);
+
+        if (options.holes) {
+            const mholes = applyMat4(options.holes, _matrix, false);
+            newholes.push(mholes);
+        }
     }
 
     const geo: IGeometry = linkSides({
         shapes,
+        holes: newholes,
         orgShape: options.shape,
+        orgHoles: options.holes,
         sealStart: options.sealStart,
         sealEnd: options.sealEnd,
         shapeClosed: options.shapeClosed,
@@ -374,6 +480,8 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         autoIndex: options.autoIndex,
         generateUV: options.generateUV,
     })
+
+
 
     return geo;
 }

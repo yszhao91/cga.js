@@ -6,6 +6,7 @@ import { circle, Circle } from '../struct/3d/Circle';
 import { Quat } from '../math/Quat';
 import { Plane } from '../struct/3d/Plane';
 import { Mat4 } from '../math/Mat4';
+import { isDefined } from '../utils/types';
 
 const XYZSort = (e1: Vec3, e2: Vec3) => {
     if (e1.x !== e2.x)
@@ -24,6 +25,9 @@ const _vector = v3();
  * @param {Array} array
  */
 export function clone(array: any | any[]) {
+    if (!isDefined(array))
+        return array;
+
     var result = new Array()
     for (let i = 0; i < array.length; i++) {
         var ele = array[i];

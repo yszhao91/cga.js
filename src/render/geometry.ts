@@ -22,11 +22,11 @@ export interface IGeometry {
 
 export interface IBufferGeometry {
     position: Float32Array | undefined;
-    indices?: Uint32Array | Uint16Array
-    normals?: Float32Array;
-    uvs?: Float32Array;
-    uvs2?: Float32Array;
-    tangents?: Float32Array;
+    index?: Uint32Array | Uint16Array
+    normal?: Float32Array;
+    uv?: Float32Array;
+    uv2?: Float32Array;
+    tangent?: Float32Array;
 }
 
 

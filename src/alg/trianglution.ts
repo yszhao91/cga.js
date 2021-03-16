@@ -48,7 +48,8 @@ export function triangulation(inboundary: any, holes: any[] = [], options: ITria
     for (let i = -1; i < holes.length - 1; i++) {
         holesIndex.push(baseIndex);
         const hole = holes[i + 1];
-        holesIndex.push(baseIndex + hole.length);
+        // holesIndex.push(baseIndex + hole.length);
+        baseIndex += hole.length;
     }
 
     var result = earcut(vertextNumbers, holesIndex, dim);
