@@ -349,7 +349,7 @@ export class Mat4 {
     return this;
   }
 
-  multiply(m: Mat4, n: Mat4) {
+  multiply(m: Mat4, n?: Mat4) {
     if (n !== undefined) {
       return this.multiplyMatrices(m, n);
     }

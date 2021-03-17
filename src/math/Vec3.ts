@@ -222,7 +222,7 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this;
   }
 
-  multiply(v: Vec3, w: Vec3) {
+  multiply(v: Vec3, w?: Vec3) {
     if (w !== undefined) {
       return this.multiplyVecs(v, w);
     }
