@@ -93,7 +93,7 @@ import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
 import { recognitionCCW } from './alg/recognition';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, WebGLRenderTarget, MeshNormalMaterial, MeshDepthMaterial, DepthTexture, MeshPhongMaterial, CanvasTexture, } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, WebGLRenderTarget, MeshNormalMaterial, MeshDepthMaterial, DepthTexture, MeshPhongMaterial, CanvasTexture, ShaderMaterial, } from 'three';
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
@@ -211,6 +211,7 @@ geometry.computeVertexNormals();
 import * as THREE from "three"
 import { diamondMaterial } from "./diamondMaterialShader";
 import { BreathLight } from "./effect/breath-light";
+import { Mat4 } from "./math/Mat4";
 var tgeo = new THREE.BufferGeometry();
 tgeo.setAttribute('position', new THREE.Float32BufferAttribute(geometry.getAttribute('position').array, 3));
 tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribute('normal').array, 3));
@@ -257,3 +258,14 @@ var label = new LabelTexture()
 
 var mesh1 = new Mesh(new PlaneBufferGeometry(100, 10), new MeshBasicMaterial({ map: new CanvasTexture(label.canvas), side: DoubleSide, transparent: true }));
 glv.add(mesh1);
+
+
+
+var shapeMaterial = new ShaderMaterial({ transparent: true, side: DoubleSide });
+var planeGeo = new PlaneBufferGeometry(10, 10);
+planeGeo.translate(0, 5, -1)
+var mesh = new Mesh(planeGeo, shapeMaterial);
+
+glv.add(mesh)
+
+var m = new Mat4()

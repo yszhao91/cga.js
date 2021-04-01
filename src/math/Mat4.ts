@@ -564,7 +564,7 @@ export class Mat4 {
     return this;
   }
 
-  getInverse(m: { elements: any; }, throwOnDegenerate: boolean) {
+  getInverse(m: { elements: any; }, throwOnDegenerate: boolean = true) {
     // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
     var te = this.elements,
       me = m.elements,
@@ -1047,9 +1047,12 @@ export class Mat4 {
 
     return array;
   }
+
+
 }
 const _v1 = v3();
 const _m1 = m4();
+const _m2 = m4();
 const _zero = v3(0, 0, 0);
 const _one = v3(1, 1, 1);
 const _x = v3();
@@ -1059,4 +1062,6 @@ const _z = v3();
 export function m4() {
   return new Mat4();
 }
+
+
 
