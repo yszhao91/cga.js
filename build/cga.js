@@ -10548,7 +10548,7 @@
 	 * @Author       : 赵耀圣
 	 * @QQ           : 549184003
 	 * @Date         : 2020-12-10 15:01:42
-	 * @LastEditTime : 2021-06-25 16:07:53
+	 * @LastEditTime : 2021-06-28 15:49:21
 	 * @FilePath     : \cga.js\src\alg\extrude.ts
 	 */
 
@@ -10974,15 +10974,16 @@
 	    options.normal = options.normal || Vec3_1.Vec3.UnitZ;
 	  }
 
+	  var up = options.up;
+	  var right = options.right;
 	  var newholes = [];
 
 	  for (var i = 0; i < options.path.length; i++) {
 	    var point = path[i];
 	    var direction = point.direction;
-	    var up = ups[i] || Vec3_1.Vec3.UnitY;
-	    var binormal = Vec3_1.v3().crossVecs(direction, up);
+	    var upi = Vec3_1.v3().crossVecs(right, direction);
 
-	    _matrix.makeBasis(binormal, up, direction);
+	    _matrix.makeBasis(right, upi, direction);
 
 	    _matrix.setPosition(point);
 

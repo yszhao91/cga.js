@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-16 19:31:29
+ * @LastEditTime : 2021-06-28 15:49:21
  * @FilePath     : \cga.js\src\alg\extrude.ts
  */
 
@@ -392,6 +392,7 @@ export interface IExtrudeOptionsEx {
     path: Array<Vec3 | IVec3>;
     ups?: Array<Vec3 | IVec3>;
     up?: Vec3 | IVec3;
+    right?: Vec3;
     shapeClosed?: boolean;//闭合为多边形 界面
     pathClosed?: boolean;//首尾闭合为圈
     textureEnable?: boolean;
@@ -448,14 +449,15 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
 
     }
 
+    var up: Vec3 = options.up as Vec3;
+    var right: Vec3 = options.right as Vec3;
     var newholes = [];
     for (let i = 0; i < options.path.length; i++) {
         const point = path[i];
         const direction = (point as any).direction;
-        var up: Vec3 = (ups[i] || Vec3.UnitY) as Vec3;
-        const binormal = v3().crossVecs(direction, up);
+        const upi = v3().crossVecs(right, direction);
 
-        _matrix.makeBasis(binormal, up, direction);
+        _matrix.makeBasis(right, upi, direction);
         _matrix.setPosition(point);
 
         var new_shape = applyMat4(shape, _matrix, false);

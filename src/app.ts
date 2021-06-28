@@ -199,10 +199,10 @@ var ia = Math.PI / 100;
 for (let i = 0; i <= 100; i++) {
     var x = Math.cos(ia * i) * 50 + 50;
     var y = Math.sin(ia * i) * 50;
-    path.push(v3(x, 0, y))
+    path.push(v3(x, y, 0))
 }
 
-var geo = extrudeEx({ shape: shape, holes, path: path, sealStart: true })
+var geo = extrudeEx({ shape: shape, path: path, right: Vec3.UnitZ, sealStart: true })
 
 // var geo = dizhu(1.8, 0.9, 0.3, 0.5, 10);
 var geometry = cga.toGeometryBuffer(geo);
@@ -269,3 +269,20 @@ var mesh = new Mesh(planeGeo, shapeMaterial);
 glv.add(mesh)
 
 var m = new Mat4()
+
+
+
+
+var geo = extrudeEx({ shape: shape, path: path, right: Vec3.UnitZ, sealStart: true })
+
+var geometry = cga.toGeometryBuffer(geo);
+geometry.computeVertexNormals();
+
+
+var tgeo = new THREE.BufferGeometry();
+tgeo.setAttribute('position', new THREE.Float32BufferAttribute(geometry.getAttribute('position').array, 3));
+tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribute('normal').array, 3));
+tgeo.setAttribute('uv', new THREE.Float32BufferAttribute(geometry.getAttribute('uv').array, 2));
+tgeo.setIndex(new THREE.Uint16BufferAttribute(geometry.getIndex()!.array, 1));
+
+var mesh = new Mesh(tgeo, new MeshPhongMaterial({}));
