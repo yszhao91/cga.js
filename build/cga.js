@@ -4903,7 +4903,11 @@
 	  };
 
 	  Mat4.prototype.getInverse = function (m, throwOnDegenerate) {
-	    // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+	    if (throwOnDegenerate === void 0) {
+	      throwOnDegenerate = true;
+	    } // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+
+
 	    var te = this.elements,
 	        me = m.elements,
 	        n11 = me[0],
@@ -5233,6 +5237,8 @@
 	var _v1 = Vec3_1.v3();
 
 	var _m1 = m4();
+
+	var _m2 = m4();
 
 	var _zero = Vec3_1.v3(0, 0, 0);
 
@@ -6044,7 +6050,7 @@
 	 * @Author       : 赵耀圣
 	 * @Q群           : 632839661
 	 * @Date         : 2020-12-10 15:01:42
-	 * @LastEditTime : 2021-03-11 16:35:50
+	 * @LastEditTime : 2021-03-12 10:13:55
 	 * @FilePath     : \cga.js\src\struct\3d\Plane.ts
 	 */
 
@@ -6286,6 +6292,12 @@
 	      _v3.set(positions[index_c], positions[index_c + 1], positions[index_c + 2]);
 
 	      var data = plane.splitTriangle(_tris);
+
+	      if (data.common.length > 0) ;
+
+	      if (data.negative.length > 0) ;
+
+	      if (data.positive.length > 0) ;
 	    }
 	  };
 
@@ -6306,12 +6318,52 @@
 	unwrapExports(Plane_1);
 	var Plane_2 = Plane_1.Plane;
 
+	var types = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.isString = exports.isFinite = exports.isUndefined = exports.isDefined = void 0;
+
+	function isDefined(value) {
+	  return value !== undefined && value !== null;
+	}
+
+	exports.isDefined = isDefined; //Method
+
+	function isUndefined(value) {
+	  return value === undefined;
+	}
+
+	exports.isUndefined = isUndefined;
+
+	function isFinite(value) {
+	  return typeof value == 'number' && globalThis.isFinite(value);
+	}
+
+	exports.isFinite = isFinite;
+
+	function isString(value) {
+	  return typeof value == 'string';
+	}
+
+	exports.isString = isString;
+	});
+
+	unwrapExports(types);
+	var types_1 = types.isString;
+	var types_2 = types.isFinite;
+	var types_3 = types.isUndefined;
+	var types_4 = types.isDefined;
+
 	var common = createCommonjsModule(function (module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.angle = exports.calcCircleFromThreePoint = exports.pointsCollinear = exports.isInOnePlane = exports.recognitionPlane = exports.projectOnPlane = exports.reverseOnPlane = exports.simplifyPointList = exports.applyMatrix4 = exports.scale = exports.rotateByUnitVectors = exports.rotate = exports.translate = exports.applyQuat = exports.boundingBox = exports.verctorToNumbers = exports.vectorCompare = exports.clone = void 0;
+
+
 
 
 
@@ -6337,6 +6389,7 @@
 
 
 	function clone(array) {
+	  if (!types.isDefined(array)) return array;
 	  var result = new Array();
 
 	  for (var i = 0; i < array.length; i++) {
@@ -7078,44 +7131,6 @@
 
 	unwrapExports(Polyline_1);
 	var Polyline_2 = Polyline_1.Polyline;
-
-	var types = createCommonjsModule(function (module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.isString = exports.isFinite = exports.isUndefined = exports.isDefined = void 0;
-
-	function isDefined(value) {
-	  return value !== undefined && value !== null;
-	}
-
-	exports.isDefined = isDefined; //Method
-
-	function isUndefined(value) {
-	  return value === undefined;
-	}
-
-	exports.isUndefined = isUndefined;
-
-	function isFinite(value) {
-	  return typeof value == 'number' && globalThis.isFinite(value);
-	}
-
-	exports.isFinite = isFinite;
-
-	function isString(value) {
-	  return typeof value == 'string';
-	}
-
-	exports.isString = isString;
-	});
-
-	unwrapExports(types);
-	var types_1 = types.isString;
-	var types_2 = types.isFinite;
-	var types_3 = types.isUndefined;
-	var types_4 = types.isDefined;
 
 	var Path_1 = createCommonjsModule(function (module, exports) {
 	/*
@@ -10299,8 +10314,9 @@
 
 	  for (var i = -1; i < holes.length - 1; i++) {
 	    holesIndex.push(baseIndex);
-	    var hole = holes[i + 1];
-	    holesIndex.push(baseIndex + hole.length);
+	    var hole = holes[i + 1]; // holesIndex.push(baseIndex + hole.length);
+
+	    baseIndex += hole.length;
 	  }
 
 	  var result = earcut_1$1.default(vertextNumbers, holesIndex, dim);
@@ -10532,7 +10548,7 @@
 	 * @Author       : 赵耀圣
 	 * @QQ           : 549184003
 	 * @Date         : 2020-12-10 15:01:42
-	 * @LastEditTime : 2021-03-11 10:53:02
+	 * @LastEditTime : 2021-06-25 16:07:53
 	 * @FilePath     : \cga.js\src\alg\extrude.ts
 	 */
 
@@ -10590,20 +10606,20 @@
 
 	/**
 	 * @description : 缝合两个边 不提供uv生成  uv有@linkSides 生成
-	 * @param        { ILinkSideOption } sideOptions
+	 * @param        { ILinkSideOption } options
 	 * @returns      { Array<Vec3>} 三角形数组，每三个为一个三角形
 	 * @example     :
 	 */
 
 
-	function linkSide(sideOptions) {
-	  sideOptions = __assign({
+	function linkSide(options) {
+	  options = __assign({
 	    shapeClosed: true,
 	    autoUV: true
-	  }, sideOptions);
-	  var side0 = sideOptions.side0;
-	  var side1 = sideOptions.side1;
-	  var shapeClosed = sideOptions.shapeClosed;
+	  }, options);
+	  var side0 = options.side0;
+	  var side1 = options.side1;
+	  var shapeClosed = options.shapeClosed;
 	  if (side0.length !== side1.length) throw "拉伸两边的点数量不一致  linkSide";
 	  if (side0.length < 2 || side1.length < 2) return [];
 	  var orgLen = side0.length;
@@ -10656,6 +10672,20 @@
 	    }
 	  }
 
+	  if (options.holes0 && options.holes1) {
+	    var holes0 = options.holes0;
+	    var holes1 = options.holes1;
+
+	    for (var h = 0; h < holes0.length; h++) {
+	      var holeTriangles = linkSide({
+	        side0: holes0[h],
+	        side1: holes1[h]
+	      });
+	      holeTriangles.reverse();
+	      triangles.push.apply(triangles, holeTriangles);
+	    }
+	  }
+
 	  return triangles;
 	}
 
@@ -10691,13 +10721,25 @@
 	    index: 0
 	  };
 	  var shapes = options.shapes;
+	  var holess = options.holes;
+	  var hasHole = !!(holess && holess.length > 0);
 	  var length = options.pathClosed ? shapes.length : shapes.length - 1;
 	  var triangles = [];
 	  var index = options.index;
-	  if (index) mesh.indexable(shapes, index);
+	  var allVertics = [shapes];
+	  if (holess && holess.length > 0) allVertics.push(holess);
+	  var orgShape = options.orgShape || shapes[0];
+	  var orgHoles = options.orgHoles || holess && holess[0];
+	  if (index) mesh.indexable(allVertics, index);
 
 	  for (var i = 0; i < length; i++) {
-	    triangles.push.apply(triangles, linkSide({
+	    if (holess) triangles.push.apply(triangles, linkSide({
+	      side0: shapes[i],
+	      side1: shapes[(i + 1) % shapes.length],
+	      holes0: holess[i],
+	      holes1: holess[(i + 1) % shapes.length],
+	      shapeClosed: options.shapeClosed
+	    }));else triangles.push.apply(triangles, linkSide({
 	      side0: shapes[i],
 	      side1: shapes[(i + 1) % shapes.length],
 	      shapeClosed: options.shapeClosed
@@ -10705,8 +10747,15 @@
 	  }
 
 	  if (options.sealStart) {
-	    shapes.push(common.clone(shapes[0]));
-	    var startTris = trianglution.triangulation(shapes[shapes.length - 1], undefined, {
+	    var startShape = common.clone(shapes[0]);
+	    allVertics.push(startShape);
+
+	    if (holess && holess[0]) {
+	      var startHoles = common.clone(holess[0]);
+	      allVertics.push(startHoles);
+	    }
+
+	    var startTris = trianglution.triangulation(startShape, startHoles, {
 	      feature: options.axisPlane
 	    });
 
@@ -10715,14 +10764,24 @@
 	        startTris[i] = v + (index === null || index === void 0 ? void 0 : index.index);
 	      });
 	      index.index += shapes[shapes.length - 2].length;
+	      if (holess && holess[0]) startHoles.forEach(function (h) {
+	        index.index += h.length;
+	      });
 	    }
 
-	    triangles.push.apply(triangles, startTris);
+	    triangles.push.apply(triangles, startTris.reverse());
 	  }
 
 	  if (options.sealEnd) {
-	    shapes.push(common.clone(shapes[shapes.length - 2]));
-	    var endTris = trianglution.triangulation(shapes[shapes.length - 1], undefined, {
+	    var endShape = common.clone(shapes[shapes.length - 1]);
+	    allVertics.push(endShape);
+
+	    if (holess && holess[0]) {
+	      var endHoles = common.clone(common.clone(holess[holess.length - 1]));
+	      allVertics.push(endHoles);
+	    }
+
+	    var endTris = trianglution.triangulation(endShape, endHoles, {
 	      feature: options.axisPlane
 	    });
 
@@ -10731,40 +10790,66 @@
 	        endTris[i] = v + (index === null || index === void 0 ? void 0 : index.index);
 	      });
 	      index.index += shapes[shapes.length - 1].length;
+	      if (holess && holess[0]) endHoles.forEach(function (h) {
+	        index.index += h.length;
+	      });
 	    }
 
 	    triangles.push.apply(triangles, endTris.reverse());
 	  }
 
-	  triangles.shapes = array.flat(shapes);
+	  triangles.shapes = allVertics;
 	  var uvs = [];
 
 	  if (options.generateUV) {
 	    //生成UV 
-	    var uBasicScalar = new Array(shapes[0].length).fill(0);
+	    // let uBasicScalar = new Array(shapes[0].length).fill(0);
+	    var uBasicScalar = 0;
 
-	    var _loop_1 = function (i_1) {
+	    for (var i_1 = 0; i_1 < shapes.length; i_1++) {
 	      var shape = shapes[i_1];
+	      var lastshape = shapes[i_1 - 1];
 
 	      if (isNaN(shape[0])) {
 	        //不是索引才生产纹理，其他都是顶点
-	        vScalar = Path_1.Path.getPerMileages(shape, false);
-	        if (i_1 > 0) uScalar = uBasicScalar.map(function (e, k) {
-	          return e + shape[k].distanceTo(shapes[i_1 - 1][k]);
-	        });else uScalar = new Array(shapes[0].length).fill(0);
+	        var vScalar = Path_1.Path.getPerMileages(shape, false);
+	        var uScalar = 0; // if (i > 0)
+	        //     uScalar = uBasicScalar.map((e, k) => {
+	        //         return e + shape[k].distanceTo(lastshape[k]);
+	        //     });
+	        // else
+	        //     uScalar = new Array(shapes[0].length).fill(0);
 
-	        for (var l = 0; l < uBasicScalar.length; l++) {
-	          uvs.push(uScalar[l], vScalar[l]);
+	        if (i_1 > 0) uScalar = uBasicScalar + shape[0].distanceTo(lastshape[0]);
+
+	        for (var l = 0; l < shape.length; l++) {
+	          uvs.push(uScalar, vScalar[l]);
 	        }
 
-	        if (vScalar.length !== uScalar.length) throw "UV不相等";
+	        uBasicScalar = uScalar;
 	      } else console.error("索引无法生成纹理");
-	    };
+	    }
 
-	    var vScalar, uScalar;
+	    if (holess) {
+	      uBasicScalar = 0;
 
-	    for (var i_1 = 0; i_1 < shapes.length - 2; i_1++) {
-	      _loop_1(i_1);
+	      for (var i_2 = 0; i_2 < holess.length; i_2++) {
+	        var holes = holess[i_2];
+	        var lastHole = holess[i_2 - 1];
+	        var uScalar = 0;
+	        if (i_2 > 0) uScalar = uBasicScalar + holes[0][0].distanceTo(lastHole[0][0]);
+
+	        for (var j = 0; j < holes.length; j++) {
+	          var hole = holes[j];
+	          var vScalar = Path_1.Path.getPerMileages(hole, false);
+
+	          for (var l = 0; l < hole.length; l++) {
+	            uvs.push(uScalar, vScalar[l]);
+	          }
+	        }
+
+	        uBasicScalar = uScalar;
+	      }
 	    } //前后纹理
 
 
@@ -10772,20 +10857,35 @@
 
 	    switch (options.axisPlane) {
 	      case trianglution.AxisPlane.XY:
-	        options.orgShape.map(function (e) {
+	        orgShape.map(function (e) {
 	          sealUvs.push(e.x, e.y);
+	        });
+	        if (orgHoles) orgHoles.forEach(function (h) {
+	          h.forEach(function (e) {
+	            sealUvs.push(e.x, e.y);
+	          });
 	        });
 	        break;
 
 	      case trianglution.AxisPlane.XZ:
-	        options.orgShape.map(function (e) {
+	        orgShape.map(function (e) {
 	          sealUvs.push(e.x, e.z);
+	        });
+	        if (orgHoles) orgHoles.forEach(function (h) {
+	          h.forEach(function (e) {
+	            sealUvs.push(e.x, e.z);
+	          });
 	        });
 	        break;
 
 	      case trianglution.AxisPlane.YZ:
-	        options.orgShape.map(function (e) {
+	        orgShape.map(function (e) {
 	          sealUvs.push(e.y, e.z);
+	        });
+	        if (orgHoles) orgHoles.forEach(function (h) {
+	          h.forEach(function (e) {
+	            sealUvs.push(e.y, e.z);
+	          });
 	        });
 	        break;
 	    }
@@ -10804,7 +10904,7 @@
 	  //     }
 	  // }
 
-	  var positions = common.verctorToNumbers(shapes);
+	  var positions = common.verctorToNumbers(allVertics);
 	  shapes.pop();
 	  shapes.pop();
 	  return {
@@ -10844,6 +10944,7 @@
 	 *    normal?: Vec3,//面的法线
 	 *    autoIndex?: boolean,
 	 *    index?: { index: number }
+	 *   holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[]
 	 *}
 	 * @return       {IGeometry}
 	 * @example     :
@@ -10873,6 +10974,8 @@
 	    options.normal = options.normal || Vec3_1.Vec3.UnitZ;
 	  }
 
+	  var newholes = [];
+
 	  for (var i = 0; i < options.path.length; i++) {
 	    var point = path[i];
 	    var direction = point.direction;
@@ -10885,11 +10988,18 @@
 
 	    var new_shape = pointset.applyMat4(shape, _matrix, false);
 	    shapes.push(new_shape);
+
+	    if (options.holes) {
+	      var mholes = pointset.applyMat4(options.holes, _matrix, false);
+	      newholes.push(mholes);
+	    }
 	  }
 
 	  var geo = linkSides({
 	    shapes: shapes,
+	    holes: newholes,
 	    orgShape: options.shape,
+	    orgHoles: options.holes,
 	    sealStart: options.sealStart,
 	    sealEnd: options.sealEnd,
 	    shapeClosed: options.shapeClosed,
