@@ -73,7 +73,7 @@ export class VecArray {
     static reverse(vs: number[], component: number = 3) {
         const length = vs.length;
         for (let i = 0; i < length; i += component) {
-            vs.unshift(...vs.splice(length - component, component));
+            vs.unshift(...vs.splice(i, component))
         }
         return vs;
     }
