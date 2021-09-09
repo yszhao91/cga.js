@@ -2,8 +2,8 @@
  * @Author       : 赵耀圣
  * @Date         : 2020-12-10 15:01:42
  * @QQ           : 549184003
- * @LastEditTime : 2021-03-10 17:41:20
- * @FilePath     : \cga.js\src\struct\3d\Path.ts
+ * @LastEditTime : 2021-09-07 15:40:10
+ * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\struct\3d\Path.ts
  */
 
 

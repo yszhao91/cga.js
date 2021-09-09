@@ -3,8 +3,8 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-06-28 15:49:21
- * @FilePath     : \cga.js\src\alg\extrude.ts
+ * @LastEditTime : 2021-09-07 16:38:31
+ * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\alg\extrude.ts
  */
 
 import { Vec3, v3, IVec3, IVec2 } from '../math/Vec3';
@@ -455,7 +455,11 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
     for (let i = 0; i < options.path.length; i++) {
         const point = path[i];
         const direction = (point as any).direction;
-        const upi = v3().crossVecs(right, direction);
+        let upi: any;
+
+        upi = ups[i] || v3().crossVecs(right, direction);
+        if (!right)
+            right = v3().crossVecs(upi, direction);
 
         _matrix.makeBasis(right, upi, direction);
         _matrix.setPosition(point);

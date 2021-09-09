@@ -2,7 +2,7 @@ import { GlobeSurfaceTileProvider } from "./GlobeSurfaceTileProvider";
 import { QuadtreeTile } from "./QuadtreeTile";
 
 export interface IQuadtreePrimitiveOption {
-    tileProvider?: GlobeSurfaceTileProvider
+    tileProvider: GlobeSurfaceTileProvider;
 }
 
 var rootTraversalDetails = [];
@@ -14,11 +14,20 @@ export class QuadtreePrimitive {
     private _tileProvider: any;
 
     constructor(options: IQuadtreePrimitiveOption) {
+        if (!options.tileProvider) {
+            throw ("options.tileProvider 参数是必须的");
+        }
+        // if (options.tileProvider.quadtree) {
+        //     throw ("A QuadtreeTileProvider can only be used with a single QuadtreePrimitive");
+        // }
+
         this._tileProvider = options.tileProvider;
         this._tileProvider.quadtree = this;
     }
 
-
+    get tileProvider() {
+        return this._tileProvider;
+    }
 
     selectTilesForRendering(frameState: any) {
         var i;
@@ -42,7 +51,6 @@ export class QuadtreePrimitive {
 
     update() {
         this.selectTilesForRendering({});
-        
     }
 
 }

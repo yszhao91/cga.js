@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2021-08-02 16:24:03
- * @LastEditTime : 2021-08-02 16:51:25
+ * @LastEditTime : 2021-08-03 11:32:10
  * @FilePath     : \cga.js\src\math\HVec3.ts
  */
 import { Quat, quat } from './Quat';
@@ -49,6 +49,8 @@ export class Vec3 extends EventHandler implements IHVec3 {
     this.z = new Decimal(_x);
 
   }
+
+
   static isVec3(v: any) {
     return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && isNaN(v.w);
   }
@@ -108,6 +110,123 @@ export class Vec3 extends EventHandler implements IHVec3 {
     return this;
   }
 
+  add(v: Vec3, w?: Vec3) {
+    if (w !== undefined) {
+      console.warn(
+        "Vec3: .add() now only accepts one argument. Use .addVecs( a, b ) instead."
+      );
+      return this.addVecs(v, w);
+    }
+
+    this.x.add(v.x);
+    this.y.add(v.y);
+    this.z.add(v.z);
+
+    return this;
+  }
+
+
+  addVecs(a: Vec3, b: Vec3) {
+    this.x = new Decimal(a.x).add(b.x);
+    this.y = new Decimal(a.y).add(b.y);
+    this.z = new Decimal(a.z).add(b.z);
+
+    return this;
+  }
+
+
+  sub(v: Vec3, w?: Vec3) {
+    if (w !== undefined) {
+      console.warn(
+        "Vec3: .sub() now only accepts one argument. Use .subVecs( a, b ) instead."
+      );
+      return this.subVecs(v, w);
+    }
+
+    this.x.sub(v.x);
+    this.y.sub(v.y);
+    this.z.sub(v.z);
+
+    return this;
+  }
+
+
+  subVecs(a: Vec3, b: Vec3) {
+    this.x = new Decimal(a.x).sub(b.x);
+    this.y = new Decimal(a.y).sub(b.y);
+    this.z = new Decimal(a.z).sub(b.z);
+
+    return this;
+  }
+
+
+  multiplyScalar(scalar: Decimal | number) {
+    scalar = new Decimal(scalar);
+    this.x.mul(scalar);
+    this.y.mul(scalar);
+    this.z.mul(scalar);
+
+    return this;
+  }
+
+
+  cross(v: Vec3, w?: Vec3) {
+    if (w !== undefined) {
+      console.warn(
+        "Vec3: .cross() now only accepts one argument. Use .crossVecs( a, b ) instead."
+      );
+      return this.crossVecs(v, w);
+    }
+
+    return this.crossVecs(this, v);
+  }
+
+  crossVecs(a: Vec3, b: Vec3) {
+    var ax = a.x,
+      ay = a.y,
+      az = a.z;
+    var bx = b.x,
+      by = b.y,
+      bz = b.z;
+
+    this.x = ay.mul(bz).sub(az.mul(by));
+    this.y = az.mul(bx).sub(ax.mul(bz));
+    this.z = ax.mul(by).sub(ay.mul(bx));
+
+    return this;
+  }
+
+  dot(v: Vec3) {
+    return this.x.mul(v.x).add(this.y.mul(v.y)).add(this.z.mul(v.z));
+  }
+
+  lerp(v: Vec3, alpha: number | Decimal) {
+    this.x.add(v.x.sub(this.x).mul(alpha));
+    this.y.add(v.y.sub(this.y).mul(alpha));
+    this.z.add(v.z.sub(this.z).mul(alpha));
+
+    return this;
+  }
+
+
+  clone(): Vec3 {
+    return new Vec3(this.x, this.y, this.z);
+  }
+
+  length() {
+    return this.x.mul(this.x).add(this.y.mul(this.y)).add(this.z.mul(this.z)).sqrt();
+  }
+
+  normalize() {
+    return this.divideScalar(this.length() || new Decimal(1));
+
+  }
+
+  divideScalar(scalar: number | Decimal) {
+    return this.multiplyScalar(new Decimal(1).mul(new Decimal(scalar)));
+  }
+
+
   //   getComponent(index: number) {
   //     switch (index) {
   //       case 0:
@@ -121,9 +240,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     }
   //   }
 
-  //   clone(): Vec3 {
-  //     return new Vec3(this.x, this.y, this.z);
-  //   }
 
   //   copy(v: Vec3) {
   //     this.x = v.x;
@@ -133,20 +249,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   add(v: Vec3, w?: Vec3) {
-  //     if (w !== undefined) {
-  //       console.warn(
-  //         "Vec3: .add() now only accepts one argument. Use .addVecs( a, b ) instead."
-  //       );
-  //       return this.addVecs(v, w);
-  //     }
 
-  //     this.x.add(v.x);
-  //     this.y.add(v.y);
-  //     this.z.add(v.z);
-
-  //     return this;
-  //   }
 
   //   addScalar(s: number) {
   //     this.x.add(s);
@@ -156,13 +259,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   addVecs(a: Vec3, b: Vec3) {
-  //     this.x = new Decimal(0).add(a.x).add(b.x);
-  //     this.y = new Decimal(0).add(a.y).add(b.y);
-  //     this.z = new Decimal(0).add(a.z).add(b.z);
-
-  //     return this;
-  //   }
 
   //   addScaledVec(v: Vec3, s: number) {
   //     this.x.add(v.x.mul(s));
@@ -172,36 +268,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   sub(v: Vec3, w?: Vec3) {
-  //     if (w !== undefined) {
-  //       console.warn(
-  //         "Vec3: .sub() now only accepts one argument. Use .subVecs( a, b ) instead."
-  //       );
-  //       return this.subVecs(v, w);
-  //     }
-
-  //     this.x.sub(v.x);
-  //     this.y.sub(v.y);
-  //     this.z.sub(v.z);
-
-  //     return this;
-  //   }
-
-  //   subScalar(s: number) {
-  //     this.x.sub(s);
-  //     this.y.sub(s);
-  //     this.z.sub(s);
-
-  //     return this;
-  //   }
-
-  //   subVecs(a: Vec3, b: Vec3) {
-  //     this.x = a.x - b.x;
-  //     this.y = a.y - b.y;
-  //     this.z = a.z - b.z;
-
-  //     return this;
-  //   }
 
   //   multiply(v: Vec3, w?: Vec3) {
   //     if (w !== undefined) {
@@ -215,13 +281,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   multiplyScalar(scalar: number) {
-  //     this.x *= scalar;
-  //     this.y *= scalar;
-  //     this.z *= scalar;
-
-  //     return this;
-  //   }
 
   //   multiplyVecs(a: Vec3, b: Vec3) {
   //     this.x = a.x * b.x;
@@ -262,20 +321,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   applyMat4(m: Mat4) {
-  //     var x = this.x,
-  //       y = this.y,
-  //       z = this.z;
-  //     var e = m.elements;
-
-  //     var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
-
-  //     this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-  //     this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-  //     this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
-
-  //     return this;
-  //   }
 
   //   applyQuat(q: { x: any; y: any; z: any; w: any; }) {
   //     var x = this.x,
@@ -338,9 +383,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   divideScalar(scalar: number) {
-  //     return this.multiplyScalar(1 / scalar);
-  //   }
 
   //   min(v: Vec3) {
   //     this.x = Math.min(this.x, v.x);
@@ -424,9 +466,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //     return this;
   //   }
 
-  //   dot(v: Vec3) {
-  //     return this.x * v.x + this.y * v.y + this.z * v.z;
-  //   }
 
   //   // TODO lengthSquared?
 
@@ -441,68 +480,10 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //   manhattanLength() {
   //     return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
   //   }
-
-  //   normalize(robust = false) {
-  //     return this.divideScalar(this.length() || 1);
-
-  //     // if (robust)
-  //     // {
-  //     //   var maxAbsComp = Math.abs(v[0]);
-  //     //   for (var i = 1; i < N; ++i)
-  //     //   {
-  //     //     var absComp = Math.abs(v[i]);
-  //     //     if (absComp > maxAbsComp)
-  //     //     {
-  //     //       maxAbsComp = absComp;
-  //     //     }
-  //     //   }
-
-  //     //   var length;
-  //     //   if (maxAbsComp > 0)
-  //     //   {
-  //     //     v /= maxAbsComp;
-  //     //     length = Math.sqrt(Dot(v, v));
-  //     //     v /= length;
-  //     //     length *= maxAbsComp;
-  //     //   }
-  //     //   else
-  //     //   {
-  //     //     length = 0;
-  //     //     for (var i = 0; i < N; ++i)
-  //     //     {
-  //     //       v[i] = 0;
-  //     //     }
-  //     //   }
-  //     //   return length;
-  //     // }
-  //     // else
-  //     // {
-  //     //   var length = this.length();
-  //     //   if (length > 0)
-  //     //   {
-  //     //     v /= length;
-  //     //   }
-  //     //   else
-  //     //   {
-  //     //     for (var i = 0; i < N; ++i)
-  //     //     {
-  //     //       v[i] = 0;
-  //     //     }
-  //     //   }
-  //     // }
-  //   }
-
   //   setLength(length: any) {
   //     return this.normalize().multiplyScalar(length);
   //   }
 
-  //   lerp(v: Vec3, alpha: number) {
-  //     this.x.add(v.x.sub(this.x).mul(alpha));
-  //     this.y.add(v.y.sub(this.y).mul(alpha));
-  //     this.z.add(v.z.sub(this.z).mul(alpha));
-
-  //     return this;
-  //   }
 
   //   lerpVecs(v1: Vec3, v2: any, alpha: any) {
   //     return this.subVecs(v2, v1)
@@ -510,31 +491,6 @@ export class Vec3 extends EventHandler implements IHVec3 {
   //       .add(v1);
   //   }
 
-  //   cross(v: Vec3, w?: Vec3) {
-  //     if (w !== undefined) {
-  //       console.warn(
-  //         "Vec3: .cross() now only accepts one argument. Use .crossVecs( a, b ) instead."
-  //       );
-  //       return this.crossVecs(v, w);
-  //     }
-
-  //     return this.crossVecs(this, v);
-  //   }
-
-  //   crossVecs(a: Vec3, b: Vec3) {
-  //     var ax = a.x,
-  //       ay = a.y,
-  //       az = a.z;
-  //     var bx = b.x,
-  //       by = b.y,
-  //       bz = b.z;
-
-  //     this.x = ay * bz - az * by;
-  //     this.y = az * bx - ax * bz;
-  //     this.z = ax * by - ay * bx;
-
-  //     return this;
-  //   }
 
   //   projectOnVec(vec: Vec3) {
   //     var scalar = vec.dot(this) / vec.lengthSq();

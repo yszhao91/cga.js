@@ -63,36 +63,6 @@ export class Vec3 extends EventHandler implements IVec3 {
     return new Vec3(0, 0, 1);
   }
 
-  // static fromDegrees(longitude: number,
-  //   latitude: number,
-  //   height: number = 0,
-  //   ellipsoid: Vec3 = wgs84RadiiSquared,
-  // ) {
-  //   longitude = toRadians(longitude);
-  //   latitude = toRadians(latitude);
-
-  //   return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
-  // }
-
-  // static fromRadians(longitude: number,
-  //   latitude: number,
-  //   height: number = 0,
-  //   ellipsoid: Vec3 = wgs84RadiiSquared) {
-
-  //   var cosLatitude = Math.cos(latitude);
-  //   scratchN.x = cosLatitude * Math.cos(longitude);
-  //   scratchN.y = Math.sin(latitude);
-  //   scratchN.z = cosLatitude * Math.sin(longitude);
-  //   scratchN.normalize();
-
-  //   scratchK.multiplyVecs(ellipsoid, scratchN);
-  //   var gamma = Math.sqrt(scratchN.dot(scratchK));
-  //   scratchK.divideScalar(gamma);
-  //   scratchN.multiplyScalar(height);
-
-  //   var result = new Vec3();
-  //   return result.addVecs(scratchK, scratchN);
-  // }
 
   set(x: number, y: number, z: number) {
     this.x = x;
@@ -1217,8 +1187,6 @@ export class Vec3 extends EventHandler implements IVec3 {
 
 const _vec = v3();
 const _quat: Quat = quat();
-const scratchN = new Vec3();
-const scratchK = new Vec3();
 
 export function v3(x?: number, y?: number, z?: number) {
   return new Vec3(x, y, z);

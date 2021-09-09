@@ -361,7 +361,7 @@ export class Quat extends EventHandler {
     return this;
   }
 
-  multiply(q: any, p: Quat) {
+  multiply(q: Quat, p?: Quat) {
     if (p !== undefined) {
       return this.multiplyQuats(q, p);
     }
@@ -369,7 +369,7 @@ export class Quat extends EventHandler {
     return this.multiplyQuats(this, q);
   }
 
-  premultiply(q: any) {
+  premultiply(q: Quat) {
     return this.multiplyQuats(q, this);
   }
 
