@@ -236,7 +236,7 @@ export class Quat extends EventHandler {
     return this;
   }
 
-  setFromRotationMatrix(m: { elements: any; }) {
+  setFromRotationMat(m: { elements: any; }) {
     // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuat/index.htm
 
     // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)

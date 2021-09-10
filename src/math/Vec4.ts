@@ -287,7 +287,7 @@ export class Vec4 extends EventHandler {
     return this;
   }
 
-  setAxisAngleFromRotationMatrix(m: { elements: any; }) {
+  setAxisAngleFromRotationMat(m: { elements: any; }) {
     // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
 
     // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)

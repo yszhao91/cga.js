@@ -86,7 +86,7 @@ export class Euler extends EventHandler {
     return this;
   }
 
-  setFromRotationMatrix(m: Mat4, order: string, update: boolean | undefined) {
+  setFromRotationMat(m: Mat4, order: string, update: boolean | undefined) {
     // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
     var te = m.elements;
@@ -164,7 +164,7 @@ export class Euler extends EventHandler {
       }
     } else {
       console.warn(
-        "Euler: .setFromRotationMatrix() given unsupported order: " + order
+        "Euler: .setFromRotationMat() given unsupported order: " + order
       );
     }
 
@@ -178,7 +178,7 @@ export class Euler extends EventHandler {
   setFromQuat(q: Quat, order: any, update?: boolean) {
     _matrix.makeRotationFromQuat(q);
 
-    return this.setFromRotationMatrix(_matrix, order, update);
+    return this.setFromRotationMat(_matrix, order, update);
   }
 
   setFromVec3(v: { x: any; y: any; z: any; }, order: any) {

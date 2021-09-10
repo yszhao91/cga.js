@@ -336,14 +336,14 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this;
   }
 
-  project(camera: { matrixWorldInverse: any; projectionMatrix: any; }) {
+  project(camera: { matrixWorldInverse: any; projectionMat: any; }) {
     return this.applyMat4(camera.matrixWorldInverse).applyMat4(
-      camera.projectionMatrix
+      camera.projectionMat
     );
   }
 
-  unproject(camera: { projectionMatrixInverse: any; matrixWorld: any; }) {
-    return this.applyMat4(camera.projectionMatrixInverse).applyMat4(
+  unproject(camera: { projectionMatInverse: any; matrixWorld: any; }) {
+    return this.applyMat4(camera.projectionMatInverse).applyMat4(
       camera.matrixWorld
     );
   }
@@ -694,7 +694,7 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this;
   }
 
-  setFromMatrixPosition(m: { elements: any; }) {
+  setFromMatPosition(m: { elements: any; }) {
     var e = m.elements;
 
     this._x = e[12];
@@ -704,10 +704,10 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this;
   }
 
-  setFromMatrixScale(m: any) {
-    var sx = this.setFromMatrixColumn(m, 0).length();
-    var sy = this.setFromMatrixColumn(m, 1).length();
-    var sz = this.setFromMatrixColumn(m, 2).length();
+  setFromMatScale(m: any) {
+    var sx = this.setFromMatColumn(m, 0).length();
+    var sy = this.setFromMatColumn(m, 1).length();
+    var sz = this.setFromMatColumn(m, 2).length();
 
     this._x = sx;
     this._y = sy;
@@ -716,7 +716,7 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this;
   }
 
-  setFromMatrixColumn(m: { elements: any; }, index: number) {
+  setFromMatColumn(m: { elements: any; }, index: number) {
     return this.fromArray(m.elements, index * 4);
   }
 

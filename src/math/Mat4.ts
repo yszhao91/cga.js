@@ -102,9 +102,9 @@ export class Mat4 {
   }
 
   extractBasis(xAxis: Vec3, yAxis: Vec3, zAxis: Vec3) {
-    xAxis.setFromMatrixColumn(this, 0);
-    yAxis.setFromMatrixColumn(this, 1);
-    zAxis.setFromMatrixColumn(this, 2);
+    xAxis.setFromMatColumn(this, 0);
+    yAxis.setFromMatColumn(this, 1);
+    zAxis.setFromMatColumn(this, 2);
 
     return this;
   }
@@ -138,9 +138,9 @@ export class Mat4 {
     var te = this.elements;
     var me = m.elements;
 
-    var scaleX = 1 / _v1.setFromMatrixColumn(m, 0).length();
-    var scaleY = 1 / _v1.setFromMatrixColumn(m, 1).length();
-    var scaleZ = 1 / _v1.setFromMatrixColumn(m, 2).length();
+    var scaleX = 1 / _v1.setFromMatColumn(m, 0).length();
+    var scaleY = 1 / _v1.setFromMatColumn(m, 1).length();
+    var scaleZ = 1 / _v1.setFromMatColumn(m, 2).length();
 
     te[0] = me[0] * scaleX;
     te[1] = me[1] * scaleX;
@@ -944,7 +944,7 @@ export class Mat4 {
     return this;
   }
 
-  decompose(position: Vec3, Quat: { setFromRotationMatrix: (arg0: Mat4) => void; }, scale: Vec3) {
+  decompose(position: Vec3, Quat: { setFromRotationMat: (arg0: Mat4) => void; }, scale: Vec3) {
     var te = this.elements;
 
     var sx = _v1.set(te[0], te[1], te[2]).length();
@@ -978,7 +978,7 @@ export class Mat4 {
     _m1.elements[9] *= invSZ;
     _m1.elements[10] *= invSZ;
 
-    Quat.setFromRotationMatrix(_m1);
+    Quat.setFromRotationMat(_m1);
 
     scale.x = sx;
     scale.y = sy;

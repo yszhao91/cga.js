@@ -232,7 +232,7 @@ export class Mat3 {
     return this;
   }
 
-  getNormalMatrix(mat4: Mat4) {
+  getNormalMat(mat4: Mat4) {
     return this.setFromMat4(mat4)
       .getInverse(this)
       .transpose();
@@ -362,4 +362,4 @@ export class Mat3 {
 
 export function m3() {
   return new Mat3();
-} 
+}
