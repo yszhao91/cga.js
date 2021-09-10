@@ -13,8 +13,8 @@ export class Vec2 extends EventHandler {
 
   set x(value) {
     if (this._x !== value) {
-      this.fire('change', 'x', this._x, value)
       this._x = value;
+      this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -24,11 +24,10 @@ export class Vec2 extends EventHandler {
 
   set y(value) {
     if (this._y !== value) {
-      this.fire('change', 'y', this._y, value)
       this._y = value;
+      this.fire('change', 'y', this._y, value)
     }
   }
-
 
   static isVec2(v: any): boolean {
     return !isNaN(v.x) && !isNaN(v.y) && isNaN(v.z) && isNaN(v.w);

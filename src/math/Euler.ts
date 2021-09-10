@@ -14,15 +14,14 @@ export class Euler extends EventHandler {
   constructor(public _x: number = 0, public _y: number = 0, public _z: number = 0, public _order = DefaultOrder) {
     super()
   }
-
   get x() {
     return this._x;
   }
 
   set x(value) {
     if (this._x !== value) {
-      this.fire('change', 'x', this._x, value)
       this._x = value;
+      this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -32,8 +31,8 @@ export class Euler extends EventHandler {
 
   set y(value) {
     if (this._y !== value) {
-      this.fire('change', 'y', this._y, value)
       this._y = value;
+      this.fire('change', 'y', this._y, value)
     }
   }
 
@@ -43,10 +42,11 @@ export class Euler extends EventHandler {
 
   set z(value) {
     if (this._z !== value) {
-      this.fire('change', 'z', this._z, value)
       this._z = value;
+      this.fire('change', 'z', this._z, value)
     }
   }
+
 
   get order() {
     return this._order;

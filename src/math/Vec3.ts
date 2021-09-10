@@ -32,15 +32,14 @@ export class Vec3 extends EventHandler implements IVec3 {
   constructor(private _x: number = 0, private _y: number = 0, private _z: number = 0) {
     super();
   }
-
   get x() {
     return this._x;
   }
 
   set x(value) {
     if (this._x !== value) {
-      this.fire('change', 'x', this._x, value)
       this._x = value;
+      this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -50,8 +49,8 @@ export class Vec3 extends EventHandler implements IVec3 {
 
   set y(value) {
     if (this._y !== value) {
-      this.fire('change', 'y', this._y, value)
       this._y = value;
+      this.fire('change', 'y', this._y, value)
     }
   }
 
@@ -61,10 +60,11 @@ export class Vec3 extends EventHandler implements IVec3 {
 
   set z(value) {
     if (this._z !== value) {
-      this.fire('change', 'z', this._z, value)
       this._z = value;
+      this.fire('change', 'z', this._z, value)
     }
   }
+
 
 
   static isVec3(v: any) {

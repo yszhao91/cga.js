@@ -1,19 +1,56 @@
 import { clamp } from "./Math";
 import { Euler } from './Euler';
 import { EventHandler } from '../render/eventhandler';
-import { buildAccessors } from '../render/thing';
 
 export class Quat extends EventHandler {
-  x!: number;
-  y!: number;
-  z!: number;
-  w!: number;
   isQuat: boolean = true;
   constructor(public _x: number = 0, public _y: number = 0, public _z: number = 0, public _w: number = 1) {
     super();
-    buildAccessors(['x', 'y', 'z', 'w'], this);
-
   }
+  get x() {
+    return this._x;
+  }
+
+  set x(value) {
+    if (this._x !== value) {
+      this._x = value;
+      this.fire('change', 'x', this._x, value)
+    }
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  set y(value) {
+    if (this._y !== value) {
+      this._y = value;
+      this.fire('change', 'y', this._y, value)
+    }
+  }
+
+  get z() {
+    return this._z;
+  }
+
+  set z(value) {
+    if (this._z !== value) {
+      this._z = value;
+      this.fire('change', 'z', this._z, value)
+    }
+  }
+
+  get w() {
+    return this._w;
+  }
+
+  set w(value) {
+    if (this._w !== value) {
+      this._w = value;
+      this.fire('change', 'w', this._w, value)
+    }
+  }
+
   static slerp(qa: any, qb: any, qm: { copy: (arg0: any) => { (): any; new(): any; slerp: { (arg0: any, arg1: any): any; new(): any; }; }; }, t: any) {
     return qm.copy(qa).slerp(qb, t);
   }
