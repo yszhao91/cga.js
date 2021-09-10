@@ -1,5 +1,6 @@
 import { Vec3, v3 } from './Vec3';
 import { Euler } from './Euler';
+import { Quat } from 'src';
 
 export class Mat4 {
   elements: number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
@@ -897,13 +898,13 @@ export class Mat4 {
     return this;
   }
 
-  compose(position: Vec3, Quat: { _x: any; _y: any; _z: any; _w: any; }, scale: Euler | Vec3) {
+  compose(position: Vec3, quat: Quat, scale: Euler | Vec3) {
     var te = this.elements;
 
-    var x = Quat._x,
-      y = Quat._y,
-      z = Quat._z,
-      w = Quat._w;
+    var x = quat._x,
+      y = quat._y,
+      z = quat._z,
+      w = quat._w;
     var x2 = x + x,
       y2 = y + y,
       z2 = z + z;
@@ -944,7 +945,7 @@ export class Mat4 {
     return this;
   }
 
-  decompose(position: Vec3, Quat: { setFromRotationMat: (arg0: Mat4) => void; }, scale: Vec3) {
+  decompose(position: Vec3, quat: Quat, scale: Vec3) {
     var te = this.elements;
 
     var sx = _v1.set(te[0], te[1], te[2]).length();
@@ -978,7 +979,7 @@ export class Mat4 {
     _m1.elements[9] *= invSZ;
     _m1.elements[10] *= invSZ;
 
-    Quat.setFromRotationMat(_m1);
+    quat.setFromRotationMat(_m1);
 
     scale.x = sx;
     scale.y = sy;
