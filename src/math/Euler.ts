@@ -2,16 +2,17 @@ import { v3 } from "./Vec3";
 import { clamp } from "./Math";
 import { m4, Mat4 } from "./Mat4";
 import { quat, Quat } from './Quat';
+import { EventHandler } from "../render/eventhandler";
 
 var _matrix = m4();
 var _Quat = quat();
 
 const RotationOrders = ["XYZ", "YZX", "ZXY", "XZY", "YXZ", "ZYX"];
 const DefaultOrder = "XYZ";
-export class Euler {
+export class Euler extends EventHandler {
   isEuler: boolean = true;
   constructor(public _x: number = 0, public _y: number = 0, public _z: number = 0, public _order = DefaultOrder) {
-
+    super()
   }
 
   get x() {
@@ -19,8 +20,10 @@ export class Euler {
   }
 
   set x(value) {
-    this._x = value;
-    this._onChangeCallback();
+    if (this._x !== value) {
+      this.fire('change', 'x', this._x, value)
+      this._x = value;
+    }
   }
 
   get y() {
@@ -28,8 +31,10 @@ export class Euler {
   }
 
   set y(value) {
-    this._y = value;
-    this._onChangeCallback();
+    if (this._y !== value) {
+      this.fire('change', 'y', this._y, value)
+      this._y = value;
+    }
   }
 
   get z() {
@@ -37,8 +42,10 @@ export class Euler {
   }
 
   set z(value) {
-    this._z = value;
-    this._onChangeCallback();
+    if (this._z !== value) {
+      this.fire('change', 'z', this._z, value)
+      this._z = value;
+    }
   }
 
   get order() {
@@ -46,8 +53,10 @@ export class Euler {
   }
 
   set order(value) {
-    this._order = value;
-    this._onChangeCallback();
+    if (this._order !== value) {
+      this.fire('change', 'order', this._order, value)
+      this._order = value;
+    }
   }
 
   set(x: number, y: number, z: number, order: string) {
@@ -56,7 +65,8 @@ export class Euler {
     this._z = z;
     this._order = order || this._order;
 
-    this._onChangeCallback();
+    this.fire('change')
+
 
     return this;
   }
@@ -71,7 +81,7 @@ export class Euler {
     this._z = Euler._z;
     this._order = Euler._order;
 
-    this._onChangeCallback();
+    this.fire('change')
 
     return this;
   }
@@ -160,7 +170,7 @@ export class Euler {
 
     this._order = order;
 
-    if (update !== false) this._onChangeCallback();
+    if (update !== false) this.fire('change')
 
     return this;
   }
@@ -198,7 +208,7 @@ export class Euler {
     this._z = array[2];
     if (array[3] !== undefined) this._order = array[3];
 
-    this._onChangeCallback();
+    this.fire('change')
 
     return this;
   }
@@ -221,13 +231,8 @@ export class Euler {
     }
   }
 
-  _onChange(callback: () => void) {
-    this._onChangeCallback = callback;
 
-    return this;
-  }
 
-  _onChangeCallback() { }
 }
 export function euler(x?: number, y?: number, z?: number) {
   return new Euler(x, y, z);

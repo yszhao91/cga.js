@@ -1,33 +1,53 @@
 import { Mat3 } from './Mat3';
 import { EventHandler } from '../render/eventhandler';
-import { buildAccessors } from '../render/thing';
 export class Vec2 extends EventHandler {
   isVec2: boolean = true;
-  x!: number;
-  y!: number;
+
   constructor(private _x: number = 0, private _y: number = 0) {
     super();
-    buildAccessors(['x', 'y'], this);
   }
+
+  get x() {
+    return this._x;
+  }
+
+  set x(value) {
+    if (this._x !== value) {
+      this.fire('change', 'x', this._x, value)
+      this._x = value;
+    }
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  set y(value) {
+    if (this._y !== value) {
+      this.fire('change', 'y', this._y, value)
+      this._y = value;
+    }
+  }
+
 
   static isVec2(v: any): boolean {
     return !isNaN(v.x) && !isNaN(v.y) && isNaN(v.z) && isNaN(v.w);
   }
 
   get width(): number {
-    return this.x;
+    return this._x;
   }
 
   set width(value: number) {
-    this.x = value;
+    this._x = value;
   }
 
   get height(): number {
-    return this.y;
+    return this._y;
   }
 
   set height(value: number) {
-    this.y = value;
+    this._y = value;
   }
 
   static get UnitX(): Vec2 {
@@ -39,27 +59,27 @@ export class Vec2 extends EventHandler {
   }
 
   set(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+    this._x = x;
+    this._y = y;
 
     return this;
   }
 
   setScalar(scalar: number) {
-    this.x = scalar;
-    this.y = scalar;
+    this._x = scalar;
+    this._y = scalar;
 
     return this;
   }
 
   setX(x: number) {
-    this.x = x;
+    this._x = x;
 
     return this;
   }
 
   setY(y: number) {
-    this.y = y;
+    this._y = y;
 
     return this;
   }
@@ -67,10 +87,10 @@ export class Vec2 extends EventHandler {
   setComponent(index: number, value: number) {
     switch (index) {
       case 0:
-        this.x = value;
+        this._x = value;
         break;
       case 1:
-        this.y = value;
+        this._y = value;
         break;
       default:
         throw new Error("index is out of range: " + index);
@@ -82,21 +102,21 @@ export class Vec2 extends EventHandler {
   getComponent(index: number) {
     switch (index) {
       case 0:
-        return this.x;
+        return this._x;
       case 1:
-        return this.y;
+        return this._y;
       default:
         throw new Error("index is out of range: " + index);
     }
   }
 
   clone(): Vec2 {
-    return new Vec2(this.x, this.y);
+    return new Vec2(this._x, this._y);
   }
 
   copy(v: Vec2): Vec2 {
-    this.x = v.x;
-    this.y = v.y;
+    this._x = v.x;
+    this._y = v.y;
 
     return this;
   }
@@ -109,29 +129,29 @@ export class Vec2 extends EventHandler {
       return this.addVecs(v, w);
     }
 
-    this.x += v.x;
-    this.y += v.y;
+    this._x += v.x;
+    this._y += v.y;
 
     return this;
   }
 
   addScalar(s: number) {
-    this.x += s;
-    this.y += s;
+    this._x += s;
+    this._y += s;
 
     return this;
   }
 
   addVecs(a: Vec2, b: Vec2) {
-    this.x = a.x + b.x;
-    this.y = a.y + b.y;
+    this._x = a.x + b.x;
+    this._y = a.y + b.y;
 
     return this;
   }
 
   addScaledVec(v: Vec2, s: number) {
-    this.x += v.x * s;
-    this.y += v.y * s;
+    this._x += v.x * s;
+    this._y += v.y * s;
 
     return this;
   }
@@ -144,43 +164,43 @@ export class Vec2 extends EventHandler {
       return this.subVecs(v, w);
     }
 
-    this.x -= v.x;
-    this.y -= v.y;
+    this._x -= v.x;
+    this._y -= v.y;
 
     return this;
   }
 
   subScalar(s: number) {
-    this.x -= s;
-    this.y -= s;
+    this._x -= s;
+    this._y -= s;
 
     return this;
   }
 
   subVecs(a: Vec2, b: Vec2) {
-    this.x = a.x - b.x;
-    this.y = a.y - b.y;
+    this._x = a.x - b.x;
+    this._y = a.y - b.y;
 
     return this;
   }
 
   multiply(v: Vec2) {
-    this.x *= v.x;
-    this.y *= v.y;
+    this._x *= v.x;
+    this._y *= v.y;
 
     return this;
   }
 
   multiplyScalar(scalar: number) {
-    this.x *= scalar;
-    this.y *= scalar;
+    this._x *= scalar;
+    this._y *= scalar;
 
     return this;
   }
 
   divide(v: Vec2) {
-    this.x /= v.x;
-    this.y /= v.y;
+    this._x /= v.x;
+    this._y /= v.y;
 
     return this;
   }
@@ -190,26 +210,26 @@ export class Vec2 extends EventHandler {
   }
 
   applyMat3(m: Mat3) {
-    var x = this.x,
-      y = this.y;
+    var x = this._x,
+      y = this._y;
     var e = m.elements;
 
-    this.x = e[0] * x + e[3] * y + e[6];
-    this.y = e[1] * x + e[4] * y + e[7];
+    this._x = e[0] * x + e[3] * y + e[6];
+    this._y = e[1] * x + e[4] * y + e[7];
 
     return this;
   }
 
   min(v: Vec2) {
-    this.x = Math.min(this.x, v.x);
-    this.y = Math.min(this.y, v.y);
+    this._x = Math.min(this._x, v.x);
+    this._y = Math.min(this._y, v.y);
 
     return this;
   }
 
   max(v: Vec2) {
-    this.x = Math.max(this.x, v.x);
-    this.y = Math.max(this.y, v.y);
+    this._x = Math.max(this._x, v.x);
+    this._y = Math.max(this._y, v.y);
 
     return this;
   }
@@ -217,15 +237,15 @@ export class Vec2 extends EventHandler {
   clamp(min: Vec2, max: Vec2) {
     // assumes min < max, componentwise
 
-    this.x = Math.max(min.x, Math.min(max.x, this.x));
-    this.y = Math.max(min.y, Math.min(max.y, this.y));
+    this._x = Math.max(min.x, Math.min(max.x, this._x));
+    this._y = Math.max(min.y, Math.min(max.y, this._y));
 
     return this;
   }
 
   clampScalar(minVal: number, maxVal: number) {
-    this.x = Math.max(minVal, Math.min(maxVal, this.x));
-    this.y = Math.max(minVal, Math.min(maxVal, this.y));
+    this._x = Math.max(minVal, Math.min(maxVal, this._x));
+    this._y = Math.max(minVal, Math.min(maxVal, this._y));
 
     return this;
   }
@@ -239,58 +259,58 @@ export class Vec2 extends EventHandler {
   }
 
   floor() {
-    this.x = Math.floor(this.x);
-    this.y = Math.floor(this.y);
+    this._x = Math.floor(this._x);
+    this._y = Math.floor(this._y);
 
     return this;
   }
 
   ceil() {
-    this.x = Math.ceil(this.x);
-    this.y = Math.ceil(this.y);
+    this._x = Math.ceil(this._x);
+    this._y = Math.ceil(this._y);
 
     return this;
   }
 
   round() {
-    this.x = Math.round(this.x);
-    this.y = Math.round(this.y);
+    this._x = Math.round(this._x);
+    this._y = Math.round(this._y);
 
     return this;
   }
 
   roundToZero() {
-    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
+    this._x = this._x < 0 ? Math.ceil(this._x) : Math.floor(this._x);
+    this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
 
     return this;
   }
 
   negate() {
-    this.x = -this.x;
-    this.y = -this.y;
+    this._x = -this._x;
+    this._y = -this._y;
 
     return this;
   }
 
   dot(v: Vec2) {
-    return this.x * v.x + this.y * v.y;
+    return this._x * v.x + this._y * v.y;
   }
 
   cross(v: Vec2) {
-    return this.x * v.y - this.y * v.x;
+    return this._x * v.y - this._y * v.x;
   }
 
   lengthSq() {
-    return this.x * this.x + this.y * this.y;
+    return this._x * this._x + this._y * this._y;
   }
 
   length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
+    return Math.sqrt(this._x * this._x + this._y * this._y);
   }
 
   manhattanLength() {
-    return Math.abs(this.x) + Math.abs(this.y);
+    return Math.abs(this._x) + Math.abs(this._y);
   }
 
   normalize() {
@@ -300,7 +320,7 @@ export class Vec2 extends EventHandler {
   angle() {
     // computes the angle in radians with respect to the positive x-axis
 
-    var angle = Math.atan2(this.y, this.x);
+    var angle = Math.atan2(this._y, this._x);
 
     if (angle < 0) angle += 2 * Math.PI;
 
@@ -312,13 +332,13 @@ export class Vec2 extends EventHandler {
   }
 
   distanceToSquared(v: Vec2) {
-    var dx = this.x - v.x,
-      dy = this.y - v.y;
+    var dx = this._x - v.x,
+      dy = this._y - v.y;
     return dx * dx + dy * dy;
   }
 
   manhattanDistanceTo(v: Vec2) {
-    return Math.abs(this.x - v.x) + Math.abs(this.y - v.y);
+    return Math.abs(this._x - v.x) + Math.abs(this._y - v.y);
   }
 
   setLength(length: number) {
@@ -326,8 +346,8 @@ export class Vec2 extends EventHandler {
   }
 
   lerp(v: Vec2, alpha: number) {
-    this.x += (v.x - this.x) * alpha;
-    this.y += (v.y - this.y) * alpha;
+    this._x += (v.x - this._x) * alpha;
+    this._y += (v.y - this._y) * alpha;
 
     return this;
   }
@@ -339,19 +359,19 @@ export class Vec2 extends EventHandler {
   }
 
   equals(v: Vec2) {
-    return v.x === this.x && v.y === this.y;
+    return v.x === this._x && v.y === this._y;
   }
 
   fromArray(array: number[], offset: number = 0) {
-    this.x = array[offset];
-    this.y = array[offset + 1];
+    this._x = array[offset];
+    this._y = array[offset + 1];
 
     return this;
   }
 
   toArray(array: number[] = [], offset: number = 0) {
-    array[offset] = this.x;
-    array[offset + 1] = this.y;
+    array[offset] = this._x;
+    array[offset + 1] = this._y;
 
     return array;
   }
@@ -363,8 +383,8 @@ export class Vec2 extends EventHandler {
       );
     }
 
-    this.x = attribute.getX(index);
-    this.y = attribute.getY(index);
+    this._x = attribute.getX(index);
+    this._y = attribute.getY(index);
 
     return this;
   }
@@ -373,11 +393,11 @@ export class Vec2 extends EventHandler {
     var c = Math.cos(angle),
       s = Math.sin(angle);
 
-    var x = this.x - center.x;
-    var y = this.y - center.y;
+    var x = this._x - center.x;
+    var y = this._y - center.y;
 
-    this.x = x * c - y * s + center.x;
-    this.y = x * s + y * c + center.y;
+    this._x = x * c - y * s + center.x;
+    this._y = x * s + y * c + center.y;
 
     return this;
   }

@@ -307,6 +307,14 @@ export class Quat extends EventHandler {
     return this.conjugate();
   }
 
+  invert() {
+
+    // quaternion is assumed to have unit length
+
+    return this.conjugate();
+
+  }
+
   conjugate() {
     this._x *= -1;
     this._y *= -1;

@@ -1,14 +1,13 @@
 import { Quat, quat } from './Quat';
 import { Mat3 } from './Mat3';
 import { Mat4 } from './Mat4';
-import { clamp, gPrecision, toRadians } from './Math';
-import { euler, Euler } from './Euler';
+import { clamp, gPrecision } from './Math';
+import { Euler } from './Euler';
 import { DistanceResult } from '../alg/result';
 import { Line, line } from '../struct/3d/Line';
 import { Ray } from '../struct/3d/Ray';
 import { Segment } from '../struct/3d/Segment';
 import { Plane } from '../struct/3d/Plane';
-import { buildAccessors } from '../render/thing';
 import { EventHandler } from '../render/eventhandler';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
@@ -29,15 +28,45 @@ export interface IVec4 extends IVec3 {
 }
 
 export class Vec3 extends EventHandler implements IVec3 {
-  x!: number;
-  y!: number;
-  z!: number;
+
   constructor(private _x: number = 0, private _y: number = 0, private _z: number = 0) {
     super();
-
-    buildAccessors(['x', 'y', 'z'], this);
-
   }
+
+  get x() {
+    return this._x;
+  }
+
+  set x(value) {
+    if (this._x !== value) {
+      this.fire('change', 'x', this._x, value)
+      this._x = value;
+    }
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  set y(value) {
+    if (this._y !== value) {
+      this.fire('change', 'y', this._y, value)
+      this._y = value;
+    }
+  }
+
+  get z() {
+    return this._z;
+  }
+
+  set z(value) {
+    if (this._z !== value) {
+      this.fire('change', 'z', this._z, value)
+      this._z = value;
+    }
+  }
+
+
   static isVec3(v: any) {
     return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && isNaN(v.w);
   }
@@ -65,30 +94,32 @@ export class Vec3 extends EventHandler implements IVec3 {
 
 
   set(x: number, y: number, z: number) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+    this._x = x;
+    this._y = y;
+    this._z = z;
+    this.fire('change');
     return this;
   }
 
   setScalar(scalar: number) {
-    this.x = scalar;
-    this.y = scalar;
-    this.z = scalar;
+    this._x = scalar;
+    this._y = scalar;
+    this._z = scalar;
 
+    this.fire('change');
     return this;
   }
 
   setComponent(index: number, value: number) {
     switch (index) {
       case 0:
-        this.x = value;
+        this._x = value;
         break;
       case 1:
-        this.y = value;
+        this._y = value;
         break;
       case 2:
-        this.z = value;
+        this._z = value;
         break;
       default:
         throw new Error("index is out of range: " + index);
@@ -100,25 +131,26 @@ export class Vec3 extends EventHandler implements IVec3 {
   getComponent(index: number) {
     switch (index) {
       case 0:
-        return this.x;
+        return this._x;
       case 1:
-        return this.y;
+        return this._y;
       case 2:
-        return this.z;
+        return this._z;
       default:
         throw new Error("index is out of range: " + index);
     }
   }
 
   clone(): Vec3 {
-    return new Vec3(this.x, this.y, this.z);
+    return new Vec3(this._x, this._y, this._z);
   }
 
   copy(v: Vec3) {
-    this.x = v.x;
-    this.y = v.y;
-    this.z = v.z;
+    this._x = v.x;
+    this._y = v.y;
+    this._z = v.z;
 
+    this.fire('change');
     return this;
   }
 
@@ -130,34 +162,38 @@ export class Vec3 extends EventHandler implements IVec3 {
       return this.addVecs(v, w);
     }
 
-    this.x += v.x;
-    this.y += v.y;
-    this.z += v.z;
+    this._x += v.x;
+    this._y += v.y;
+    this._z += v.z;
 
+    this.fire('change');
     return this;
   }
 
   addScalar(s: number) {
-    this.x += s;
-    this.y += s;
-    this.z += s;
+    this._x += s;
+    this._y += s;
+    this._z += s;
 
+    this.fire('change');
     return this;
   }
 
   addVecs(a: Vec3, b: Vec3) {
-    this.x = a.x + b.x;
-    this.y = a.y + b.y;
-    this.z = a.z + b.z;
+    this._x = a.x + b.x;
+    this._y = a.y + b.y;
+    this._z = a.z + b.z;
 
+    this.fire('change');
     return this;
   }
 
   addScaledVec(v: Vec3, s: number) {
-    this.x += v.x * s;
-    this.y += v.y * s;
-    this.z += v.z * s;
+    this._x += v.x * s;
+    this._y += v.y * s;
+    this._z += v.z * s;
 
+    this.fire('change');
     return this;
   }
 
@@ -169,26 +205,29 @@ export class Vec3 extends EventHandler implements IVec3 {
       return this.subVecs(v, w);
     }
 
-    this.x -= v.x;
-    this.y -= v.y;
-    this.z -= v.z;
+    this._x -= v.x;
+    this._y -= v.y;
+    this._z -= v.z;
 
+    this.fire('change');
     return this;
   }
 
   subScalar(s: number) {
-    this.x -= s;
-    this.y -= s;
-    this.z -= s;
+    this._x -= s;
+    this._y -= s;
+    this._z -= s;
 
+    this.fire('change');
     return this;
   }
 
   subVecs(a: Vec3, b: Vec3) {
-    this.x = a.x - b.x;
-    this.y = a.y - b.y;
-    this.z = a.z - b.z;
+    this._x = a.x - b.x;
+    this._y = a.y - b.y;
+    this._z = a.z - b.z;
 
+    this.fire('change');
     return this;
   }
 
@@ -197,26 +236,29 @@ export class Vec3 extends EventHandler implements IVec3 {
       return this.multiplyVecs(v, w);
     }
 
-    this.x *= v.x;
-    this.y *= v.y;
-    this.z *= v.z;
+    this._x *= v.x;
+    this._y *= v.y;
+    this._z *= v.z;
 
+    this.fire('change');
     return this;
   }
 
   multiplyScalar(scalar: number) {
-    this.x *= scalar;
-    this.y *= scalar;
-    this.z *= scalar;
+    this._x *= scalar;
+    this._y *= scalar;
+    this._z *= scalar;
 
+    this.fire('change');
     return this;
   }
 
   multiplyVecs(a: Vec3, b: Vec3) {
-    this.x = a.x * b.x;
-    this.y = a.y * b.y;
-    this.z = a.z * b.z;
+    this._x = a.x * b.x;
+    this._y = a.y * b.y;
+    this._z = a.z * b.z;
 
+    this.fire('change');
     return this;
   }
 
@@ -239,37 +281,39 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   applyMat3(m: Mat3) {
-    var x = this.x,
-      y = this.y,
-      z = this.z;
+    var x = this._x,
+      y = this._y,
+      z = this._z;
     var e = m.elements;
 
-    this.x = e[0] * x + e[3] * y + e[6] * z;
-    this.y = e[1] * x + e[4] * y + e[7] * z;
-    this.z = e[2] * x + e[5] * y + e[8] * z;
+    this._x = e[0] * x + e[3] * y + e[6] * z;
+    this._y = e[1] * x + e[4] * y + e[7] * z;
+    this._z = e[2] * x + e[5] * y + e[8] * z;
 
+    this.fire('change');
     return this;
   }
 
   applyMat4(m: Mat4) {
-    var x = this.x,
-      y = this.y,
-      z = this.z;
+    var x = this._x,
+      y = this._y,
+      z = this._z;
     var e = m.elements;
 
     var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
 
-    this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-    this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-    this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+    this._x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+    this._y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+    this._z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
 
+    this.fire('change');
     return this;
   }
 
   applyQuat(q: { x: any; y: any; z: any; w: any; }) {
-    var x = this.x,
-      y = this.y,
-      z = this.z;
+    var x = this._x,
+      y = this._y,
+      z = this._z;
     var qx = q.x,
       qy = q.y,
       qz = q.z,
@@ -284,10 +328,11 @@ export class Vec3 extends EventHandler implements IVec3 {
 
     // calculate result * inverse Quat
 
-    this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-    this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-    this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+    this._x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+    this._y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+    this._z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
 
+    this.fire('change');
     return this;
   }
 
@@ -307,23 +352,25 @@ export class Vec3 extends EventHandler implements IVec3 {
     // input: Mat4 affine matrix
     // Vec interpreted as a direction
 
-    var x = this.x,
-      y = this.y,
-      z = this.z;
+    var x = this._x,
+      y = this._y,
+      z = this._z;
     var e = m.elements;
 
-    this.x = e[0] * x + e[4] * y + e[8] * z;
-    this.y = e[1] * x + e[5] * y + e[9] * z;
-    this.z = e[2] * x + e[6] * y + e[10] * z;
+    this._x = e[0] * x + e[4] * y + e[8] * z;
+    this._y = e[1] * x + e[5] * y + e[9] * z;
+    this._z = e[2] * x + e[6] * y + e[10] * z;
 
+    this.fire('change');
     return this.normalize();
   }
 
   divide(v: Vec3) {
-    this.x /= v.x;
-    this.y /= v.y;
-    this.z /= v.z;
+    this._x /= v.x;
+    this._y /= v.y;
+    this._z /= v.z;
 
+    this.fire('change');
     return this;
   }
 
@@ -332,36 +379,40 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   min(v: Vec3) {
-    this.x = Math.min(this.x, v.x);
-    this.y = Math.min(this.y, v.y);
-    this.z = Math.min(this.z, v.z);
+    this._x = Math.min(this._x, v.x);
+    this._y = Math.min(this._y, v.y);
+    this._z = Math.min(this._z, v.z);
 
+    this.fire('change');
     return this;
   }
 
   max(v: Vec3) {
-    this.x = Math.max(this.x, v.x);
-    this.y = Math.max(this.y, v.y);
-    this.z = Math.max(this.z, v.z);
+    this._x = Math.max(this._x, v.x);
+    this._y = Math.max(this._y, v.y);
+    this._z = Math.max(this._z, v.z);
 
+    this.fire('change');
     return this;
   }
 
   clamp(min: Vec3, max: Vec3) {
     // assumes min < max, componentwise
 
-    this.x = Math.max(min.x, Math.min(max.x, this.x));
-    this.y = Math.max(min.y, Math.min(max.y, this.y));
-    this.z = Math.max(min.z, Math.min(max.z, this.z));
+    this._x = Math.max(min.x, Math.min(max.x, this._x));
+    this._y = Math.max(min.y, Math.min(max.y, this._y));
+    this._z = Math.max(min.z, Math.min(max.z, this._z));
 
+    this.fire('change');
     return this;
   }
 
   clampScalar(minVal: number, maxVal: number) {
-    this.x = Math.max(minVal, Math.min(maxVal, this.x));
-    this.y = Math.max(minVal, Math.min(maxVal, this.y));
-    this.z = Math.max(minVal, Math.min(maxVal, this.z));
+    this._x = Math.max(minVal, Math.min(maxVal, this._x));
+    this._y = Math.max(minVal, Math.min(maxVal, this._y));
+    this._z = Math.max(minVal, Math.min(maxVal, this._z));
 
+    this.fire('change');
     return this;
   }
 
@@ -374,61 +425,66 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   floor() {
-    this.x = Math.floor(this.x);
-    this.y = Math.floor(this.y);
-    this.z = Math.floor(this.z);
+    this._x = Math.floor(this._x);
+    this._y = Math.floor(this._y);
+    this._z = Math.floor(this._z);
 
+    this.fire('change');
     return this;
   }
 
   ceil() {
-    this.x = Math.ceil(this.x);
-    this.y = Math.ceil(this.y);
-    this.z = Math.ceil(this.z);
+    this._x = Math.ceil(this._x);
+    this._y = Math.ceil(this._y);
+    this._z = Math.ceil(this._z);
 
+    this.fire('change');
     return this;
   }
 
   round() {
-    this.x = Math.round(this.x);
-    this.y = Math.round(this.y);
-    this.z = Math.round(this.z);
+    this._x = Math.round(this._x);
+    this._y = Math.round(this._y);
+    this._z = Math.round(this._z);
 
+    this.fire('change');
     return this;
   }
 
   roundToZero() {
-    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
-    this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
+    this._x = this._x < 0 ? Math.ceil(this._x) : Math.floor(this._x);
+    this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
+    this._z = this._z < 0 ? Math.ceil(this._z) : Math.floor(this._z);
 
+    this.fire('change');
     return this;
   }
 
   negate() {
-    this.x = -this.x;
-    this.y = -this.y;
-    this.z = -this.z;
+    this._x = -this._x;
+    this._y = -this._y;
+    this._z = -this._z;
 
+    this.fire('change');
     return this;
   }
 
   dot(v: Vec3) {
-    return this.x * v.x + this.y * v.y + this.z * v.z;
+    return this._x * v.x + this._y * v.y + this._z * v.z;
   }
 
   // TODO lengthSquared?
 
   lengthSq() {
-    return this.x * this.x + this.y * this.y + this.z * this.z;
+    return this._x * this._x + this._y * this._y + this._z * this._z;
   }
 
   length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
   }
 
   manhattanLength() {
-    return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
+    return Math.abs(this._x) + Math.abs(this._y) + Math.abs(this._z);
   }
 
   normalize(robust = false) {
@@ -486,9 +542,9 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   lerp(v: Vec3, alpha: number) {
-    this.x += (v.x - this.x) * alpha;
-    this.y += (v.y - this.y) * alpha;
-    this.z += (v.z - this.z) * alpha;
+    this._x += (v.x - this._x) * alpha;
+    this._y += (v.y - this._y) * alpha;
+    this._z += (v.z - this._z) * alpha;
 
     return this;
   }
@@ -518,9 +574,9 @@ export class Vec3 extends EventHandler implements IVec3 {
       by = b.y,
       bz = b.z;
 
-    this.x = ay * bz - az * by;
-    this.y = az * bx - ax * bz;
-    this.z = ax * by - ay * bx;
+    this._x = ay * bz - az * by;
+    this._y = az * bx - ax * bz;
+    this._z = ax * by - ay * bx;
 
     return this;
   }
@@ -599,16 +655,16 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   distanceToSquared(v: Vec3) {
-    var dx = this.x - v.x,
-      dy = this.y - v.y,
-      dz = this.z - v.z;
+    var dx = this._x - v.x,
+      dy = this._y - v.y,
+      dz = this._z - v.z;
 
     return dx * dx + dy * dy + dz * dz;
   }
 
   manhattanDistanceTo(v: Vec3) {
     return (
-      Math.abs(this.x - v.x) + Math.abs(this.y - v.y) + Math.abs(this.z - v.z)
+      Math.abs(this._x - v.x) + Math.abs(this._y - v.y) + Math.abs(this._z - v.z)
     );
   }
 
@@ -619,9 +675,9 @@ export class Vec3 extends EventHandler implements IVec3 {
   setFromSphericalCoords(radius: number, phi: number, theta: number) {
     var sinPhiRadius = Math.sin(phi) * radius;
 
-    this.x = sinPhiRadius * Math.sin(theta);
-    this.y = Math.cos(phi) * radius;
-    this.z = sinPhiRadius * Math.cos(theta);
+    this._x = sinPhiRadius * Math.sin(theta);
+    this._y = Math.cos(phi) * radius;
+    this._z = sinPhiRadius * Math.cos(theta);
 
     return this;
   }
@@ -631,9 +687,9 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   setFromCylindricalCoords(radius: number, theta: number, y: number) {
-    this.x = radius * Math.sin(theta);
-    this.y = y;
-    this.z = radius * Math.cos(theta);
+    this._x = radius * Math.sin(theta);
+    this._y = y;
+    this._z = radius * Math.cos(theta);
 
     return this;
   }
@@ -641,9 +697,9 @@ export class Vec3 extends EventHandler implements IVec3 {
   setFromMatrixPosition(m: { elements: any; }) {
     var e = m.elements;
 
-    this.x = e[12];
-    this.y = e[13];
-    this.z = e[14];
+    this._x = e[12];
+    this._y = e[13];
+    this._z = e[14];
 
     return this;
   }
@@ -653,9 +709,9 @@ export class Vec3 extends EventHandler implements IVec3 {
     var sy = this.setFromMatrixColumn(m, 1).length();
     var sz = this.setFromMatrixColumn(m, 2).length();
 
-    this.x = sx;
-    this.y = sy;
-    this.z = sz;
+    this._x = sx;
+    this._y = sy;
+    this._z = sz;
 
     return this;
   }
@@ -665,24 +721,24 @@ export class Vec3 extends EventHandler implements IVec3 {
   }
 
   equals(v: Vec3) {
-    return v.x === this.x && v.y === this.y && v.z === this.z;
+    return v.x === this._x && v.y === this._y && v.z === this._z;
   }
 
   fromArray(array: ArrayLike<number>, offset?: number) {
     if (offset === undefined) offset = 0;
 
-    this.x = array[offset];
-    this.y = array[offset + 1];
-    this.z = array[offset + 2];
+    this._x = array[offset];
+    this._y = array[offset + 1];
+    this._z = array[offset + 2];
 
     return this;
   }
 
   toArray(array: number[] = [], offset: number = 0) {
 
-    array[offset] = this.x;
-    array[offset + 1] = this.y;
-    array[offset + 2] = this.z;
+    array[offset] = this._x;
+    array[offset + 1] = this._y;
+    array[offset + 2] = this._z;
 
     return array;
   }
@@ -694,18 +750,18 @@ export class Vec3 extends EventHandler implements IVec3 {
       );
     }
 
-    this.x = attribute.getX(index);
-    this.y = attribute.getY(index);
-    this.z = attribute.getZ(index);
+    this._x = attribute.getX(index);
+    this._y = attribute.getY(index);
+    this._z = attribute.getZ(index);
 
     return this;
   }
 
   toFixed(fractionDigits: number | undefined) {
     if (fractionDigits !== undefined) {
-      this.x = parseFloat(this.x.toFixed(fractionDigits))
-      this.y = parseFloat(this.y.toFixed(fractionDigits))
-      this.z = parseFloat(this.z.toFixed(fractionDigits))
+      this._x = parseFloat(this._x.toFixed(fractionDigits))
+      this._y = parseFloat(this._y.toFixed(fractionDigits))
+      this._z = parseFloat(this._z.toFixed(fractionDigits))
     }
     return this;
   }
@@ -925,11 +981,11 @@ export class Vec3 extends EventHandler implements IVec3 {
     for (let i = 0; i < polyline.length - 1; i++) {
       const pti = polyline[i];
       const ptj = polyline[i + 1];
-      if (Math.abs(pti.x - this.x) > u && Math.abs(ptj.x - this.x) > u && (pti.x - this.x) * (ptj.x - this.x) > 0)
+      if (Math.abs(pti.x - this._x) > u && Math.abs(ptj.x - this._x) > u && (pti.x - this._x) * (ptj.x - this._x) > 0)
         continue;
-      if (Math.abs(pti.y - this.y) > u && Math.abs(ptj.y - this.y) > u && (pti.y - this.y) * (ptj.y - this.y) > 0)
+      if (Math.abs(pti.y - this._y) > u && Math.abs(ptj.y - this._y) > u && (pti.y - this._y) * (ptj.y - this._y) > 0)
         continue;
-      if (Math.abs(pti.z - this.z) > u && Math.abs(ptj.z - this.z) > u && (pti.z - this.z) * (ptj.z - this.z) > 0)
+      if (Math.abs(pti.z - this._z) > u && Math.abs(ptj.z - this._z) > u && (pti.z - this._z) * (ptj.z - this._z) > 0)
         continue;
       tempResult = this.distanceSegment(new Segment(pti, ptj));
       if (tempResult.distance! < u) {
