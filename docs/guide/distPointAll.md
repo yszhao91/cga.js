@@ -106,6 +106,13 @@ console.timeEnd("测试法");
 <distance geo0 = "Vec3" geo1 = "Circle"></distance> 
 </ClientOnly>
 
+```javascript
+var point = new cga.Vec3().copy(randomV3());
+var circle = new cga.Circle(randomV3(), 5);
+var result = point.distanceCircle(circle);
+infoPanel.innerText = JSON.stringify(result);
+```
+
 ## 点与三角形的距离测试
 
 <div></div>
