@@ -3,8 +3,8 @@
  * @Author       : 赵耀圣
  * @Q群           : 632839661
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-03-10 17:53:50
- * @FilePath     : \cga.js\src\utils\array.ts
+ * @LastEditTime : 2021-09-10 11:15:02
+ * @FilePath     : \object_framed:\github\cga.js\src\utils\array.ts
  */
 import { gPrecision, toFixed as toFixedOne } from '../math/Math';
 
@@ -56,7 +56,7 @@ export function flat(array: any[]): any[] {
  * @param {Function} classifyMethod  分类方法
  */
 export function classify(array: Array<any>, classifyMethod: (arg0: any, arg1: any, arg2: any[]) => any) {
-    var result = [];
+    var result: any = [];
     for (let i = 0; i < array.length; i++) {
         for (let j = 0; j < result.length; j++) {
             if (classifyMethod(array[i], result[j][0], result[j])) {

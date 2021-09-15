@@ -1,6 +1,6 @@
 import { Vec3, v3 } from './Vec3';
 import { Euler } from './Euler';
-import { Quat } from 'src';
+import { Quat } from './Quat';
 
 export class Mat4 {
   elements: number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
@@ -352,17 +352,17 @@ export class Mat4 {
 
   multiply(m: Mat4, n?: Mat4) {
     if (n !== undefined) {
-      return this.multiplyMatrices(m, n);
+      return this.multiplyMats(m, n);
     }
 
-    return this.multiplyMatrices(this, m);
+    return this.multiplyMats(this, m);
   }
 
   premultiply(m: Mat4) {
-    return this.multiplyMatrices(m, this);
+    return this.multiplyMats(m, this);
   }
 
-  multiplyMatrices(a: Mat4, b: Mat4) {
+  multiplyMats(a: Mat4, b: Mat4) {
     var ae = a.elements;
     var be = b.elements;
     var te = this.elements;

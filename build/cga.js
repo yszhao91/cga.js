@@ -343,470 +343,6 @@
 	unwrapExports(eventhandler);
 	var eventhandler_1 = eventhandler.EventHandler;
 
-	var rngBrowser = createCommonjsModule(function (module) {
-	// Unique ID creation requires a high quality random # generator.  In the
-	// browser this is a little complicated due to unknown quality of Math.random()
-	// and inconsistent support for the `crypto` API.  We do the best we can via
-	// feature-detection
-
-	// getRandomValues needs to be invoked in a context where "this" is a Crypto
-	// implementation. Also, find the complete implementation of crypto on IE11.
-	var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
-	                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
-
-	if (getRandomValues) {
-	  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-	  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-
-	  module.exports = function whatwgRNG() {
-	    getRandomValues(rnds8);
-	    return rnds8;
-	  };
-	} else {
-	  // Math.random()-based (RNG)
-	  //
-	  // If all else fails, use Math.random().  It's fast, but is of unspecified
-	  // quality.
-	  var rnds = new Array(16);
-
-	  module.exports = function mathRNG() {
-	    for (var i = 0, r; i < 16; i++) {
-	      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-	      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-	    }
-
-	    return rnds;
-	  };
-	}
-	});
-
-	/**
-	 * Convert array of 16 byte values to UUID string format of the form:
-	 * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-	 */
-	var byteToHex = [];
-	for (var i = 0; i < 256; ++i) {
-	  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-	}
-
-	function bytesToUuid(buf, offset) {
-	  var i = offset || 0;
-	  var bth = byteToHex;
-	  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-	  return ([
-	    bth[buf[i++]], bth[buf[i++]],
-	    bth[buf[i++]], bth[buf[i++]], '-',
-	    bth[buf[i++]], bth[buf[i++]], '-',
-	    bth[buf[i++]], bth[buf[i++]], '-',
-	    bth[buf[i++]], bth[buf[i++]], '-',
-	    bth[buf[i++]], bth[buf[i++]],
-	    bth[buf[i++]], bth[buf[i++]],
-	    bth[buf[i++]], bth[buf[i++]]
-	  ]).join('');
-	}
-
-	var bytesToUuid_1 = bytesToUuid;
-
-	// **`v1()` - Generate time-based UUID**
-	//
-	// Inspired by https://github.com/LiosK/UUID.js
-	// and http://docs.python.org/library/uuid.html
-
-	var _nodeId;
-	var _clockseq;
-
-	// Previous uuid creation time
-	var _lastMSecs = 0;
-	var _lastNSecs = 0;
-
-	// See https://github.com/uuidjs/uuid for API details
-	function v1(options, buf, offset) {
-	  var i = buf && offset || 0;
-	  var b = buf || [];
-
-	  options = options || {};
-	  var node = options.node || _nodeId;
-	  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
-
-	  // node and clockseq need to be initialized to random values if they're not
-	  // specified.  We do this lazily to minimize issues related to insufficient
-	  // system entropy.  See #189
-	  if (node == null || clockseq == null) {
-	    var seedBytes = rngBrowser();
-	    if (node == null) {
-	      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
-	      node = _nodeId = [
-	        seedBytes[0] | 0x01,
-	        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
-	      ];
-	    }
-	    if (clockseq == null) {
-	      // Per 4.2.2, randomize (14 bit) clockseq
-	      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
-	    }
-	  }
-
-	  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
-	  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
-	  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
-	  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-	  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
-
-	  // Per 4.2.1.2, use count of uuid's generated during the current clock
-	  // cycle to simulate higher resolution clock
-	  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
-
-	  // Time since last uuid creation (in msecs)
-	  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
-
-	  // Per 4.2.1.2, Bump clockseq on clock regression
-	  if (dt < 0 && options.clockseq === undefined) {
-	    clockseq = clockseq + 1 & 0x3fff;
-	  }
-
-	  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
-	  // time interval
-	  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
-	    nsecs = 0;
-	  }
-
-	  // Per 4.2.1.2 Throw error if too many uuids are requested
-	  if (nsecs >= 10000) {
-	    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
-	  }
-
-	  _lastMSecs = msecs;
-	  _lastNSecs = nsecs;
-	  _clockseq = clockseq;
-
-	  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
-	  msecs += 12219292800000;
-
-	  // `time_low`
-	  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
-	  b[i++] = tl >>> 24 & 0xff;
-	  b[i++] = tl >>> 16 & 0xff;
-	  b[i++] = tl >>> 8 & 0xff;
-	  b[i++] = tl & 0xff;
-
-	  // `time_mid`
-	  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
-	  b[i++] = tmh >>> 8 & 0xff;
-	  b[i++] = tmh & 0xff;
-
-	  // `time_high_and_version`
-	  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
-	  b[i++] = tmh >>> 16 & 0xff;
-
-	  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
-	  b[i++] = clockseq >>> 8 | 0x80;
-
-	  // `clock_seq_low`
-	  b[i++] = clockseq & 0xff;
-
-	  // `node`
-	  for (var n = 0; n < 6; ++n) {
-	    b[i + n] = node[n];
-	  }
-
-	  return buf ? buf : bytesToUuid_1(b);
-	}
-
-	var v1_1 = v1;
-
-	function v4(options, buf, offset) {
-	  var i = buf && offset || 0;
-
-	  if (typeof(options) == 'string') {
-	    buf = options === 'binary' ? new Array(16) : null;
-	    options = null;
-	  }
-	  options = options || {};
-
-	  var rnds = options.random || (options.rng || rngBrowser)();
-
-	  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-	  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-	  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-	  // Copy bytes to buffer, if provided
-	  if (buf) {
-	    for (var ii = 0; ii < 16; ++ii) {
-	      buf[i + ii] = rnds[ii];
-	    }
-	  }
-
-	  return buf || bytesToUuid_1(rnds);
-	}
-
-	var v4_1 = v4;
-
-	var uuid = v4_1;
-	uuid.v1 = v1_1;
-	uuid.v4 = v4_1;
-
-	var _uuid_3_4_0_uuid = uuid;
-
-	var thing = createCommonjsModule(function (module, exports) {
-
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.buildAccessors = exports.buildAccessor = exports.Thing = void 0;
-
-
-
-
-
-	var Thing =
-	/** @class */
-	function (_super) {
-	  __extends(Thing, _super);
-
-	  function Thing(opts) {
-	    var _this = _super.call(this) || this;
-
-	    _this.cache = {};
-	    opts = opts || {};
-	    _this.uuid = _uuid_3_4_0_uuid.v4();
-	    _this.id = _this.uuid;
-	    _this.name = opts.name || "未命名";
-	    _this.alias = opts.alias;
-	    _this.isThing = true;
-	    _this.parent = null;
-	    _this.children = [];
-	    _this.meta = undefined;
-	    _this.needsUpdate = false;
-	    _this._renderObject = null;
-	    _this._useData = {};
-	    _this.tag = "untagged";
-
-	    _this.on("set", function (name, oldValue, newValue) {
-	      _this.fire("set_" + name, name, oldValue, newValue);
-	    });
-
-	    for (var key in opts) {
-	      if (opts.hasOwnProperty(key)) {
-	        if (!_this[key]) {
-	          _this[key] = opts[key];
-	        }
-	      }
-	    }
-
-	    return _this;
-	  }
-
-	  Thing.prototype.add = function (thing, force) {
-	    if (force === void 0) {
-	      force = false;
-	    }
-
-	    if (arguments.length > 1) {
-	      for (var i = 0; i < arguments.length; i++) {
-	        this.add(arguments[i]);
-	      }
-
-	      return this;
-	    }
-
-	    if (thing === this) {
-	      console.error("Thing.add: 自己不能作为自己的子节点", thing);
-	      return this;
-	    }
-
-	    if (thing && this.isThing) {
-	      if (thing.parent) {
-	        thing.parent.remove(thing);
-	      }
-
-	      thing.parent = this;
-	      this.children.push(thing);
-	    } else if (thing && force) {
-	      if (thing.parent) {
-	        thing.parent.remove(thing);
-	      }
-
-	      thing.parent = this;
-	      this.children.push(thing);
-	    } else {
-	      console.error("Thing.add:不是Thing类型", thing);
-	    }
-
-	    return this;
-	  };
-
-	  Thing.prototype.remove = function (thing) {
-	    if (arguments.length > 1) {
-	      for (var i = 0; i < arguments.length; i++) {
-	        this.remove(arguments[i]);
-	      }
-
-	      return this;
-	    } else {
-	      //自身从父节点移除
-	      this.parent.remove(this);
-	    }
-
-	    var index = this.children.indexOf(thing);
-
-	    if (index !== -1) {
-	      thing.parent = null; // thing.dispatchEvent( { type: 'removed' } );
-
-	      this.children.splice(index, 1);
-	    }
-
-	    return this;
-	  };
-
-	  Thing.prototype.foreach = function (cb) {
-	    cb(this);
-	    var children = this.children;
-
-	    for (var i = 0; i < children.length; i++) {
-	      children[i].foreach(cb);
-	    }
-	  };
-
-	  Thing.prototype.getObjectByProperty = function (name, value) {
-	    if (this[name] === value) return this;
-
-	    for (var i = 0, l = this.children.length; i < l; i++) {
-	      var child = this.children[i];
-	      if (!child.getObjectByProperty) continue;
-	      var object = child.getObjectByProperty(name, value);
-
-	      if (object !== undefined) {
-	        return object;
-	      }
-	    }
-
-	    return undefined;
-	  };
-
-	  Thing.prototype.getObjectById = function (id) {
-	    return this.getObjectByProperty('id', id);
-	  };
-
-	  Thing.prototype.getObjectByName = function (name) {
-	    return this.getObjectByProperty('name', name);
-	  };
-	  /**
-	  * 生成属性的set/get方法
-	  * @param {string} name
-	  * @param {function} setFunc
-	  * @param {boolean} skipEqualsCheck
-	  */
-
-
-	  Thing.prototype.defineProperty = function (name, setFunc, skipEqualsCheck) {
-	    var _this = this;
-
-	    if (skipEqualsCheck === void 0) {
-	      skipEqualsCheck = true;
-	    }
-
-	    Object.defineProperty(this, name, {
-	      get: function () {
-	        return _this._useData[name];
-	      },
-	      set: function (value) {
-	        var data = _this._useData;
-	        var oldValue = data[name];
-	        if (!skipEqualsCheck && oldValue === value) return;
-	        data[name] = value;
-	        if (setFunc) setFunc.call(_this, value, oldValue);
-	      },
-	      configurable: true
-	    });
-	  };
-
-	  Thing.prototype.buildAccessor = function (name, bindObject) {
-	    if (bindObject === void 0) {
-	      bindObject = this;
-	    }
-
-	    if (!bindObject) return;
-	    Object.defineProperty(bindObject, name, {
-	      get: function () {
-	        return bindObject["_" + name];
-	      },
-	      set: function (value) {
-	        var oldValue = bindObject["_" + name];
-	        bindObject["_" + name] = value;
-	        bindObject.fire('set', name, oldValue, value);
-	      },
-	      configurable: true
-	    });
-	  };
-
-	  Thing.prototype.buildAccessors = function (schema, bindObject) {
-	    var _this = this;
-
-	    schema.forEach(function (descriptor) {
-	      _this.buildAccessor(descriptor, bindObject);
-	    });
-	  };
-
-	  return Thing;
-	}(eventhandler.EventHandler);
-
-	exports.Thing = Thing;
-
-	function buildAccessor(name, bindObject) {
-	  if (!bindObject) return;
-	  Object.defineProperty(bindObject, name, {
-	    get: function () {
-	      return bindObject["_" + name];
-	    },
-	    set: function (value) {
-	      var oldValue = bindObject["_" + name];
-	      bindObject["_" + name] = value;
-	      bindObject.fire('set', name, oldValue, value);
-	    },
-	    configurable: true
-	  });
-	}
-
-	exports.buildAccessor = buildAccessor;
-
-	function buildAccessors(schema, bindObject) {
-	  schema.forEach(function (descriptor) {
-	    buildAccessor(descriptor, bindObject);
-	  });
-	}
-
-	exports.buildAccessors = buildAccessors;
-	});
-
-	unwrapExports(thing);
-	var thing_1 = thing.buildAccessors;
-	var thing_2 = thing.buildAccessor;
-	var thing_3 = thing.Thing;
-
 	var Vec2_1 = createCommonjsModule(function (module, exports) {
 
 	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
@@ -840,8 +376,6 @@
 
 
 
-
-
 	var Vec2 =
 	/** @class */
 	function (_super) {
@@ -861,9 +395,35 @@
 	    _this._x = _x;
 	    _this._y = _y;
 	    _this.isVec2 = true;
-	    thing.buildAccessors(['x', 'y'], _this);
 	    return _this;
 	  }
+
+	  Object.defineProperty(Vec2.prototype, "x", {
+	    get: function () {
+	      return this._x;
+	    },
+	    set: function (value) {
+	      if (this._x !== value) {
+	        this._x = value;
+	        this.fire('change', 'x', this._x, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec2.prototype, "y", {
+	    get: function () {
+	      return this._y;
+	    },
+	    set: function (value) {
+	      if (this._y !== value) {
+	        this._y = value;
+	        this.fire('change', 'y', this._y, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
 
 	  Vec2.isVec2 = function (v) {
 	    return !isNaN(v.x) && !isNaN(v.y) && isNaN(v.z) && isNaN(v.w);
@@ -871,20 +431,20 @@
 
 	  Object.defineProperty(Vec2.prototype, "width", {
 	    get: function () {
-	      return this.x;
+	      return this._x;
 	    },
 	    set: function (value) {
-	      this.x = value;
+	      this._x = value;
 	    },
 	    enumerable: false,
 	    configurable: true
 	  });
 	  Object.defineProperty(Vec2.prototype, "height", {
 	    get: function () {
-	      return this.y;
+	      return this._y;
 	    },
 	    set: function (value) {
-	      this.y = value;
+	      this._y = value;
 	    },
 	    enumerable: false,
 	    configurable: true
@@ -905,35 +465,35 @@
 	  });
 
 	  Vec2.prototype.set = function (x, y) {
-	    this.x = x;
-	    this.y = y;
+	    this._x = x;
+	    this._y = y;
 	    return this;
 	  };
 
 	  Vec2.prototype.setScalar = function (scalar) {
-	    this.x = scalar;
-	    this.y = scalar;
+	    this._x = scalar;
+	    this._y = scalar;
 	    return this;
 	  };
 
 	  Vec2.prototype.setX = function (x) {
-	    this.x = x;
+	    this._x = x;
 	    return this;
 	  };
 
 	  Vec2.prototype.setY = function (y) {
-	    this.y = y;
+	    this._y = y;
 	    return this;
 	  };
 
 	  Vec2.prototype.setComponent = function (index, value) {
 	    switch (index) {
 	      case 0:
-	        this.x = value;
+	        this._x = value;
 	        break;
 
 	      case 1:
-	        this.y = value;
+	        this._y = value;
 	        break;
 
 	      default:
@@ -946,10 +506,10 @@
 	  Vec2.prototype.getComponent = function (index) {
 	    switch (index) {
 	      case 0:
-	        return this.x;
+	        return this._x;
 
 	      case 1:
-	        return this.y;
+	        return this._y;
 
 	      default:
 	        throw new Error("index is out of range: " + index);
@@ -957,12 +517,12 @@
 	  };
 
 	  Vec2.prototype.clone = function () {
-	    return new Vec2(this.x, this.y);
+	    return new Vec2(this._x, this._y);
 	  };
 
 	  Vec2.prototype.copy = function (v) {
-	    this.x = v.x;
-	    this.y = v.y;
+	    this._x = v.x;
+	    this._y = v.y;
 	    return this;
 	  };
 
@@ -972,26 +532,26 @@
 	      return this.addVecs(v, w);
 	    }
 
-	    this.x += v.x;
-	    this.y += v.y;
+	    this._x += v.x;
+	    this._y += v.y;
 	    return this;
 	  };
 
 	  Vec2.prototype.addScalar = function (s) {
-	    this.x += s;
-	    this.y += s;
+	    this._x += s;
+	    this._y += s;
 	    return this;
 	  };
 
 	  Vec2.prototype.addVecs = function (a, b) {
-	    this.x = a.x + b.x;
-	    this.y = a.y + b.y;
+	    this._x = a.x + b.x;
+	    this._y = a.y + b.y;
 	    return this;
 	  };
 
 	  Vec2.prototype.addScaledVec = function (v, s) {
-	    this.x += v.x * s;
-	    this.y += v.y * s;
+	    this._x += v.x * s;
+	    this._y += v.y * s;
 	    return this;
 	  };
 
@@ -1001,38 +561,38 @@
 	      return this.subVecs(v, w);
 	    }
 
-	    this.x -= v.x;
-	    this.y -= v.y;
+	    this._x -= v.x;
+	    this._y -= v.y;
 	    return this;
 	  };
 
 	  Vec2.prototype.subScalar = function (s) {
-	    this.x -= s;
-	    this.y -= s;
+	    this._x -= s;
+	    this._y -= s;
 	    return this;
 	  };
 
 	  Vec2.prototype.subVecs = function (a, b) {
-	    this.x = a.x - b.x;
-	    this.y = a.y - b.y;
+	    this._x = a.x - b.x;
+	    this._y = a.y - b.y;
 	    return this;
 	  };
 
 	  Vec2.prototype.multiply = function (v) {
-	    this.x *= v.x;
-	    this.y *= v.y;
+	    this._x *= v.x;
+	    this._y *= v.y;
 	    return this;
 	  };
 
 	  Vec2.prototype.multiplyScalar = function (scalar) {
-	    this.x *= scalar;
-	    this.y *= scalar;
+	    this._x *= scalar;
+	    this._y *= scalar;
 	    return this;
 	  };
 
 	  Vec2.prototype.divide = function (v) {
-	    this.x /= v.x;
-	    this.y /= v.y;
+	    this._x /= v.x;
+	    this._y /= v.y;
 	    return this;
 	  };
 
@@ -1041,36 +601,36 @@
 	  };
 
 	  Vec2.prototype.applyMat3 = function (m) {
-	    var x = this.x,
-	        y = this.y;
+	    var x = this._x,
+	        y = this._y;
 	    var e = m.elements;
-	    this.x = e[0] * x + e[3] * y + e[6];
-	    this.y = e[1] * x + e[4] * y + e[7];
+	    this._x = e[0] * x + e[3] * y + e[6];
+	    this._y = e[1] * x + e[4] * y + e[7];
 	    return this;
 	  };
 
 	  Vec2.prototype.min = function (v) {
-	    this.x = Math.min(this.x, v.x);
-	    this.y = Math.min(this.y, v.y);
+	    this._x = Math.min(this._x, v.x);
+	    this._y = Math.min(this._y, v.y);
 	    return this;
 	  };
 
 	  Vec2.prototype.max = function (v) {
-	    this.x = Math.max(this.x, v.x);
-	    this.y = Math.max(this.y, v.y);
+	    this._x = Math.max(this._x, v.x);
+	    this._y = Math.max(this._y, v.y);
 	    return this;
 	  };
 
 	  Vec2.prototype.clamp = function (min, max) {
 	    // assumes min < max, componentwise
-	    this.x = Math.max(min.x, Math.min(max.x, this.x));
-	    this.y = Math.max(min.y, Math.min(max.y, this.y));
+	    this._x = Math.max(min.x, Math.min(max.x, this._x));
+	    this._y = Math.max(min.y, Math.min(max.y, this._y));
 	    return this;
 	  };
 
 	  Vec2.prototype.clampScalar = function (minVal, maxVal) {
-	    this.x = Math.max(minVal, Math.min(maxVal, this.x));
-	    this.y = Math.max(minVal, Math.min(maxVal, this.y));
+	    this._x = Math.max(minVal, Math.min(maxVal, this._x));
+	    this._y = Math.max(minVal, Math.min(maxVal, this._y));
 	    return this;
 	  };
 
@@ -1080,53 +640,53 @@
 	  };
 
 	  Vec2.prototype.floor = function () {
-	    this.x = Math.floor(this.x);
-	    this.y = Math.floor(this.y);
+	    this._x = Math.floor(this._x);
+	    this._y = Math.floor(this._y);
 	    return this;
 	  };
 
 	  Vec2.prototype.ceil = function () {
-	    this.x = Math.ceil(this.x);
-	    this.y = Math.ceil(this.y);
+	    this._x = Math.ceil(this._x);
+	    this._y = Math.ceil(this._y);
 	    return this;
 	  };
 
 	  Vec2.prototype.round = function () {
-	    this.x = Math.round(this.x);
-	    this.y = Math.round(this.y);
+	    this._x = Math.round(this._x);
+	    this._y = Math.round(this._y);
 	    return this;
 	  };
 
 	  Vec2.prototype.roundToZero = function () {
-	    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-	    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
+	    this._x = this._x < 0 ? Math.ceil(this._x) : Math.floor(this._x);
+	    this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
 	    return this;
 	  };
 
 	  Vec2.prototype.negate = function () {
-	    this.x = -this.x;
-	    this.y = -this.y;
+	    this._x = -this._x;
+	    this._y = -this._y;
 	    return this;
 	  };
 
 	  Vec2.prototype.dot = function (v) {
-	    return this.x * v.x + this.y * v.y;
+	    return this._x * v.x + this._y * v.y;
 	  };
 
 	  Vec2.prototype.cross = function (v) {
-	    return this.x * v.y - this.y * v.x;
+	    return this._x * v.y - this._y * v.x;
 	  };
 
 	  Vec2.prototype.lengthSq = function () {
-	    return this.x * this.x + this.y * this.y;
+	    return this._x * this._x + this._y * this._y;
 	  };
 
 	  Vec2.prototype.length = function () {
-	    return Math.sqrt(this.x * this.x + this.y * this.y);
+	    return Math.sqrt(this._x * this._x + this._y * this._y);
 	  };
 
 	  Vec2.prototype.manhattanLength = function () {
-	    return Math.abs(this.x) + Math.abs(this.y);
+	    return Math.abs(this._x) + Math.abs(this._y);
 	  };
 
 	  Vec2.prototype.normalize = function () {
@@ -1135,7 +695,7 @@
 
 	  Vec2.prototype.angle = function () {
 	    // computes the angle in radians with respect to the positive x-axis
-	    var angle = Math.atan2(this.y, this.x);
+	    var angle = Math.atan2(this._y, this._x);
 	    if (angle < 0) angle += 2 * Math.PI;
 	    return angle;
 	  };
@@ -1145,13 +705,13 @@
 	  };
 
 	  Vec2.prototype.distanceToSquared = function (v) {
-	    var dx = this.x - v.x,
-	        dy = this.y - v.y;
+	    var dx = this._x - v.x,
+	        dy = this._y - v.y;
 	    return dx * dx + dy * dy;
 	  };
 
 	  Vec2.prototype.manhattanDistanceTo = function (v) {
-	    return Math.abs(this.x - v.x) + Math.abs(this.y - v.y);
+	    return Math.abs(this._x - v.x) + Math.abs(this._y - v.y);
 	  };
 
 	  Vec2.prototype.setLength = function (length) {
@@ -1159,8 +719,8 @@
 	  };
 
 	  Vec2.prototype.lerp = function (v, alpha) {
-	    this.x += (v.x - this.x) * alpha;
-	    this.y += (v.y - this.y) * alpha;
+	    this._x += (v.x - this._x) * alpha;
+	    this._y += (v.y - this._y) * alpha;
 	    return this;
 	  };
 
@@ -1169,7 +729,7 @@
 	  };
 
 	  Vec2.prototype.equals = function (v) {
-	    return v.x === this.x && v.y === this.y;
+	    return v.x === this._x && v.y === this._y;
 	  };
 
 	  Vec2.prototype.fromArray = function (array, offset) {
@@ -1177,8 +737,8 @@
 	      offset = 0;
 	    }
 
-	    this.x = array[offset];
-	    this.y = array[offset + 1];
+	    this._x = array[offset];
+	    this._y = array[offset + 1];
 	    return this;
 	  };
 
@@ -1191,8 +751,8 @@
 	      offset = 0;
 	    }
 
-	    array[offset] = this.x;
-	    array[offset + 1] = this.y;
+	    array[offset] = this._x;
+	    array[offset + 1] = this._y;
 	    return array;
 	  };
 
@@ -1201,18 +761,18 @@
 	      console.warn("Vec2: offset has been removed from .fromBufferAttribute().");
 	    }
 
-	    this.x = attribute.getX(index);
-	    this.y = attribute.getY(index);
+	    this._x = attribute.getX(index);
+	    this._y = attribute.getY(index);
 	    return this;
 	  };
 
 	  Vec2.prototype.rotateAround = function (center, angle) {
 	    var c = Math.cos(angle),
 	        s = Math.sin(angle);
-	    var x = this.x - center.x;
-	    var y = this.y - center.y;
-	    this.x = x * c - y * s + center.x;
-	    this.y = x * s + y * c + center.y;
+	    var x = this._x - center.x;
+	    var y = this._y - center.y;
+	    this._x = x * c - y * s + center.x;
+	    this._y = x * s + y * c + center.y;
 	    return this;
 	  };
 
@@ -1530,8 +1090,6 @@
 
 
 
-
-
 	var Quat =
 	/** @class */
 	function (_super) {
@@ -1561,9 +1119,61 @@
 	    _this._z = _z;
 	    _this._w = _w;
 	    _this.isQuat = true;
-	    thing.buildAccessors(['x', 'y', 'z', 'w'], _this);
 	    return _this;
 	  }
+
+	  Object.defineProperty(Quat.prototype, "x", {
+	    get: function () {
+	      return this._x;
+	    },
+	    set: function (value) {
+	      if (this._x !== value) {
+	        this._x = value;
+	        this.fire('change', 'x', this._x, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Quat.prototype, "y", {
+	    get: function () {
+	      return this._y;
+	    },
+	    set: function (value) {
+	      if (this._y !== value) {
+	        this._y = value;
+	        this.fire('change', 'y', this._y, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Quat.prototype, "z", {
+	    get: function () {
+	      return this._z;
+	    },
+	    set: function (value) {
+	      if (this._z !== value) {
+	        this._z = value;
+	        this.fire('change', 'z', this._z, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Quat.prototype, "w", {
+	    get: function () {
+	      return this._w;
+	    },
+	    set: function (value) {
+	      if (this._w !== value) {
+	        this._w = value;
+	        this.fire('change', 'w', this._w, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
 
 	  Quat.slerp = function (qa, qb, qm, t) {
 	    return qm.copy(qa).slerp(qb, t);
@@ -1722,7 +1332,7 @@
 	    return this;
 	  };
 
-	  Quat.prototype.setFromRotationMatrix = function (m) {
+	  Quat.prototype.setFromRotationMat = function (m) {
 	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuat/index.htm
 	    // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 	    var te = m.elements,
@@ -1812,6 +1422,11 @@
 
 	  Quat.prototype.inverse = function () {
 	    // Quat is assumed to have unit length
+	    return this.conjugate();
+	  };
+
+	  Quat.prototype.invert = function () {
+	    // quaternion is assumed to have unit length
 	    return this.conjugate();
 	  };
 
@@ -2379,8 +1994,6 @@
 
 
 
-
-
 	var Vec3 =
 	/** @class */
 	function (_super) {
@@ -2404,9 +2017,48 @@
 	    _this._x = _x;
 	    _this._y = _y;
 	    _this._z = _z;
-	    thing.buildAccessors(['x', 'y', 'z'], _this);
 	    return _this;
 	  }
+
+	  Object.defineProperty(Vec3.prototype, "x", {
+	    get: function () {
+	      return this._x;
+	    },
+	    set: function (value) {
+	      if (this._x !== value) {
+	        this._x = value;
+	        this.fire('change', 'x', this._x, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3.prototype, "y", {
+	    get: function () {
+	      return this._y;
+	    },
+	    set: function (value) {
+	      if (this._y !== value) {
+	        this._y = value;
+	        this.fire('change', 'y', this._y, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec3.prototype, "z", {
+	    get: function () {
+	      return this._z;
+	    },
+	    set: function (value) {
+	      if (this._z !== value) {
+	        this._z = value;
+	        this.fire('change', 'z', this._z, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
 
 	  Vec3.isVec3 = function (v) {
 	    return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && isNaN(v.w);
@@ -2453,58 +2105,36 @@
 	    },
 	    enumerable: false,
 	    configurable: true
-	  }); // static fromDegrees(longitude: number,
-	  //   latitude: number,
-	  //   height: number = 0,
-	  //   ellipsoid: Vec3 = wgs84RadiiSquared,
-	  // ) {
-	  //   longitude = toRadians(longitude);
-	  //   latitude = toRadians(latitude);
-	  //   return Vec3.fromRadians(longitude, latitude, height, ellipsoid);
-	  // }
-	  // static fromRadians(longitude: number,
-	  //   latitude: number,
-	  //   height: number = 0,
-	  //   ellipsoid: Vec3 = wgs84RadiiSquared) {
-	  //   var cosLatitude = Math.cos(latitude);
-	  //   scratchN.x = cosLatitude * Math.cos(longitude);
-	  //   scratchN.y = Math.sin(latitude);
-	  //   scratchN.z = cosLatitude * Math.sin(longitude);
-	  //   scratchN.normalize();
-	  //   scratchK.multiplyVecs(ellipsoid, scratchN);
-	  //   var gamma = Math.sqrt(scratchN.dot(scratchK));
-	  //   scratchK.divideScalar(gamma);
-	  //   scratchN.multiplyScalar(height);
-	  //   var result = new Vec3();
-	  //   return result.addVecs(scratchK, scratchN);
-	  // }
+	  });
 
 	  Vec3.prototype.set = function (x, y, z) {
-	    this.x = x;
-	    this.y = y;
-	    this.z = z;
+	    this._x = x;
+	    this._y = y;
+	    this._z = z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.setScalar = function (scalar) {
-	    this.x = scalar;
-	    this.y = scalar;
-	    this.z = scalar;
+	    this._x = scalar;
+	    this._y = scalar;
+	    this._z = scalar;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.setComponent = function (index, value) {
 	    switch (index) {
 	      case 0:
-	        this.x = value;
+	        this._x = value;
 	        break;
 
 	      case 1:
-	        this.y = value;
+	        this._y = value;
 	        break;
 
 	      case 2:
-	        this.z = value;
+	        this._z = value;
 	        break;
 
 	      default:
@@ -2517,13 +2147,13 @@
 	  Vec3.prototype.getComponent = function (index) {
 	    switch (index) {
 	      case 0:
-	        return this.x;
+	        return this._x;
 
 	      case 1:
-	        return this.y;
+	        return this._y;
 
 	      case 2:
-	        return this.z;
+	        return this._z;
 
 	      default:
 	        throw new Error("index is out of range: " + index);
@@ -2531,13 +2161,14 @@
 	  };
 
 	  Vec3.prototype.clone = function () {
-	    return new Vec3(this.x, this.y, this.z);
+	    return new Vec3(this._x, this._y, this._z);
 	  };
 
 	  Vec3.prototype.copy = function (v) {
-	    this.x = v.x;
-	    this.y = v.y;
-	    this.z = v.z;
+	    this._x = v.x;
+	    this._y = v.y;
+	    this._z = v.z;
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -2547,30 +2178,34 @@
 	      return this.addVecs(v, w);
 	    }
 
-	    this.x += v.x;
-	    this.y += v.y;
-	    this.z += v.z;
+	    this._x += v.x;
+	    this._y += v.y;
+	    this._z += v.z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.addScalar = function (s) {
-	    this.x += s;
-	    this.y += s;
-	    this.z += s;
+	    this._x += s;
+	    this._y += s;
+	    this._z += s;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.addVecs = function (a, b) {
-	    this.x = a.x + b.x;
-	    this.y = a.y + b.y;
-	    this.z = a.z + b.z;
+	    this._x = a.x + b.x;
+	    this._y = a.y + b.y;
+	    this._z = a.z + b.z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.addScaledVec = function (v, s) {
-	    this.x += v.x * s;
-	    this.y += v.y * s;
-	    this.z += v.z * s;
+	    this._x += v.x * s;
+	    this._y += v.y * s;
+	    this._z += v.z * s;
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -2580,23 +2215,26 @@
 	      return this.subVecs(v, w);
 	    }
 
-	    this.x -= v.x;
-	    this.y -= v.y;
-	    this.z -= v.z;
+	    this._x -= v.x;
+	    this._y -= v.y;
+	    this._z -= v.z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.subScalar = function (s) {
-	    this.x -= s;
-	    this.y -= s;
-	    this.z -= s;
+	    this._x -= s;
+	    this._y -= s;
+	    this._z -= s;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.subVecs = function (a, b) {
-	    this.x = a.x - b.x;
-	    this.y = a.y - b.y;
-	    this.z = a.z - b.z;
+	    this._x = a.x - b.x;
+	    this._y = a.y - b.y;
+	    this._z = a.z - b.z;
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -2605,23 +2243,26 @@
 	      return this.multiplyVecs(v, w);
 	    }
 
-	    this.x *= v.x;
-	    this.y *= v.y;
-	    this.z *= v.z;
+	    this._x *= v.x;
+	    this._y *= v.y;
+	    this._z *= v.z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.multiplyScalar = function (scalar) {
-	    this.x *= scalar;
-	    this.y *= scalar;
-	    this.z *= scalar;
+	    this._x *= scalar;
+	    this._y *= scalar;
+	    this._z *= scalar;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.multiplyVecs = function (a, b) {
-	    this.x = a.x * b.x;
-	    this.y = a.y * b.y;
-	    this.z = a.z * b.z;
+	    this._x = a.x * b.x;
+	    this._y = a.y * b.y;
+	    this._z = a.z * b.z;
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -2642,32 +2283,34 @@
 	  };
 
 	  Vec3.prototype.applyMat3 = function (m) {
-	    var x = this.x,
-	        y = this.y,
-	        z = this.z;
+	    var x = this._x,
+	        y = this._y,
+	        z = this._z;
 	    var e = m.elements;
-	    this.x = e[0] * x + e[3] * y + e[6] * z;
-	    this.y = e[1] * x + e[4] * y + e[7] * z;
-	    this.z = e[2] * x + e[5] * y + e[8] * z;
+	    this._x = e[0] * x + e[3] * y + e[6] * z;
+	    this._y = e[1] * x + e[4] * y + e[7] * z;
+	    this._z = e[2] * x + e[5] * y + e[8] * z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.applyMat4 = function (m) {
-	    var x = this.x,
-	        y = this.y,
-	        z = this.z;
+	    var x = this._x,
+	        y = this._y,
+	        z = this._z;
 	    var e = m.elements;
 	    var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
-	    this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-	    this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-	    this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+	    this._x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+	    this._y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+	    this._z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.applyQuat = function (q) {
-	    var x = this.x,
-	        y = this.y,
-	        z = this.z;
+	    var x = this._x,
+	        y = this._y,
+	        z = this._z;
 	    var qx = q.x,
 	        qy = q.y,
 	        qz = q.z,
@@ -2678,37 +2321,40 @@
 	    var iz = qw * z + qx * y - qy * x;
 	    var iw = -qx * x - qy * y - qz * z; // calculate result * inverse Quat
 
-	    this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-	    this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-	    this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+	    this._x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+	    this._y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+	    this._z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.project = function (camera) {
-	    return this.applyMat4(camera.matrixWorldInverse).applyMat4(camera.projectionMatrix);
+	    return this.applyMat4(camera.matrixWorldInverse).applyMat4(camera.projectionMat);
 	  };
 
 	  Vec3.prototype.unproject = function (camera) {
-	    return this.applyMat4(camera.projectionMatrixInverse).applyMat4(camera.matrixWorld);
+	    return this.applyMat4(camera.projectionMatInverse).applyMat4(camera.matrixWorld);
 	  };
 
 	  Vec3.prototype.transformDirection = function (m) {
 	    // input: Mat4 affine matrix
 	    // Vec interpreted as a direction
-	    var x = this.x,
-	        y = this.y,
-	        z = this.z;
+	    var x = this._x,
+	        y = this._y,
+	        z = this._z;
 	    var e = m.elements;
-	    this.x = e[0] * x + e[4] * y + e[8] * z;
-	    this.y = e[1] * x + e[5] * y + e[9] * z;
-	    this.z = e[2] * x + e[6] * y + e[10] * z;
+	    this._x = e[0] * x + e[4] * y + e[8] * z;
+	    this._y = e[1] * x + e[5] * y + e[9] * z;
+	    this._z = e[2] * x + e[6] * y + e[10] * z;
+	    this.fire('change');
 	    return this.normalize();
 	  };
 
 	  Vec3.prototype.divide = function (v) {
-	    this.x /= v.x;
-	    this.y /= v.y;
-	    this.z /= v.z;
+	    this._x /= v.x;
+	    this._y /= v.y;
+	    this._z /= v.z;
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -2717,31 +2363,35 @@
 	  };
 
 	  Vec3.prototype.min = function (v) {
-	    this.x = Math.min(this.x, v.x);
-	    this.y = Math.min(this.y, v.y);
-	    this.z = Math.min(this.z, v.z);
+	    this._x = Math.min(this._x, v.x);
+	    this._y = Math.min(this._y, v.y);
+	    this._z = Math.min(this._z, v.z);
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.max = function (v) {
-	    this.x = Math.max(this.x, v.x);
-	    this.y = Math.max(this.y, v.y);
-	    this.z = Math.max(this.z, v.z);
+	    this._x = Math.max(this._x, v.x);
+	    this._y = Math.max(this._y, v.y);
+	    this._z = Math.max(this._z, v.z);
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.clamp = function (min, max) {
 	    // assumes min < max, componentwise
-	    this.x = Math.max(min.x, Math.min(max.x, this.x));
-	    this.y = Math.max(min.y, Math.min(max.y, this.y));
-	    this.z = Math.max(min.z, Math.min(max.z, this.z));
+	    this._x = Math.max(min.x, Math.min(max.x, this._x));
+	    this._y = Math.max(min.y, Math.min(max.y, this._y));
+	    this._z = Math.max(min.z, Math.min(max.z, this._z));
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.clampScalar = function (minVal, maxVal) {
-	    this.x = Math.max(minVal, Math.min(maxVal, this.x));
-	    this.y = Math.max(minVal, Math.min(maxVal, this.y));
-	    this.z = Math.max(minVal, Math.min(maxVal, this.z));
+	    this._x = Math.max(minVal, Math.min(maxVal, this._x));
+	    this._y = Math.max(minVal, Math.min(maxVal, this._y));
+	    this._z = Math.max(minVal, Math.min(maxVal, this._z));
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -2751,55 +2401,60 @@
 	  };
 
 	  Vec3.prototype.floor = function () {
-	    this.x = Math.floor(this.x);
-	    this.y = Math.floor(this.y);
-	    this.z = Math.floor(this.z);
+	    this._x = Math.floor(this._x);
+	    this._y = Math.floor(this._y);
+	    this._z = Math.floor(this._z);
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.ceil = function () {
-	    this.x = Math.ceil(this.x);
-	    this.y = Math.ceil(this.y);
-	    this.z = Math.ceil(this.z);
+	    this._x = Math.ceil(this._x);
+	    this._y = Math.ceil(this._y);
+	    this._z = Math.ceil(this._z);
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.round = function () {
-	    this.x = Math.round(this.x);
-	    this.y = Math.round(this.y);
-	    this.z = Math.round(this.z);
+	    this._x = Math.round(this._x);
+	    this._y = Math.round(this._y);
+	    this._z = Math.round(this._z);
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.roundToZero = function () {
-	    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-	    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
-	    this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
+	    this._x = this._x < 0 ? Math.ceil(this._x) : Math.floor(this._x);
+	    this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
+	    this._z = this._z < 0 ? Math.ceil(this._z) : Math.floor(this._z);
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.negate = function () {
-	    this.x = -this.x;
-	    this.y = -this.y;
-	    this.z = -this.z;
+	    this._x = -this._x;
+	    this._y = -this._y;
+	    this._z = -this._z;
+	    this.fire('change');
 	    return this;
 	  };
 
 	  Vec3.prototype.dot = function (v) {
-	    return this.x * v.x + this.y * v.y + this.z * v.z;
+	    return this._x * v.x + this._y * v.y + this._z * v.z;
 	  }; // TODO lengthSquared?
 
 
 	  Vec3.prototype.lengthSq = function () {
-	    return this.x * this.x + this.y * this.y + this.z * this.z;
+	    return this._x * this._x + this._y * this._y + this._z * this._z;
 	  };
 
 	  Vec3.prototype.length = function () {
-	    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+	    return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
 	  };
 
 	  Vec3.prototype.manhattanLength = function () {
-	    return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
+	    return Math.abs(this._x) + Math.abs(this._y) + Math.abs(this._z);
 	  };
 
 	  Vec3.prototype.normalize = function (robust) {
@@ -2855,9 +2510,9 @@
 	  };
 
 	  Vec3.prototype.lerp = function (v, alpha) {
-	    this.x += (v.x - this.x) * alpha;
-	    this.y += (v.y - this.y) * alpha;
-	    this.z += (v.z - this.z) * alpha;
+	    this._x += (v.x - this._x) * alpha;
+	    this._y += (v.y - this._y) * alpha;
+	    this._z += (v.z - this._z) * alpha;
 	    return this;
 	  };
 
@@ -2881,9 +2536,9 @@
 	    var bx = b.x,
 	        by = b.y,
 	        bz = b.z;
-	    this.x = ay * bz - az * by;
-	    this.y = az * bx - ax * bz;
-	    this.z = ax * by - ay * bx;
+	    this._x = ay * bz - az * by;
+	    this._y = az * bx - ax * bz;
+	    this._z = ax * by - ay * bx;
 	    return this;
 	  };
 
@@ -2952,14 +2607,14 @@
 	  };
 
 	  Vec3.prototype.distanceToSquared = function (v) {
-	    var dx = this.x - v.x,
-	        dy = this.y - v.y,
-	        dz = this.z - v.z;
+	    var dx = this._x - v.x,
+	        dy = this._y - v.y,
+	        dz = this._z - v.z;
 	    return dx * dx + dy * dy + dz * dz;
 	  };
 
 	  Vec3.prototype.manhattanDistanceTo = function (v) {
-	    return Math.abs(this.x - v.x) + Math.abs(this.y - v.y) + Math.abs(this.z - v.z);
+	    return Math.abs(this._x - v.x) + Math.abs(this._y - v.y) + Math.abs(this._z - v.z);
 	  };
 
 	  Vec3.prototype.setFromSpherical = function (s) {
@@ -2968,9 +2623,9 @@
 
 	  Vec3.prototype.setFromSphericalCoords = function (radius, phi, theta) {
 	    var sinPhiRadius = Math.sin(phi) * radius;
-	    this.x = sinPhiRadius * Math.sin(theta);
-	    this.y = Math.cos(phi) * radius;
-	    this.z = sinPhiRadius * Math.cos(theta);
+	    this._x = sinPhiRadius * Math.sin(theta);
+	    this._y = Math.cos(phi) * radius;
+	    this._z = sinPhiRadius * Math.cos(theta);
 	    return this;
 	  };
 
@@ -2979,43 +2634,43 @@
 	  };
 
 	  Vec3.prototype.setFromCylindricalCoords = function (radius, theta, y) {
-	    this.x = radius * Math.sin(theta);
-	    this.y = y;
-	    this.z = radius * Math.cos(theta);
+	    this._x = radius * Math.sin(theta);
+	    this._y = y;
+	    this._z = radius * Math.cos(theta);
 	    return this;
 	  };
 
-	  Vec3.prototype.setFromMatrixPosition = function (m) {
+	  Vec3.prototype.setFromMatPosition = function (m) {
 	    var e = m.elements;
-	    this.x = e[12];
-	    this.y = e[13];
-	    this.z = e[14];
+	    this._x = e[12];
+	    this._y = e[13];
+	    this._z = e[14];
 	    return this;
 	  };
 
-	  Vec3.prototype.setFromMatrixScale = function (m) {
-	    var sx = this.setFromMatrixColumn(m, 0).length();
-	    var sy = this.setFromMatrixColumn(m, 1).length();
-	    var sz = this.setFromMatrixColumn(m, 2).length();
-	    this.x = sx;
-	    this.y = sy;
-	    this.z = sz;
+	  Vec3.prototype.setFromMatScale = function (m) {
+	    var sx = this.setFromMatColumn(m, 0).length();
+	    var sy = this.setFromMatColumn(m, 1).length();
+	    var sz = this.setFromMatColumn(m, 2).length();
+	    this._x = sx;
+	    this._y = sy;
+	    this._z = sz;
 	    return this;
 	  };
 
-	  Vec3.prototype.setFromMatrixColumn = function (m, index) {
+	  Vec3.prototype.setFromMatColumn = function (m, index) {
 	    return this.fromArray(m.elements, index * 4);
 	  };
 
 	  Vec3.prototype.equals = function (v) {
-	    return v.x === this.x && v.y === this.y && v.z === this.z;
+	    return v.x === this._x && v.y === this._y && v.z === this._z;
 	  };
 
 	  Vec3.prototype.fromArray = function (array, offset) {
 	    if (offset === undefined) offset = 0;
-	    this.x = array[offset];
-	    this.y = array[offset + 1];
-	    this.z = array[offset + 2];
+	    this._x = array[offset];
+	    this._y = array[offset + 1];
+	    this._z = array[offset + 2];
 	    return this;
 	  };
 
@@ -3028,9 +2683,9 @@
 	      offset = 0;
 	    }
 
-	    array[offset] = this.x;
-	    array[offset + 1] = this.y;
-	    array[offset + 2] = this.z;
+	    array[offset] = this._x;
+	    array[offset + 1] = this._y;
+	    array[offset + 2] = this._z;
 	    return array;
 	  };
 
@@ -3039,17 +2694,17 @@
 	      console.warn("Vec3: offset has been removed from .fromBufferAttribute().");
 	    }
 
-	    this.x = attribute.getX(index);
-	    this.y = attribute.getY(index);
-	    this.z = attribute.getZ(index);
+	    this._x = attribute.getX(index);
+	    this._y = attribute.getY(index);
+	    this._z = attribute.getZ(index);
 	    return this;
 	  };
 
 	  Vec3.prototype.toFixed = function (fractionDigits) {
 	    if (fractionDigits !== undefined) {
-	      this.x = parseFloat(this.x.toFixed(fractionDigits));
-	      this.y = parseFloat(this.y.toFixed(fractionDigits));
-	      this.z = parseFloat(this.z.toFixed(fractionDigits));
+	      this._x = parseFloat(this._x.toFixed(fractionDigits));
+	      this._y = parseFloat(this._y.toFixed(fractionDigits));
+	      this._z = parseFloat(this._z.toFixed(fractionDigits));
 	    }
 
 	    return this;
@@ -3261,9 +2916,9 @@
 	    for (var i = 0; i < polyline.length - 1; i++) {
 	      var pti = polyline[i];
 	      var ptj = polyline[i + 1];
-	      if (Math.abs(pti.x - this.x) > u && Math.abs(ptj.x - this.x) > u && (pti.x - this.x) * (ptj.x - this.x) > 0) continue;
-	      if (Math.abs(pti.y - this.y) > u && Math.abs(ptj.y - this.y) > u && (pti.y - this.y) * (ptj.y - this.y) > 0) continue;
-	      if (Math.abs(pti.z - this.z) > u && Math.abs(ptj.z - this.z) > u && (pti.z - this.z) * (ptj.z - this.z) > 0) continue;
+	      if (Math.abs(pti.x - this._x) > u && Math.abs(ptj.x - this._x) > u && (pti.x - this._x) * (ptj.x - this._x) > 0) continue;
+	      if (Math.abs(pti.y - this._y) > u && Math.abs(ptj.y - this._y) > u && (pti.y - this._y) * (ptj.y - this._y) > 0) continue;
+	      if (Math.abs(pti.z - this._z) > u && Math.abs(ptj.z - this._z) > u && (pti.z - this._z) * (ptj.z - this._z) > 0) continue;
 	      tempResult = this.distanceSegment(new Segment_1.Segment(pti, ptj));
 
 	      if (tempResult.distance < u) {
@@ -3520,9 +3175,6 @@
 
 	var _quat = Quat_1.quat();
 
-	var scratchN = new Vec3();
-	var scratchK = new Vec3();
-
 	function v3(x, y, z) {
 	  return new Vec3(x, y, z);
 	}
@@ -3567,8 +3219,6 @@
 
 
 
-
-
 	var Vec4 =
 	/** @class */
 	function (_super) {
@@ -3598,9 +3248,61 @@
 	    _this._z = _z;
 	    _this._w = _w;
 	    _this.isVec4 = true;
-	    thing.buildAccessors(['x', 'y', 'z', 'w'], _this);
 	    return _this;
 	  }
+
+	  Object.defineProperty(Vec4.prototype, "x", {
+	    get: function () {
+	      return this._x;
+	    },
+	    set: function (value) {
+	      if (this._x !== value) {
+	        this._x = value;
+	        this.fire('change', 'x', this._x, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec4.prototype, "y", {
+	    get: function () {
+	      return this._y;
+	    },
+	    set: function (value) {
+	      if (this._y !== value) {
+	        this._y = value;
+	        this.fire('change', 'y', this._y, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec4.prototype, "z", {
+	    get: function () {
+	      return this._z;
+	    },
+	    set: function (value) {
+	      if (this._z !== value) {
+	        this._z = value;
+	        this.fire('change', 'z', this._z, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Vec4.prototype, "w", {
+	    get: function () {
+	      return this._w;
+	    },
+	    set: function (value) {
+	      if (this._w !== value) {
+	        this._w = value;
+	        this.fire('change', 'w', this._w, value);
+	      }
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
 
 	  Vec4.isVec4 = function (v) {
 	    return !isNaN(v.x) && !isNaN(v.y) && !isNaN(v.z) && !isNaN(v.w);
@@ -3608,77 +3310,77 @@
 
 	  Object.defineProperty(Vec4.prototype, "width", {
 	    get: function () {
-	      return this.z;
+	      return this._z;
 	    },
 	    set: function (value) {
-	      this.z = value;
+	      this._z = value;
 	    },
 	    enumerable: false,
 	    configurable: true
 	  });
 	  Object.defineProperty(Vec4.prototype, "height", {
 	    get: function () {
-	      return this.w;
+	      return this._w;
 	    },
 	    set: function (value) {
-	      this.w = value;
+	      this._w = value;
 	    },
 	    enumerable: false,
 	    configurable: true
 	  });
 
 	  Vec4.prototype.set = function (x, y, z, w) {
-	    this.x = x;
-	    this.y = y;
-	    this.z = z;
-	    this.w = w;
+	    this._x = x;
+	    this._y = y;
+	    this._z = z;
+	    this._w = w;
 	    return this;
 	  };
 
 	  Vec4.prototype.setScalar = function (scalar) {
-	    this.x = scalar;
-	    this.y = scalar;
-	    this.z = scalar;
-	    this.w = scalar;
+	    this._x = scalar;
+	    this._y = scalar;
+	    this._z = scalar;
+	    this._w = scalar;
 	    return this;
 	  };
 
 	  Vec4.prototype.setX = function (x) {
-	    this.x = x;
+	    this._x = x;
 	    return this;
 	  };
 
 	  Vec4.prototype.setY = function (y) {
-	    this.y = y;
+	    this._y = y;
 	    return this;
 	  };
 
 	  Vec4.prototype.setZ = function (z) {
-	    this.z = z;
+	    this._z = z;
 	    return this;
 	  };
 
 	  Vec4.prototype.setW = function (w) {
-	    this.w = w;
+	    this._w = w;
 	    return this;
 	  };
 
 	  Vec4.prototype.setComponent = function (index, value) {
 	    switch (index) {
 	      case 0:
-	        this.x = value;
+	        this._x = value;
 	        break;
 
 	      case 1:
-	        this.y = value;
+	        this._y = value;
 	        break;
 
 	      case 2:
-	        this.z = value;
+	        this._z = value;
 	        break;
 
 	      case 3:
-	        this.w = value;
+	        this._w = value;
 	        break;
 
 	      default:
@@ -3691,16 +3393,16 @@
 	  Vec4.prototype.getComponent = function (index) {
 	    switch (index) {
 	      case 0:
-	        return this.x;
+	        return this._x;
 
 	      case 1:
-	        return this.y;
+	        return this._y;
 
 	      case 2:
-	        return this.z;
+	        return this._z;
 
 	      case 3:
-	        return this.w;
+	        return this._w;
 
 	      default:
 	        throw new Error("index is out of range: " + index);
@@ -3708,14 +3410,14 @@
 	  };
 
 	  Vec4.prototype.clone = function () {
-	    return new Vec4(this.x, this.y, this.z, this.w);
+	    return new Vec4(this._x, this._y, this._z, this._w);
 	  };
 
 	  Vec4.prototype.copy = function (v) {
-	    this.x = v.x;
-	    this.y = v.y;
-	    this.z = v.z;
-	    this.w = v.w !== undefined ? v.w : 1;
+	    this._x = v.x;
+	    this._y = v.y;
+	    this._z = v.z;
+	    this._w = v.w !== undefined ? v.w : 1;
 	    return this;
 	  };
 
@@ -3725,34 +3427,34 @@
 	      return this.addVecs(v, w);
 	    }
 
-	    this.x += v.x;
-	    this.y += v.y;
-	    this.z += v.z;
-	    this.w += v.w;
+	    this._x += v.x;
+	    this._y += v.y;
+	    this._z += v.z;
+	    this._w += v.w;
 	    return this;
 	  };
 
 	  Vec4.prototype.addScalar = function (s) {
-	    this.x += s;
-	    this.y += s;
-	    this.z += s;
-	    this.w += s;
+	    this._x += s;
+	    this._y += s;
+	    this._z += s;
+	    this._w += s;
 	    return this;
 	  };
 
 	  Vec4.prototype.addVecs = function (a, b) {
-	    this.x = a.x + b.x;
-	    this.y = a.y + b.y;
-	    this.z = a.z + b.z;
-	    this.w = a.w + b.w;
+	    this._x = a.x + b.x;
+	    this._y = a.y + b.y;
+	    this._z = a.z + b.z;
+	    this._w = a.w + b.w;
 	    return this;
 	  };
 
 	  Vec4.prototype.addScaledVec = function (v, s) {
-	    this.x += v.x * s;
-	    this.y += v.y * s;
-	    this.z += v.z * s;
-	    this.w += v.w * s;
+	    this._x += v.x * s;
+	    this._y += v.y * s;
+	    this._z += v.z * s;
+	    this._w += v.w * s;
 	    return this;
 	  };
 
@@ -3761,47 +3463,47 @@
 	      return this.subVecs(v, w);
 	    }
 
-	    this.x -= v.x;
-	    this.y -= v.y;
-	    this.z -= v.z;
-	    this.w -= v.w;
+	    this._x -= v.x;
+	    this._y -= v.y;
+	    this._z -= v.z;
+	    this._w -= v.w;
 	    return this;
 	  };
 
 	  Vec4.prototype.subScalar = function (s) {
-	    this.x -= s;
-	    this.y -= s;
-	    this.z -= s;
-	    this.w -= s;
+	    this._x -= s;
+	    this._y -= s;
+	    this._z -= s;
+	    this._w -= s;
 	    return this;
 	  };
 
 	  Vec4.prototype.subVecs = function (a, b) {
-	    this.x = a.x - b.x;
-	    this.y = a.y - b.y;
-	    this.z = a.z - b.z;
-	    this.w = a.w - b.w;
+	    this._x = a.x - b.x;
+	    this._y = a.y - b.y;
+	    this._z = a.z - b.z;
+	    this._w = a.w - b.w;
 	    return this;
 	  };
 
 	  Vec4.prototype.multiplyScalar = function (scalar) {
-	    this.x *= scalar;
-	    this.y *= scalar;
-	    this.z *= scalar;
-	    this.w *= scalar;
+	    this._x *= scalar;
+	    this._y *= scalar;
+	    this._z *= scalar;
+	    this._w *= scalar;
 	    return this;
 	  };
 
 	  Vec4.prototype.applyMat4 = function (m) {
-	    var x = this.x,
-	        y = this.y,
-	        z = this.z,
-	        w = this.w;
+	    var x = this._x,
+	        y = this._y,
+	        z = this._z,
+	        w = this._w;
 	    var e = m.elements;
-	    this.x = e[0] * x + e[4] * y + e[8] * z + e[12] * w;
-	    this.y = e[1] * x + e[5] * y + e[9] * z + e[13] * w;
-	    this.z = e[2] * x + e[6] * y + e[10] * z + e[14] * w;
-	    this.w = e[3] * x + e[7] * y + e[11] * z + e[15] * w;
+	    this._x = e[0] * x + e[4] * y + e[8] * z + e[12] * w;
+	    this._y = e[1] * x + e[5] * y + e[9] * z + e[13] * w;
+	    this._z = e[2] * x + e[6] * y + e[10] * z + e[14] * w;
+	    this._w = e[3] * x + e[7] * y + e[11] * z + e[15] * w;
 	    return this;
 	  };
 
@@ -3812,23 +3514,23 @@
 	  Vec4.prototype.setAxisAngleFromQuat = function (q) {
 	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/QuatToAngle/index.htm
 	    // q is assumed to be normalized
-	    this.w = 2 * Math.acos(q.w);
+	    this._w = 2 * Math.acos(q.w);
 	    var s = Math.sqrt(1 - q.w * q.w);
 
 	    if (s < 0.0001) {
-	      this.x = 1;
-	      this.y = 0;
-	      this.z = 0;
+	      this._x = 1;
+	      this._y = 0;
+	      this._z = 0;
 	    } else {
-	      this.x = q.x / s;
-	      this.y = q.y / s;
-	      this.z = q.z / s;
+	      this._x = q.x / s;
+	      this._y = q.y / s;
+	      this._z = q.z / s;
 	    }
 
 	    return this;
 	  };
 
-	  Vec4.prototype.setAxisAngleFromRotationMatrix = function (m) {
+	  Vec4.prototype.setAxisAngleFromRotationMat = function (m) {
 	    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
 	    // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 	    var angle,
@@ -3915,43 +3617,43 @@
 	    if (Math.abs(s) < 0.001) s = 1; // prevent divide by zero, should not happen if matrix is orthogonal and should be
 	    // caught by singularity test above, but I've left it in just in case
 
-	    this.x = (m32 - m23) / s;
-	    this.y = (m13 - m31) / s;
-	    this.z = (m21 - m12) / s;
-	    this.w = Math.acos((m11 + m22 + m33 - 1) / 2);
+	    this._x = (m32 - m23) / s;
+	    this._y = (m13 - m31) / s;
+	    this._z = (m21 - m12) / s;
+	    this._w = Math.acos((m11 + m22 + m33 - 1) / 2);
 	    return this;
 	  };
 
 	  Vec4.prototype.min = function (v) {
-	    this.x = Math.min(this.x, v.x);
-	    this.y = Math.min(this.y, v.y);
-	    this.z = Math.min(this.z, v.z);
-	    this.w = Math.min(this.w, v.w);
+	    this._x = Math.min(this._x, v.x);
+	    this._y = Math.min(this._y, v.y);
+	    this._z = Math.min(this._z, v.z);
+	    this._w = Math.min(this._w, v.w);
 	    return this;
 	  };
 
 	  Vec4.prototype.max = function (v) {
-	    this.x = Math.max(this.x, v.x);
-	    this.y = Math.max(this.y, v.y);
-	    this.z = Math.max(this.z, v.z);
-	    this.w = Math.max(this.w, v.w);
+	    this._x = Math.max(this._x, v.x);
+	    this._y = Math.max(this._y, v.y);
+	    this._z = Math.max(this._z, v.z);
+	    this._w = Math.max(this._w, v.w);
 	    return this;
 	  };
 
 	  Vec4.prototype.clamp = function (min, max) {
 	    // assumes min < max, componentwise
-	    this.x = Math.max(min.x, Math.min(max.x, this.x));
-	    this.y = Math.max(min.y, Math.min(max.y, this.y));
-	    this.z = Math.max(min.z, Math.min(max.z, this.z));
-	    this.w = Math.max(min.w, Math.min(max.w, this.w));
+	    this._x = Math.max(min.x, Math.min(max.x, this._x));
+	    this._y = Math.max(min.y, Math.min(max.y, this._y));
+	    this._z = Math.max(min.z, Math.min(max.z, this._z));
+	    this._w = Math.max(min.w, Math.min(max.w, this._w));
 	    return this;
 	  };
 
 	  Vec4.prototype.clampScalar = function (minVal, maxVal) {
-	    this.x = Math.max(minVal, Math.min(maxVal, this.x));
-	    this.y = Math.max(minVal, Math.min(maxVal, this.y));
-	    this.z = Math.max(minVal, Math.min(maxVal, this.z));
-	    this.w = Math.max(minVal, Math.min(maxVal, this.w));
+	    this._x = Math.max(minVal, Math.min(maxVal, this._x));
+	    this._y = Math.max(minVal, Math.min(maxVal, this._y));
+	    this._z = Math.max(minVal, Math.min(maxVal, this._z));
+	    this._w = Math.max(minVal, Math.min(maxVal, this._w));
 	    return this;
 	  };
 
@@ -3961,59 +3663,59 @@
 	  };
 
 	  Vec4.prototype.floor = function () {
-	    this.x = Math.floor(this.x);
-	    this.y = Math.floor(this.y);
-	    this.z = Math.floor(this.z);
-	    this.w = Math.floor(this.w);
+	    this._x = Math.floor(this._x);
+	    this._y = Math.floor(this._y);
+	    this._z = Math.floor(this._z);
+	    this._w = Math.floor(this._w);
 	    return this;
 	  };
 
 	  Vec4.prototype.ceil = function () {
-	    this.x = Math.ceil(this.x);
-	    this.y = Math.ceil(this.y);
-	    this.z = Math.ceil(this.z);
-	    this.w = Math.ceil(this.w);
+	    this._x = Math.ceil(this._x);
+	    this._y = Math.ceil(this._y);
+	    this._z = Math.ceil(this._z);
+	    this._w = Math.ceil(this._w);
 	    return this;
 	  };
 
 	  Vec4.prototype.round = function () {
-	    this.x = Math.round(this.x);
-	    this.y = Math.round(this.y);
-	    this.z = Math.round(this.z);
-	    this.w = Math.round(this.w);
+	    this._x = Math.round(this._x);
+	    this._y = Math.round(this._y);
+	    this._z = Math.round(this._z);
+	    this._w = Math.round(this._w);
 	    return this;
 	  };
 
 	  Vec4.prototype.roundToZero = function () {
-	    this.x = this.x < 0 ? Math.ceil(this.x) : Math.floor(this.x);
-	    this.y = this.y < 0 ? Math.ceil(this.y) : Math.floor(this.y);
-	    this.z = this.z < 0 ? Math.ceil(this.z) : Math.floor(this.z);
-	    this.w = this.w < 0 ? Math.ceil(this.w) : Math.floor(this.w);
+	    this._x = this._x < 0 ? Math.ceil(this._x) : Math.floor(this._x);
+	    this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
+	    this._z = this._z < 0 ? Math.ceil(this._z) : Math.floor(this._z);
+	    this._w = this._w < 0 ? Math.ceil(this._w) : Math.floor(this._w);
 	    return this;
 	  };
 
 	  Vec4.prototype.negate = function () {
-	    this.x = -this.x;
-	    this.y = -this.y;
-	    this.z = -this.z;
-	    this.w = -this.w;
+	    this._x = -this._x;
+	    this._y = -this._y;
+	    this._z = -this._z;
+	    this._w = -this._w;
 	    return this;
 	  };
 
 	  Vec4.prototype.dot = function (v) {
-	    return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
+	    return this._x * v.x + this._y * v.y + this._z * v.z + this._w * v.w;
 	  };
 
 	  Vec4.prototype.lengthSq = function () {
-	    return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+	    return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
 	  };
 
 	  Vec4.prototype.length = function () {
-	    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+	    return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
 	  };
 
 	  Vec4.prototype.manhattanLength = function () {
-	    return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z) + Math.abs(this.w);
+	    return Math.abs(this._x) + Math.abs(this._y) + Math.abs(this._z) + Math.abs(this._w);
 	  };
 
 	  Vec4.prototype.normalize = function () {
@@ -4025,10 +3727,10 @@
 	  };
 
 	  Vec4.prototype.lerp = function (v, alpha) {
-	    this.x += (v.x - this.x) * alpha;
-	    this.y += (v.y - this.y) * alpha;
-	    this.z += (v.z - this.z) * alpha;
-	    this.w += (v.w - this.w) * alpha;
+	    this._x += (v.x - this._x) * alpha;
+	    this._y += (v.y - this._y) * alpha;
+	    this._z += (v.z - this._z) * alpha;
+	    this._w += (v.w - this._w) * alpha;
 	    return this;
 	  };
 
@@ -4037,7 +3739,7 @@
 	  };
 
 	  Vec4.prototype.equals = function (v) {
-	    return v.x === this.x && v.y === this.y && v.z === this.z && v.w === this.w;
+	    return v.x === this._x && v.y === this._y && v.z === this._z && v.w === this._w;
 	  };
 
 	  Vec4.prototype.fromArray = function (array, offset) {
@@ -4045,10 +3747,10 @@
 	      offset = 0;
 	    }
 
-	    this.x = array[offset];
-	    this.y = array[offset + 1];
-	    this.z = array[offset + 2];
-	    this.w = array[offset + 3];
+	    this._x = array[offset];
+	    this._y = array[offset + 1];
+	    this._z = array[offset + 2];
+	    this._w = array[offset + 3];
 	    return this;
 	  };
 
@@ -4061,10 +3763,10 @@
 	      offset = 0;
 	    }
 
-	    array[offset] = this.x;
-	    array[offset + 1] = this.y;
-	    array[offset + 2] = this.z;
-	    array[offset + 3] = this.w;
+	    array[offset] = this._x;
+	    array[offset + 1] = this._y;
+	    array[offset + 2] = this._z;
+	    array[offset + 3] = this._w;
 	    return array;
 	  };
 
@@ -4073,10 +3775,10 @@
 	      console.warn("Vec4: offset has been removed from .fromBufferAttribute().");
 	    }
 
-	    this.x = attribute.getX(index);
-	    this.y = attribute.getY(index);
-	    this.z = attribute.getZ(index);
-	    this.w = attribute.getW(index);
+	    this._x = attribute.getX(index);
+	    this._y = attribute.getY(index);
+	    this._z = attribute.getZ(index);
+	    this._w = attribute.getW(index);
 	    return this;
 	  };
 
@@ -4312,7 +4014,7 @@
 	    return this;
 	  };
 
-	  Mat3.prototype.getNormalMatrix = function (mat4) {
+	  Mat3.prototype.getNormalMat = function (mat4) {
 	    return this.setFromMat4(mat4).getInverse(this).transpose();
 	  };
 
@@ -4529,9 +4231,9 @@
 	  };
 
 	  Mat4.prototype.extractBasis = function (xAxis, yAxis, zAxis) {
-	    xAxis.setFromMatrixColumn(this, 0);
-	    yAxis.setFromMatrixColumn(this, 1);
-	    zAxis.setFromMatrixColumn(this, 2);
+	    xAxis.setFromMatColumn(this, 0);
+	    yAxis.setFromMatColumn(this, 1);
+	    zAxis.setFromMatColumn(this, 2);
 	    return this;
 	  };
 
@@ -4545,11 +4247,11 @@
 	    var te = this.elements;
 	    var me = m.elements;
 
-	    var scaleX = 1 / _v1.setFromMatrixColumn(m, 0).length();
+	    var scaleX = 1 / _v1.setFromMatColumn(m, 0).length();
 
-	    var scaleY = 1 / _v1.setFromMatrixColumn(m, 1).length();
+	    var scaleY = 1 / _v1.setFromMatColumn(m, 1).length();
 
-	    var scaleZ = 1 / _v1.setFromMatrixColumn(m, 2).length();
+	    var scaleZ = 1 / _v1.setFromMatColumn(m, 2).length();
 
 	    te[0] = me[0] * scaleX;
 	    te[1] = me[1] * scaleX;
@@ -4733,17 +4435,17 @@
 
 	  Mat4.prototype.multiply = function (m, n) {
 	    if (n !== undefined) {
-	      return this.multiplyMatrices(m, n);
+	      return this.multiplyMats(m, n);
 	    }
 
-	    return this.multiplyMatrices(this, m);
+	    return this.multiplyMats(this, m);
 	  };
 
 	  Mat4.prototype.premultiply = function (m) {
-	    return this.multiplyMatrices(m, this);
+	    return this.multiplyMats(m, this);
 	  };
 
-	  Mat4.prototype.multiplyMatrices = function (a, b) {
+	  Mat4.prototype.multiplyMats = function (a, b) {
 	    var ae = a.elements;
 	    var be = b.elements;
 	    var te = this.elements;
@@ -4901,6 +4603,56 @@
 
 	    return this;
 	  };
+	  /**
+	   * 矩阵求逆
+	   * @returns  自己
+	   */
+
+
+	  Mat4.prototype.invert = function () {
+	    // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+	    var te = this.elements,
+	        n11 = te[0],
+	        n21 = te[1],
+	        n31 = te[2],
+	        n41 = te[3],
+	        n12 = te[4],
+	        n22 = te[5],
+	        n32 = te[6],
+	        n42 = te[7],
+	        n13 = te[8],
+	        n23 = te[9],
+	        n33 = te[10],
+	        n43 = te[11],
+	        n14 = te[12],
+	        n24 = te[13],
+	        n34 = te[14],
+	        n44 = te[15],
+	        t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
+	        t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
+	        t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
+	        t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+	    var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
+	    if (det === 0) return this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	    var detInv = 1 / det;
+	    te[0] = t11 * detInv;
+	    te[1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * detInv;
+	    te[2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * detInv;
+	    te[3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * detInv;
+	    te[4] = t12 * detInv;
+	    te[5] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * detInv;
+	    te[6] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * detInv;
+	    te[7] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * detInv;
+	    te[8] = t13 * detInv;
+	    te[9] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * detInv;
+	    te[10] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * detInv;
+	    te[11] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * detInv;
+	    te[12] = t14 * detInv;
+	    te[13] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * detInv;
+	    te[14] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * detInv;
+	    te[15] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * detInv;
+	    return this;
+	  };
 
 	  Mat4.prototype.getInverse = function (m, throwOnDegenerate) {
 	    if (throwOnDegenerate === void 0) {
@@ -5042,12 +4794,12 @@
 	    return this;
 	  };
 
-	  Mat4.prototype.compose = function (position, Quat, scale) {
+	  Mat4.prototype.compose = function (position, quat, scale) {
 	    var te = this.elements;
-	    var x = Quat._x,
-	        y = Quat._y,
-	        z = Quat._z,
-	        w = Quat._w;
+	    var x = quat._x,
+	        y = quat._y,
+	        z = quat._z,
+	        w = quat._w;
 	    var x2 = x + x,
 	        y2 = y + y,
 	        z2 = z + z;
@@ -5082,7 +4834,7 @@
 	    return this;
 	  };
 
-	  Mat4.prototype.decompose = function (position, Quat, scale) {
+	  Mat4.prototype.decompose = function (position, quat, scale) {
 	    var te = this.elements;
 
 	    var sx = _v1.set(te[0], te[1], te[2]).length();
@@ -5112,7 +4864,7 @@
 	    _m1.elements[8] *= invSZ;
 	    _m1.elements[9] *= invSZ;
 	    _m1.elements[10] *= invSZ;
-	    Quat.setFromRotationMatrix(_m1);
+	    quat.setFromRotationMat(_m1);
 	    scale.x = sx;
 	    scale.y = sy;
 	    scale.z = sz;
@@ -5263,10 +5015,36 @@
 
 	var Euler_1 = createCommonjsModule(function (module, exports) {
 
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.euler = exports.Euler = void 0;
+
+
 
 
 
@@ -5283,7 +5061,9 @@
 
 	var Euler =
 	/** @class */
-	function () {
+	function (_super) {
+	  __extends(Euler, _super);
+
 	  function Euler(_x, _y, _z, _order) {
 	    if (_x === void 0) {
 	      _x = 0;
@@ -5301,11 +5081,14 @@
 	      _order = DefaultOrder;
 	    }
 
-	    this._x = _x;
-	    this._y = _y;
-	    this._z = _z;
-	    this._order = _order;
-	    this.isEuler = true;
+	    var _this = _super.call(this) || this;
+
+	    _this._x = _x;
+	    _this._y = _y;
+	    _this._z = _z;
+	    _this._order = _order;
+	    _this.isEuler = true;
+	    return _this;
 	  }
 
 	  Object.defineProperty(Euler.prototype, "x", {
@@ -5313,9 +5096,10 @@
 	      return this._x;
 	    },
 	    set: function (value) {
-	      this._x = value;
-
-	      this._onChangeCallback();
+	      if (this._x !== value) {
+	        this._x = value;
+	        this.fire('change', 'x', this._x, value);
+	      }
 	    },
 	    enumerable: false,
 	    configurable: true
@@ -5325,9 +5109,10 @@
 	      return this._y;
 	    },
 	    set: function (value) {
-	      this._y = value;
-
-	      this._onChangeCallback();
+	      if (this._y !== value) {
+	        this._y = value;
+	        this.fire('change', 'y', this._y, value);
+	      }
 	    },
 	    enumerable: false,
 	    configurable: true
@@ -5337,9 +5122,10 @@
 	      return this._z;
 	    },
 	    set: function (value) {
-	      this._z = value;
-
-	      this._onChangeCallback();
+	      if (this._z !== value) {
+	        this._z = value;
+	        this.fire('change', 'z', this._z, value);
+	      }
 	    },
 	    enumerable: false,
 	    configurable: true
@@ -5349,9 +5135,10 @@
 	      return this._order;
 	    },
 	    set: function (value) {
-	      this._order = value;
-
-	      this._onChangeCallback();
+	      if (this._order !== value) {
+	        this.fire('change', 'order', this._order, value);
+	        this._order = value;
+	      }
 	    },
 	    enumerable: false,
 	    configurable: true
@@ -5362,9 +5149,7 @@
 	    this._y = y;
 	    this._z = z;
 	    this._order = order || this._order;
-
-	    this._onChangeCallback();
-
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -5377,13 +5162,11 @@
 	    this._y = Euler._y;
 	    this._z = Euler._z;
 	    this._order = Euler._order;
-
-	    this._onChangeCallback();
-
+	    this.fire('change');
 	    return this;
 	  };
 
-	  Euler.prototype.setFromRotationMatrix = function (m, order, update) {
+	  Euler.prototype.setFromRotationMat = function (m, order, update) {
 	    // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 	    var te = m.elements;
 	    var m11 = te[0],
@@ -5458,18 +5241,18 @@
 	        this._y = 0;
 	      }
 	    } else {
-	      console.warn("Euler: .setFromRotationMatrix() given unsupported order: " + order);
+	      console.warn("Euler: .setFromRotationMat() given unsupported order: " + order);
 	    }
 
 	    this._order = order;
-	    if (update !== false) this._onChangeCallback();
+	    if (update !== false) this.fire('change');
 	    return this;
 	  };
 
 	  Euler.prototype.setFromQuat = function (q, order, update) {
 	    _matrix.makeRotationFromQuat(q);
 
-	    return this.setFromRotationMatrix(_matrix, order, update);
+	    return this.setFromRotationMat(_matrix, order, update);
 	  };
 
 	  Euler.prototype.setFromVec3 = function (v, order) {
@@ -5492,9 +5275,7 @@
 	    this._y = array[1];
 	    this._z = array[2];
 	    if (array[3] !== undefined) this._order = array[3];
-
-	    this._onChangeCallback();
-
+	    this.fire('change');
 	    return this;
 	  };
 
@@ -5522,15 +5303,8 @@
 	    }
 	  };
 
-	  Euler.prototype._onChange = function (callback) {
-	    this._onChangeCallback = callback;
-	    return this;
-	  };
-
-	  Euler.prototype._onChangeCallback = function () {};
-
 	  return Euler;
-	}();
+	}(eventhandler.EventHandler);
 
 	exports.Euler = Euler;
 
@@ -7137,8 +6911,8 @@
 	 * @Author       : 赵耀圣
 	 * @Date         : 2020-12-10 15:01:42
 	 * @QQ           : 549184003
-	 * @LastEditTime : 2021-03-10 17:41:20
-	 * @FilePath     : \cga.js\src\struct\3d\Path.ts
+	 * @LastEditTime : 2021-09-07 15:40:10
+	 * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\struct\3d\Path.ts
 	 */
 
 	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
@@ -8782,7 +8556,7 @@
 	    var normal = this.attributes.normal;
 
 	    if (normal !== undefined) {
-	      var normalMatrix = new Mat3_1.Mat3().getNormalMatrix(matrix);
+	      var normalMatrix = new Mat3_1.Mat3().getNormalMat(matrix);
 	      normal.applyNormalMat(normalMatrix);
 	      normal.needsUpdate = true;
 	    }
@@ -10548,8 +10322,8 @@
 	 * @Author       : 赵耀圣
 	 * @QQ           : 549184003
 	 * @Date         : 2020-12-10 15:01:42
-	 * @LastEditTime : 2021-06-28 15:49:21
-	 * @FilePath     : \cga.js\src\alg\extrude.ts
+	 * @LastEditTime : 2021-09-10 15:59:18
+	 * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\alg\extrude.ts
 	 */
 
 	var __assign = commonjsGlobal && commonjsGlobal.__assign || function () {
@@ -10960,7 +10734,8 @@
 	    pathClosed: false,
 	    generateUV: true,
 	    autoIndex: true,
-	    axisPlane: trianglution.AxisPlane.XY
+	    axisPlane: trianglution.AxisPlane.XY,
+	    up: Vec3_1.Vec3.Up
 	  }, options);
 	  var path = new Path_1.Path(options.path);
 	  var shapes = [];
@@ -10981,7 +10756,9 @@
 	  for (var i = 0; i < options.path.length; i++) {
 	    var point = path[i];
 	    var direction = point.direction;
-	    var upi = Vec3_1.v3().crossVecs(right, direction);
+	    var upi = void 0;
+	    upi = ups[i] || up || Vec3_1.v3().crossVecs(right, direction);
+	    if (!right) right = Vec3_1.v3().crossVecs(upi, direction);
 
 	    _matrix.makeBasis(right, upi, direction);
 
@@ -11009,6 +10786,23 @@
 	    autoIndex: options.autoIndex,
 	    generateUV: options.generateUV
 	  });
+	  var index = geo.position.length / 3;
+	  //     const shapeStart = clone(shape);
+	  //     const holes = clone(options.holes || []);
+	  //     sealStartTris = triangulation(shapeStart, holes, { dim: 3 })
+	  //     for (let i = 0; i < sealStartTris.length; i++) {
+	  //         sealStartTris[i] += index;
+	  //     }
+	  //     index += shapeStart.length
+	  //     holes.forEach((v: any[]) => {
+	  //         index += v.length;
+	  //     });
+	  //     geo.position.push(verctorToNumbers([shapeStart, holes]));
+	  //     geo.index?.push(...sealStartTris);
+	  // }
+	  // if (options.sealEnd) {
+	  // }
+
 	  return geo;
 	}
 

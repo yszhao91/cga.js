@@ -87,7 +87,8 @@ export function verctorToNumbers(points: any, feature = "xyz"): any {
         }
     else if (points[0] instanceof Array) {
         for (var i = 0; i < points.length; i++) {
-            numbers = numbers.concat(verctorToNumbers(points[i]));
+            if (points[i].length > 0)
+                numbers = numbers.concat(verctorToNumbers(points[i]));
         }
     } else {
         console.error("数组内部的元素不是向量");

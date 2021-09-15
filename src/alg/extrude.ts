@@ -3,7 +3,7 @@
  * @Author       : 赵耀圣
  * @QQ           : 549184003
  * @Date         : 2020-12-10 15:01:42
- * @LastEditTime : 2021-09-07 16:38:31
+ * @LastEditTime : 2021-09-14 10:07:25
  * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\alg\extrude.ts
  */
 
@@ -57,7 +57,7 @@ export function linkSide(options: ILinkSideOption) {
     var orgLen = side0.length;
     var length = shapeClosed ? side0.length : side0.length - 1;
 
-    var triangles = [];
+    var triangles: number[] = [];
 
     if (side0[0] instanceof Number) {
         //索引三角形
@@ -203,7 +203,6 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
     if (options.sealStart) {
         const startShape = clone(shapes[0]);
         allVertics.push(startShape);
-
         if (holess && holess[0]) {
             var startHoles = clone(holess[0])
             allVertics.push(startHoles)
@@ -215,7 +214,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                 startTris[i] = v + index?.index;
             })
 
-            index.index += shapes[shapes.length - 2].length
+            index.index += startShape.length
             if (holess && holess[0])
                 startHoles.forEach((h: any) => {
                     index.index += h.length
@@ -238,7 +237,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                 endTris[i] = v + index?.index;
             })
 
-            index.index += shapes[shapes.length - 1].length
+            index.index += endShape.length
             if (holess && holess[0])
                 endHoles.forEach((h: any) => {
                     index.index += h.length
@@ -437,7 +436,9 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
         generateUV: true,
         autoIndex: true,
-        axisPlane: AxisPlane.XY, ...options
+        axisPlane: AxisPlane.XY,
+        up: Vec3.Up,
+        ...options
     }
     const path = new Path(options.path);
     const shapes = [];
@@ -457,7 +458,7 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         const direction = (point as any).direction;
         let upi: any;
 
-        upi = ups[i] || v3().crossVecs(right, direction);
+        upi = ups[i] || up || v3().crossVecs(right, direction);
         if (!right)
             right = v3().crossVecs(upi, direction);
 
@@ -486,8 +487,6 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         autoIndex: options.autoIndex,
         generateUV: options.generateUV,
     })
-
-
 
     return geo;
 }
