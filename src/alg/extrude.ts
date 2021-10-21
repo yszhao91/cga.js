@@ -460,7 +460,7 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
 
         upi = ups[i] || up || v3().crossVecs(right, direction);
         if (!right)
-            right = v3().crossVecs(upi, direction);
+            right = v3().crossVecs(upi, direction).normalize();
 
         _matrix.makeBasis(right, upi, direction);
         _matrix.setPosition(point);
