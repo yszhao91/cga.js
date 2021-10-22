@@ -7,6 +7,8 @@ export * from "./math/Mat4"
 export * from "./math/Quat"
 export * from "./math/Math"
 export * from "./math/Euler"
+//common
+export * from "./math/vector"
 
 export * from "./alg/common"
 export * from "./alg/result"
