@@ -459,10 +459,11 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         let upi: any;
 
         upi = ups[i] || up || v3().crossVecs(right, direction);
+        let righti = right;
         if (!right)
-            right = v3().crossVecs(upi, direction).normalize();
+            righti = v3().crossVecs(upi, direction).normalize();
 
-        _matrix.makeBasis(right, upi, direction);
+        _matrix.makeBasis(righti, upi, direction);
         _matrix.setPosition(point);
 
         var new_shape = applyMat4(shape, _matrix, false);
