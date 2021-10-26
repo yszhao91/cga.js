@@ -446,7 +446,7 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
     const shapes = [];
     let shape: any = options.shape;
 
-    shape = new Path(shape, options.shapeClosed);
+    shape = new Path([].slice(0, shape.length), options.shapeClosed);
 
     for (let i = 1; i < shape.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
         if (shape[i].tangent.dot(shape[(i + 1) % shape.length].tangent) < options.smoothAngle!) {
