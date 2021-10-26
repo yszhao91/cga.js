@@ -21,6 +21,7 @@ import { recognitionCCW, } from './recognition';
 import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
+import { RADIANS_PER_DEGREE } from '../math/Math';
 
 export interface ILinkSideOption {
     side0: { x: number, y: number, z: number, index?: number }[] | number[];//可能是点  也可能是索引
@@ -438,11 +439,23 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         autoIndex: true,
         axisPlane: AxisPlane.XY,
         up: Vec3.Up,
+        smoothAngle: 30 * RADIANS_PER_DEGREE,
         ...options
     }
     const path = new Path(options.path);
     const shapes = [];
     let shape: any = options.shape;
+
+    shape = new Path(shape, options.shapeClosed);
+
+    for (let i = 1; i < shape.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+        if (shape[i].tangent.dot(shape[(i + 1) % shape.length].tangent) < options.smoothAngle!) {
+            shape.splice(i + 1, 0, shape[i].clone());
+            i++;
+        }
+    }
+
+
     const ups = options.ups || [];
     if (isUndefined(shape[0].z)) {
         shape = shape.map((e: any) => v3(e.x, e.y, 0));

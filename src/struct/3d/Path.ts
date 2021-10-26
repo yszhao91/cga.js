@@ -21,10 +21,10 @@ export interface IDistanceResut {
 
 export class Path extends Polyline {
     _closed: boolean;
-    constructor(vs: Array<Vec3 | IVec3>) {
+    constructor(vs: Array<Vec3 | IVec3>, closed: boolean = false) {
         super(vs);
         Object.setPrototypeOf(this, Path.prototype);
-        this._closed = false;
+        this._closed = closed;
         this.init();
     }
 

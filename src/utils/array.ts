@@ -74,9 +74,9 @@ export function classify(array: Array<any>, classifyMethod: (arg0: any, arg1: an
  * 去掉重复元素
  * @param {Array} array 
  * @param {Function} uniqueMethod  去重复
- * @param {Function} sortMethod 排序
+ * @param {Function} sortMethod 排序 存在就先排序再去重复
  */
-export function unique(array: any[], uniqueMethod: (arg0: any, arg1: any) => boolean, sortMethod: any) {
+export function unique(array: any[], uniqueMethod: (arg0: any, arg1: any) => boolean, sortMethod?: (a: any, b: any) => number) {
     if (sortMethod) {
         array.sort(sortMethod);
         for (let i = 0; i < array.length; i++) {
