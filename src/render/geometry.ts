@@ -71,7 +71,19 @@ export class BufferGeometry {
         this.drawRange = { start: 0, count: Infinity };
     }
 
+    /**
+     * 转化成BufferArray来计算
+     * @param geo 
+     */
+    fromGeometry(geo: IGeometry) {
+        this.setAttribute('position', new Float32BufferAttribute(geo.position, 3))
+        if (geo.uv)
+            this.setAttribute('uv', new Float32BufferAttribute(geo.uv, 2));
 
+        if (geo.index)
+            this.setIndex(geo.index)
+        this.computeFaceNormals();
+    }
 
     getIndex() {
 
