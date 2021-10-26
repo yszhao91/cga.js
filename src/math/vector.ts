@@ -13,11 +13,11 @@ const ckeckVec = (vs: any, component: number) => {
         throw ("向量组件数量不一样")
 }
 
-export const vector = {
+export class vector {
     /**
      * 检测相邻没有重复点
      */
-    uniqueNeighbor: (vs: number[], component: number = 3) => {
+    static uniqueNeighbor(vs: number[], component: number = 3) {
 
         for (let i = 0; i < vs.length; i += component) {
             for (let j = i + 3; j < vs.length;) {
@@ -34,7 +34,7 @@ export const vector = {
         }
 
         return vs;
-    },
+    }
 
     /**
      * 去除任意重复点
@@ -42,7 +42,7 @@ export const vector = {
      * @param component 向量组件数量 
      * @returns 无重复向量数组
      */
-    unique: (vs: number[], component: number = 3) => {
+    static unique(vs: number[], component: number = 3) {
         for (let i = 0; i < vs.length; i += component) {
             for (let j = i + 3; j < vs.length;) {
                 let lensq = 0
@@ -58,7 +58,7 @@ export const vector = {
         }
 
         return vs;
-    },
+    }
 
     /**
      *  翻转向量数组 
@@ -66,7 +66,7 @@ export const vector = {
      * @param component  组件数量
      * @returns 
      */
-    reverse: (vecs: number[], component: number = 3) => {
+    static reverse(vecs: number[], component: number = 3) {
         ckeckVec(vecs, component);
 
         const length = vecs.length;
@@ -75,9 +75,9 @@ export const vector = {
         }
 
         return vecs;
-    },
+    }
 
-    dot: (...vecs: number[]) => {
+    static dot(...vecs: number[]) {
         if (vecs.length % 2 !== 0)
             throw ("两个向量组件数量不一样")
 
@@ -89,14 +89,14 @@ export const vector = {
         }
 
         return dot;
-    },
+    }
 
     /**
      * 长度平方
      * @param vecs 
      * @returns 
      */
-    distanceSq: (...vecs: number[]) => {
+    static distanceSq(...vecs: number[]) {
         if (vecs.length % 2 !== 0)
             throw ("向量组件数量不一样")
 
@@ -108,23 +108,23 @@ export const vector = {
             lenSq += d * d;
         }
         return lenSq;
-    },
+    }
 
     /**
      * 长度 
      * @param vecs 
      * @returns 
      */
-    distance: (...vecs: number[]) => {
-        return Math.sqrt(vector.distanceSq(...vecs));
-    },
+    static distance(...vecs: number[]) {
+        return Math.sqrt(this.distanceSq(...vecs));
+    }
 
     /**
      * 相加
      * @param vecs 
      * @returns 
      */
-    add: (...vecs: number[]) => {
+    static add(...vecs: number[]) {
         if (vecs.length % 2 !== 0)
             throw ("两个向量组件数量不一样")
         if (Array.isArray(vecs[0]) && Array.isArray(vecs[1])) {
@@ -146,14 +146,14 @@ export const vector = {
         }
 
         return res;
-    },
+    }
 
     /**
      * 相减
      * @param vecs 
      * @returns 
      */
-    sub: (...vecs: number[]): number[] => {
+    static sub(...vecs: number[]): number[] {
         ckeckVec(vecs, 2);
 
         if (Array.isArray(vecs[0]) && Array.isArray(vecs[1])) {
@@ -175,7 +175,7 @@ export const vector = {
         }
 
         return res;
-    },
+    }
 
 
     /**
@@ -183,7 +183,7 @@ export const vector = {
      * @param vecs 
      * @returns 
      */
-    mul: (...vecs: number[]) => {
+    static mul(...vecs: number[]) {
         ckeckVec(vecs, 2);
         if (Array.isArray(vecs[0]) && Array.isArray(vecs[1])) {
             for (let i = 0; i < vecs[0].length; i++) {
@@ -204,7 +204,7 @@ export const vector = {
         }
 
         return res;
-    },
+    }
 
 
     /**
@@ -214,9 +214,9 @@ export const vector = {
      * @param component 
      * @returns 
      */
-    getVecAt: (vecs: number[], i: number, component: number = 3): number[] => {
-        return [vecs[3 * i], vecs[3 * i + 1], vecs[3 * i + 2]];
-    },
+    static getVecAt(vecs: number[], i: number, component: number = 3): number[] {
+        return [vecs[3 * i], vecs[3 * i + 1], vecs[3 * i + 2]]
+    }
 
     /**
      * 在第 i 个位置插入一个向量
@@ -224,8 +224,9 @@ export const vector = {
      * @param i 
      * @param vec 
      */
-    insertAt: (vecs: number[], i: number, ...vec: number[]) => {
+    static insertAt(vecs: number[], i: number, ...vec: number[]) {
         vecs.splice(i * vecs.length, 0, ...vecs);
     }
+
 
 }

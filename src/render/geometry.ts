@@ -75,7 +75,7 @@ export class BufferGeometry {
      * 转化成BufferArray来计算
      * @param geo 
      */
-    fromGeometry(geo: IGeometry) {
+    setFromGeometry(geo: IGeometry) {
         this.setAttribute('position', new Float32BufferAttribute(geo.position, 3))
         if (geo.uv)
             this.setAttribute('uv', new Float32BufferAttribute(geo.uv, 2));
@@ -83,6 +83,8 @@ export class BufferGeometry {
         if (geo.index)
             this.setIndex(geo.index)
         this.computeFaceNormals();
+
+        return this;
     }
 
     getIndex() {
