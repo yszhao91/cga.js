@@ -7,26 +7,47 @@
  */
 
 
-import { IVec3, Vec3 } from '../../math/Vec3';
+import { Vec3 } from '../../math/Vec3';
 import { Point } from './Point';
 import { clamp } from '../../math/Math';
 import { Polyline } from './Polyline';
 import { isDefined } from '../../utils/types';
 // import { Polyline } from './PolyLine';
+import { Polygon } from './Polygon';
+import { ArrayList } from '../data/ArrayList';
+import { Mat4 } from '../../math/Mat4';
+import { applyMat4 } from '../../alg/pointset';
 
 export interface IDistanceResut {
     isNode: boolean;//是否在节点上
     point: Vec3;
 }
 
-export class Path extends Polyline {
+export class Path<T extends Vec3> extends ArrayList<T> {
     _closed: boolean;
-    constructor(vs: Array<Vec3 | IVec3>, closed: boolean = false) {
+    constructor(vs: Array<T> | ArrayList<T>, closed: boolean = false) {
         super(vs);
-        Object.setPrototypeOf(this, Path.prototype);
         this._closed = closed;
         this.init();
     }
+
+    init() {
+        if (this.length === 0)
+            return
+        this.get(0).len = 0;
+        this.get(0).tlen = 0;
+        this.get(0).direction = this.get(1).clone().sub(this.get(0)).normalize();
+        for (let i = 1; i < this.length; i++) {
+            const e = this.get(i);
+            e.len = this.get(i).distanceTo(this.get(i - 1));
+            e.tlen = this.get(i - 1).tlen + e.len;
+            this.get(i).direction = this.get(i).clone().sub(this.get(i - 1)).normalize();
+        }
+        if (this._closed) {
+            this.get(-1).direction.copy(this.get(0)).sub(this.get(-1)).normalize();
+        }
+    }
+
 
     set closed(val: boolean) {
         this._closed = val;
@@ -36,38 +57,16 @@ export class Path extends Polyline {
         return this._closed;
     }
 
-    init() {
-        if (this.length === 0)
-            return
-        this[0].len = 0;
-        this[0].tlen = 0;
-        this[0].direction = this[1].clone().sub(this[0]).normalize();
-        for (let i = 1; i < this.length; i++) {
-            const e = this[i];
-            e.len = this[i].distanceTo(this[i - 1]);
-            e.tlen = this[i - 1].tlen + e.len;
-            this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
-        }
-        if (this._closed) {
-            this.get(-1).direction.copy(this[0]).sub(this.get(-1)).normalize();
-        }
-
-        for (let i = 0; i < this.length + 2; i++) {
-            // this[i % this.length].tangent = this[i % this.length].direction.clone()
-            //     .add(this[(i + 1) % this.length]).normalize();
-            this[i % this.length].tangent = this[i % this.length].direction.clone();
-        }
-        if (!this._closed) {
-            this[0].tangent.copy(this[0].direction)
-            this.get(-1).tangent.copy(this.get(-1).direction)
-        }
-    }
-
     get tlen() {
         if (this.length === 0)
             return 0;
-        return Math.max(this.get(-1).tlen, this[0].tlen);
+        return Math.max(this.get(-1).tlen, this.get(0).tlen);
     }
+
+    applyMat4(mat4: Mat4,) {
+        applyMat4(this._array, mat4);
+    }
+
 
     /**
      * 截取一段从from到to的path
@@ -79,8 +78,8 @@ export class Path extends Polyline {
             return null;
         var newPath = new Path([]);
         for (let i = 0; i < this.length - 1; i++) {
-            const pt = this[i];
-            const ptnext = this[i + 1];
+            const pt = this.get(i);
+            const ptnext = this.get(i + 1);
             if (pt.tlen <= from && ptnext.tlen >= from) {
                 var v3 = new Vec3().lerpVecs(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
                 newPath.add(v3);
@@ -109,17 +108,17 @@ export class Path extends Polyline {
         if (right - left === 1) {
             return {
                 isNode: false,//是否在节点上
-                point: new Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+                point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
             }
         }
         var mid = (left + right) >> 1;
-        if (this[mid].tlen > distance)
+        if (this.get(mid).tlen > distance)
             return this.getPointByDistance(distance, left, mid);
-        else if (this[mid].tlen < distance)
+        else if (this.get(mid).tlen < distance)
             return this.getPointByDistance(distance, mid, right);
         else return {
             isNode: true,//是否在节点上
-            point: new Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len)
+            point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
         }
     }
     /**
@@ -132,15 +131,15 @@ export class Path extends Polyline {
             return null;
 
         if (right - left === 1) {
-            return new Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len);
+            return new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len);
         }
 
         var mid = (left + right) >> 1;
-        if (this[mid].tlen > distance)
+        if (this.get(mid).tlen > distance)
             return this.getPointByDistancePure(distance, left, mid);
-        else if (this[mid].tlen < distance)
+        else if (this.get(mid).tlen < distance)
             return this.getPointByDistancePure(distance, mid, right);
-        else return this[mid].clone();
+        else return this.get(mid).clone();
     }
 
     /**
@@ -148,24 +147,24 @@ export class Path extends Polyline {
      * @param {Number} splitCount 
      * @returns {Path} 新的path
      */
-    splitAverage(splitCount: number): Path {
-        var tlen = this.last.tlen;
+    splitAverage(splitCount: number): Path<T> {
+        var tlen = this.lastValue.tlen;
         var perlen = tlen / splitCount;
 
-        var res = [];
+        var res: Vec3[] = [];
         var curJ = 0
         for (var i = 0; i <= splitCount; i++) {
             var plen = i * perlen;
             for (let j = curJ; j < this.length - 1; j++) {
-                if (this[j].tlen <= plen && this[j + 1].tlen >= plen) {
-                    var p = new Vec3().lerpVecs(this[j], this[j + 1], (plen - this[j].tlen) / (this[j + 1].len))
+                if (this.get(j).tlen <= plen && this.get(j + 1).tlen >= plen) {
+                    var p = new Vec3().lerpVecs(this.get(j), this.get(j + 1), (plen - this.get(j).tlen) / (this.get(j + 1).len))
                     res.push(p);
                     curJ = j;
                     break;
                 }
             }
         }
-        return new Path(res);
+        return new Path<any>(res);
     }
 
     /**
@@ -176,7 +175,7 @@ export class Path extends Polyline {
     * @returns {Path} 新的path
     */
     splitAverageLength(splitLength: number, integer = true) {
-        var tlen = this.last.tlen;
+        var tlen = this.lastValue.tlen;
         var count = tlen / splitLength;
         if (integer)
             count = Math.round(count);
@@ -191,8 +190,8 @@ export class Path extends Polyline {
         if (this.length == 0) {
             const firstpt = ps.shift();
             this.push(firstpt);
-            this[0].len = 0;
-            this[0].tlen = 0;
+            this.get(0).len = 0;
+            this.get(0).tlen = 0;
 
         }
         for (let i = 0; i < ps.length; i++) {

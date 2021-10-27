@@ -9,12 +9,13 @@
 import { toGeoBuffer, indexable } from '../render/mesh';
 import { Vec3 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
-import { extrude, IExtrudeOptions, linkSide, linkSides } from '../alg/extrude';
+import { extrude_obsolete, IExtrudeOptions, linkSide, linkSides } from '../alg/extrude';
 import { Polyline } from '../struct/3d/Polyline';
 import { Polygon } from '../struct/3d/Polygon';
 import { AxisPlane, triangulation } from '../alg/trianglution';
 import { flat } from '../utils/array';
 import { BufferGeometry, IBufferGeometry, IGeometry } from '../render/geometry';
+import { ArrayList } from '../struct/data/ArrayList';
 
 export function toGeometryBuffer(geo: IGeometry) {
 
@@ -29,8 +30,8 @@ export function toGeometryBuffer(geo: IGeometry) {
  * @param {*} arg_path 
  * @param {*} options 
  */
-export function extrudeToGeometryBuffer(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array<Vec3> | any, options: IExtrudeOptions) {
-    var extrudeRes = extrude(shape, arg_path, options);
+export function extrudeToGeometryBuffer(shape: ArrayList<Vec3>, arg_path: Array<Vec3>, options: IExtrudeOptions) {
+    var extrudeRes = extrude_obsolete(shape, arg_path, options);
     return toGeoBuffer(extrudeRes.vertices, extrudeRes.index!, extrudeRes.uvs);
 }
 
@@ -42,7 +43,7 @@ export function extrudeToGeometryBuffer(shape: Polygon | Polyline | Array<Vec3>,
  * @param {*} options 
  * @param {*} material 
  */
-export function linkToGeometry(shape: Polygon | Polyline | Array<Vec2>, shape1: Polygon | Polyline | Array<Vec3>, axisPlane: AxisPlane = AxisPlane.XY, shapeClose: boolean = false) {
+export function linkToGeometry(shape: Array<Vec3>, shape1: | Array<Vec3>, axisPlane: AxisPlane = AxisPlane.XY, shapeClose: boolean = false) {
     const geo: IGeometry = linkSides({ shapes: [shape, shape1], shapeClosed: shapeClose, orgShape: shape, axisPlane: axisPlane })
 
     const geometry = toGeometryBuffer(geo);
@@ -56,7 +57,7 @@ export function linkToGeometry(shape: Polygon | Polyline | Array<Vec2>, shape1: 
  * @param isClose 
  * @param material 
  */
-export function linksToGeometry(shapes: (Polygon | Polyline | Array<Vec3>)[], pathClosed: boolean = true, shapeClosed: boolean = true) {
+export function linksToGeometry(shapes: Array<Vec3>[], pathClosed: boolean = true, shapeClosed: boolean = true) {
     const vertices = flat(shapes);
     indexable(vertices)
     const geo = linkSides({ shapes, shapeClosed: pathClosed, orgShape: shapes[0] });

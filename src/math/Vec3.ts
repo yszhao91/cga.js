@@ -973,14 +973,21 @@ export class Vec3 extends EventHandler implements IVec3 {
    * 点与折线的距离 测试排除法，平均比线性检索(暴力法)要快两倍以上
    * @param { Polyline | Vec3[]} polyline 
    */
-  distancePolyline(polyline: Polyline | Vec3[]) {
+  distancePolyline(polyline: Polyline<Vec3> | Vec3[]) {
     let u = +Infinity;
     let ipos: number = -1;
     let tempResult: DistanceResult;
     let result = null;
     for (let i = 0; i < polyline.length - 1; i++) {
-      const pti = polyline[i];
-      const ptj = polyline[i + 1];
+      let pti, ptj;
+      if (Array.isArray(polyline)) {
+        pti = polyline[i];
+        ptj = polyline[i + 1];
+      }
+      else {
+        pti = polyline.get(i);
+        ptj = polyline.get(i + 1);
+      }
       if (Math.abs(pti.x - this._x) > u && Math.abs(ptj.x - this._x) > u && (pti.x - this._x) * (ptj.x - this._x) > 0)
         continue;
       if (Math.abs(pti.y - this._y) > u && Math.abs(ptj.y - this._y) > u && (pti.y - this._y) * (ptj.y - this._y) > 0)

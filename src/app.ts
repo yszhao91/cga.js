@@ -92,12 +92,11 @@
 import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
-import { recognitionCCW } from './alg/recognition';
 import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, WebGLRenderTarget, MeshNormalMaterial, MeshDepthMaterial, DepthTexture, MeshPhongMaterial, CanvasTexture, ShaderMaterial, } from 'three';
 
 import { Delaunator } from './alg/delaunator';
 import Delaunay from './alg/delaunay';
-import { extrudeEx, linkSides } from './alg/extrude';
+import { extrude, linkSides } from './alg/extrude';
 import { Polyline } from './struct/3d/Polyline';
 import { PI, PI_OVER_TWO, PI_TWO } from "./math/Math";
 import { clone, scale, translate } from "./alg/common";
@@ -155,6 +154,9 @@ glv.run();
 
 // polyline.offset(1)
 
+const shape1: any = [new cga.Vec3(-10, -10, 0), new cga.Vec3(10, -10, 0), new cga.Vec3(10, 10, 0), new cga.Vec3(-10, 10, 0)]
+const path1: any = [new cga.Vec3(), new cga.Vec3(0, 0, 100)];
+extrude({ shape: shape1, path: path1, enableSmooth: true });
 
 var dizhu = (bottomR: number, topR: number, bh: number, gh: number, th: number) => {
     var bq: cga.Vec3[] = []
@@ -202,7 +204,7 @@ for (let i = 0; i <= 100; i++) {
     path.push(v3(x, y, 0))
 }
 
-var geo = extrudeEx({ shape: shape, path: path, right: Vec3.UnitZ, sealStart: true })
+var geo = extrude({ shape: shape, path: path, right: Vec3.UnitZ, sealStart: true })
 
 // var geo = dizhu(1.8, 0.9, 0.3, 0.5, 10);
 var geometry = cga.toGeometryBuffer(geo);
@@ -273,7 +275,7 @@ var m = new Mat4()
 
 
 
-var geo = extrudeEx({ shape: shape, path: path, right: Vec3.UnitZ, sealStart: true })
+var geo = extrude({ shape: shape, path: path, right: Vec3.UnitZ, sealStart: true })
 
 var geometry = cga.toGeometryBuffer(geo);
 geometry.computeVertexNormals();

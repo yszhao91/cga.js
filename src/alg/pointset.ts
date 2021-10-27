@@ -1,4 +1,4 @@
-import { Quat } from "../math/Quat"; 
+import { Quat } from "../math/Quat";
 import { v3, Vec3 } from "../math/Vec3";
 import { gPrecision } from "../math/Math";
 import { Line } from "../struct/3d/Line";

@@ -1,21 +1,20 @@
 import { DistanceResult } from '../../alg/result';
 import { Vec3 } from '../../math/Vec3';
-import { Segment } from './Segment'; 
+import { Segment } from './Segment';
 import { Polyline } from "./Polyline";
 
-export class Polygon extends Polyline {
+export class Polygon<T> extends Polyline<T> {
     isPolygon: boolean = true;
     constructor(vs?: any[]) {
         super(vs);
-        Object.setPrototypeOf(this, Polygon.prototype);
     }
 
-    offset(distance: number, normal: Vec3 = Vec3.UnitY): Polygon {
+    offset(distance: number, normal: Vec3 = Vec3.UnitY): Polygon<T> {
 
         const segments = [];
         for (let i = 0; i < this.length; i++) {
-            const point = this[i];
-            const pointNext = this[(i + 1) % this.length];
+            const point = this.get(i);
+            const pointNext = this.get((i + 1) % this.length);
             const segment = new Segment(point, pointNext)
             segments.push(segment)
             segment.offset(distance, normal);

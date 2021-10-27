@@ -8,6 +8,14 @@
  * @FilePath     : \cga.js\src\math\VecArray.ts
  */
 
+import { Polygon } from "../struct/3d/Polygon"
+import { Polyline } from "../struct/3d/Polyline"
+import { Vec2 } from "./Vec2"
+import { Vec3 } from './Vec3';
+import { ArrayList } from '../struct/data/ArrayList';
+
+
+
 const ckeckVec = (vs: any, component: number) => {
     if (vs.length % component !== 0)
         throw ("向量组件数量不一样")
@@ -77,6 +85,11 @@ export class vector {
         return vecs;
     }
 
+    /**
+     * 点积
+     * @param vecs 
+     * @returns 
+     */
     static dot(...vecs: number[]) {
         if (vecs.length % 2 !== 0)
             throw ("两个向量组件数量不一样")
@@ -228,5 +241,39 @@ export class vector {
         vecs.splice(i * vecs.length, 0, ...vecs);
     }
 
+
+    //
+
+    /**
+     * 是否逆时针
+     * counterclockwise
+     */
+    static isCCW<T>(shape: Array<T> | ArrayList<T>, component: number = 3): boolean {
+        let d = 0;
+        if (shape instanceof Polyline || shape instanceof Polygon)
+            for (let i = 0; i < shape.length; i++) {
+                const pt = shape.get(i);
+                const ptnext = shape.get((i + 1) % shape.length);
+                d += -0.5 * (ptnext.y + pt.y) * (ptnext.x - pt.x);
+            }
+        else if (Array.isArray(shape) && shape.length > 0) {
+            if (shape[0] instanceof Vec3 || shape[0] instanceof Vec2) {
+                for (let i = 0; i < shape.length; i++) {
+                    const pt: Vec3 | Vec2 = shape[i] as any;
+                    const ptnext: Vec3 | Vec2 = shape[(i + 1) % shape.length] as any;
+                    d += -0.5 * (ptnext.y + pt.y) * (ptnext.x - pt.x);
+                }
+            } else if (!isNaN(shape[0] as any)) {
+                for (let i = 0; i < shape.length; i += component) {
+                    const ptx: number = shape[i] as any;
+                    const pty: number = shape[(i + 1) % shape.length] as any;
+                    const ptnextx = shape[(i + 3) % shape.length] as any;
+                    const ptnexty = shape[(i + 4) % shape.length] as any;
+                    d += -0.5 * (ptnexty + pty) * (ptnextx - ptx);
+                }
+            }
+        }
+        return d > 0;
+    }
 
 }

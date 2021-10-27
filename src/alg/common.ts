@@ -28,25 +28,25 @@ export function clone(array: any | any[]) {
     if (!isDefined(array))
         return array;
 
-    var result = new Array()
-    for (let i = 0; i < array.length; i++) {
-        var ele = array[i];
-        if (ele instanceof Number || ele instanceof String)
-            result[i] = ele;
-        else if (ele.clone) {
-            result[i] = ele.clone();
+    if (Array.isArray(array)) {
+        var result = new Array()
+        for (let i = 0; i < array.length; i++) {
+
+            result[i] = clone(array[i]);
+
         }
-        else if (ele instanceof Array)
-            result[i] = clone(ele);
+        return result;
+    } else {
+        if (array.clone)
+            return array.clone();
         else
-            throw ("数组有元素不能clone")
+            return array;
     }
-    return result;
 }
 
 
 /**
- * 点排序函数
+ * 点排序函数 xyz 有序排序回调
  * @param {Vector*} a 
  * @param {Vector*} b
  */

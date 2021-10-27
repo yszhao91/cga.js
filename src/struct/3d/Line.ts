@@ -1,10 +1,10 @@
 import { v3, Vec3 } from "../../math/Vec3";
-import { DistanceResult } from '../../alg/result'; 
+import { DistanceResult } from '../../alg/result';
 import { Segment } from './Segment';
 import { gPrecision } from '../../math/Math';
 import { Ray } from './Ray';
 import { Triangle } from './Triangle';
-import { Polyline } from "./Polyline";
+import { Polyline } from './Polyline';
 
 export class Line {
 
@@ -301,11 +301,12 @@ export class Line {
     return result;
   }
 
-  distancePolyline(polyline: Polyline | Vec3[]): DistanceResult {
+  distancePolyline(polyline: Polyline<Vec3> | Vec3[]): DistanceResult {
+    const polyl: any = (polyline as any)._array || polyline as any;
     let result: DistanceResult | any = null;
     var maodian: number = -1;
-    for (let i = 0; i < polyline.length - 1; i++) {
-      const segment = new Segment(polyline[i], polyline[i + 1]);
+    for (let i = 0; i < polyl.length - 1; i++) {
+      const segment = new Segment(polyl[i], polyl[i + 1]);
       var oneres: DistanceResult = this.distanceSegment(segment) as any;
       if (!result || (result as any).distance < (oneres as any).distance) {
         result = oneres;

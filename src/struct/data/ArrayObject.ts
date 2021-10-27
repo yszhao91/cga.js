@@ -1,6 +1,8 @@
-export class ArrayEx extends Array {
+export class ArrayObject extends Array {
     constructor(...args: any) {
         super(...args);
+
+        Object.setPrototypeOf(this, ArrayObject.prototype);
     }
 
     get last() {
@@ -29,7 +31,7 @@ export class ArrayEx extends Array {
      * 
     */
     clone() {
-        var result = new ArrayEx()
+        var result = new ArrayObject()
         for (let i = 0; i < this.length; i++) {
             var ele = this[i];
             if (ele instanceof Number || ele instanceof String)

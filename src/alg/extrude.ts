@@ -17,11 +17,12 @@ import { applyMat4, projectOnPlane, translate } from './pointset';
 import { indexable } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
 import { flat } from '../utils/array';
-import { recognitionCCW, } from './recognition';
 import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
 import { RADIANS_PER_DEGREE } from '../math/Math';
+import { vector } from '../math/vector';
+import { ArrayList } from '../struct/data/ArrayList';
 
 export interface ILinkSideOption {
     side0: { x: number, y: number, z: number, index?: number }[] | number[];//可能是点  也可能是索引
@@ -397,6 +398,7 @@ export interface IExtrudeOptionsEx {
     pathClosed?: boolean;//首尾闭合为圈
     textureEnable?: boolean;
     smoothAngle?: number;
+    enableSmooth?: boolean;
     sealStart?: boolean;
     sealEnd?: boolean;
     normal?: Vec3,
@@ -432,7 +434,7 @@ const _vec1 = v3();
  * @example     : 
  *  
  */
-export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
+export function extrude(options: IExtrudeOptionsEx): IGeometry {
     options = {
         sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
         generateUV: true,
@@ -440,34 +442,35 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         axisPlane: AxisPlane.XY,
         up: Vec3.Up,
         smoothAngle: 30 * RADIANS_PER_DEGREE,
+        enableSmooth: false,
         ...options
     }
-    const path = new Path(options.path);
+
+    const path = new Path(options.path as any);
     const shapes = [];
-    let shape: any = options.shape;
+    const shape: any = options.shape;
 
-    shape = new Path(shape.slice(0, shape.length), options.shapeClosed);
-
-    for (let i = 1; i < shape.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
-        if (shape[i].tangent.dot(shape[(i + 1) % shape.length].tangent) < options.smoothAngle!) {
-            shape.splice(i + 1, 0, shape[i].clone());
-            i++;
+    let shapePath: any = new Path(shape, options.shapeClosed);
+    if (options.enableSmooth)
+        for (let i = 1; i < shapePath.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+            if (shapePath.get(i).direction.dot(shapePath.get((i + 1) % shapePath.length).direction) < options.smoothAngle!) {
+                shapePath.splice(i + 1, 0, shapePath.get(i).clone());
+                i++;
+            }
         }
-    }
 
 
     const ups = options.ups || [];
-    if (isUndefined(shape[0].z)) {
-        shape = shape.map((e: any) => v3(e.x, e.y, 0));
+    if (isUndefined(shapePath.firstValue.z)) {
+        shapePath = shapePath.map((e: any) => v3(e.x, e.y, 0));
         options.normal = options.normal || Vec3.UnitZ;
-
     }
 
     var up: Vec3 = options.up as Vec3;
     var right: Vec3 = options.right as Vec3;
     var newholes = [];
     for (let i = 0; i < options.path.length; i++) {
-        const point = path[i];
+        const point = path.get(i);
         const direction = (point as any).direction;
         let upi: any;
 
@@ -479,7 +482,8 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
         _matrix.makeBasis(righti, upi, direction);
         _matrix.setPosition(point);
 
-        var new_shape = applyMat4(shape, _matrix, false);
+        var new_shape = shapePath.clone();
+        new_shape.applyMat4(_matrix);
         shapes.push(new_shape);
 
         if (options.holes) {
@@ -489,7 +493,7 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
     }
 
     const geo: IGeometry = linkSides({
-        shapes,
+        shapes: shapes.map(e => e._array),
         holes: newholes,
         orgShape: options.shape,
         orgHoles: options.holes,
@@ -518,35 +522,35 @@ export function extrudeEx(options: IExtrudeOptionsEx): IGeometry {
  *      sealStart: true, 是否密封开始面
  *      sealEnd: true,是否密封结束面}
  */
-export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array<Vec3> | any, options: IExtrudeOptions = defaultExtrudeOption) {
+export function extrude_obsolete<T extends Vec3>(shape: ArrayList<T>, arg_path: Array<Vec3> | any, options: IExtrudeOptions = defaultExtrudeOption) {
     options = {
         ...defaultExtrudeOption,
         ...options
     }
     if (arg_path.length < 2) { throw ("路径节点数必须大于2") }
 
-    var isCCW = recognitionCCW(shape);
+    var isCCW = vector.isCCW(shape);
     if (!isCCW)
         shape.reverse();
 
     var normal = options.normal;
 
     var startSeal = clone(shape);
-    var shapepath = new Path(shape);
+    var shapepath = new Path(shape as any);
     var insertNum = 0;
     for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
-        if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
-            shape.splice(i + insertNum++, 0, shapepath[i].clone());
+        if (Math.acos(shapepath.get(i).tangent.dot(shapepath.get(i + 1).tangent)) > options.smoothAngle!)
+            shape.splice(i + insertNum++, 0, shapepath.get(i).clone());
     }
 
     if (options.shapeClosed) {
         var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
-        var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
+        var dir2 = shapepath.get(0).clone().sub(shapepath.get(-1)).normalize();
         if (Math.acos(dir1.dot(dir2)) > options.smoothAngle!)
             shape.push((<any>shape).get(-1).clone());
 
         //新加起始点纹理拉伸
-        shape.unshift(shape[0].clone());
+        shape.unshift(shape.firstValue.clone());
     }
 
 
@@ -576,13 +580,13 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
     const gindex = { index: 0 };
     var vertices = flat(shapeArray);
     indexable(vertices, gindex);
-    var { index } = linkSides({ shapes: shapeArray, shapeClosed: options.shapeClosed, pathClosed: options.isClosed2, orgShape: shape });
-    shapepath = new Path(shape);
+    var { index } = linkSides({ shapes: shapeArray, shapeClosed: options.shapeClosed, pathClosed: options.isClosed2, orgShape: shape as any });
+    shapepath = new Path(shape as any);
     var uvs = [];
 
     for (let i = 0; i < path.length; i++) {
         for (let j = 0; j < shapepath.length; j++) {
-            uvs.push(shapepath[j].tlen * options.textureScale!.x, path[i].tlen * options.textureScale!.y);
+            uvs.push(shapepath.get(j).tlen * options.textureScale!.x, path.get(i).tlen * options.textureScale!.y);
         }
     }
 
@@ -658,19 +662,6 @@ export function extrude(shape: Polygon | Polyline | Array<Vec3>, arg_path: Array
 }
 
 
-/**
- * 是否逆时针
- * counterclockwise
- */
-export function isCCW(shape: Polygon | Polyline | Array<Vec3>): boolean {
-    let d = 0;
-    for (let i = 0; i < shape.length; i++) {
-        const pt = shape[i];
-        const ptnext = shape[(i + 1) % shape.length];
-        d += -0.5 * (ptnext.y + pt.y) * (ptnext.x - pt.x);
-    }
-    return d > 0;
-}
 
 export enum JoinType {
     Bevel,
