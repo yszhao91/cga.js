@@ -212,7 +212,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
 
         var startTris = triangulation(startShape, startHoles, { feature: options.axisPlane });
         if (index) {
-            startTris.forEach((v, i) => {
+            startTris.forEach((v: number, i: number) => {
                 startTris[i] = v + index?.index;
             })
 
@@ -235,7 +235,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
         }
         var endTris = triangulation(endShape, endHoles, { feature: options.axisPlane });
         if (index) {
-            endTris.forEach((v, i) => {
+            endTris.forEach((v: number, i: number) => {
                 endTris[i] = v + index?.index;
             })
 
@@ -448,9 +448,13 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
 
     const path = new Path(options.path as any);
     const shapes = [];
-    const shape: any = options.shape;
+    let shape: any = options.shape;
 
-    let shapePath: any = new Path(shape, options.shapeClosed);
+    if (options.shapeClosed && !shape[0].equals(shape[shape.length - 1]))
+        shape.push(shape[0].clone())
+
+    let shapePath: Path<Vec3> | any = new Path(shape, options.shapeClosed);
+
     if (options.enableSmooth)
         for (let i = 1; i < shapePath.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
             if (shapePath.get(i).direction.dot(shapePath.get((i + 1) % shapePath.length).direction) < options.smoothAngle!) {
@@ -460,9 +464,10 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
         }
 
 
+
     const ups = options.ups || [];
     if (isUndefined(shapePath.first.z)) {
-        shapePath = shapePath.map((e: any) => v3(e.x, e.y, 0));
+        shapePath.array = shapePath.array.map((e: any) => v3(e.x, e.y, 0));
         options.normal = options.normal || Vec3.UnitZ;
     }
 
@@ -495,7 +500,7 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
     const geo: IGeometry = linkSides({
         shapes: shapes.map(e => e._array),
         holes: newholes,
-        orgShape: options.shape,
+        orgShape: shapePath,
         orgHoles: options.holes,
         sealStart: options.sealStart,
         sealEnd: options.sealEnd,
