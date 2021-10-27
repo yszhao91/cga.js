@@ -461,7 +461,7 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
 
 
     const ups = options.ups || [];
-    if (isUndefined(shapePath.firstValue.z)) {
+    if (isUndefined(shapePath.first.z)) {
         shapePath = shapePath.map((e: any) => v3(e.x, e.y, 0));
         options.normal = options.normal || Vec3.UnitZ;
     }
