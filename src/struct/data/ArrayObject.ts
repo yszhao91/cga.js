@@ -9,6 +9,10 @@ export class ArrayObject extends Array {
         return this.get(-1);
     }
 
+    get first() {
+        return this[0]
+    }
+
     get(index: number) {
         if (index < 0)
             index = this.length + index;

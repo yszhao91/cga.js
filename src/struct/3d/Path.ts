@@ -148,7 +148,7 @@ export class Path<T extends Vec3> extends ArrayList<T> {
      * @returns {Path} 新的path
      */
     splitAverage(splitCount: number): Path<T> {
-        var tlen = this.lastValue.tlen;
+        var tlen = this.last.tlen;
         var perlen = tlen / splitCount;
 
         var res: Vec3[] = [];
@@ -175,7 +175,7 @@ export class Path<T extends Vec3> extends ArrayList<T> {
     * @returns {Path} 新的path
     */
     splitAverageLength(splitLength: number, integer = true) {
-        var tlen = this.lastValue.tlen;
+        var tlen = this.last.tlen;
         var count = tlen / splitLength;
         if (integer)
             count = Math.round(count);

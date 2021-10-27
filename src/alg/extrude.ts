@@ -550,7 +550,7 @@ export function extrude_obsolete<T extends Vec3>(shape: ArrayList<T>, arg_path: 
             shape.push((<any>shape).get(-1).clone());
 
         //新加起始点纹理拉伸
-        shape.unshift(shape.firstValue.clone());
+        shape.unshift(shape.first.clone());
     }
 
 

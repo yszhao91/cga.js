@@ -20,11 +20,11 @@ export class ArrayList<T> {
         return this._array.length;
     }
 
-    get lastValue() {
+    get last() {
         return this.get(-1);
     }
 
-    get firstValue() {
+    get first() {
         return this._array[0];
     }
 
