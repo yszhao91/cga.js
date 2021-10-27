@@ -222,7 +222,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                     index.index += h.length
                 })
         }
-        triangles.push(...startTris.reverse());
+        triangles.push(...startTris);
     }
 
     if (options.sealEnd) {

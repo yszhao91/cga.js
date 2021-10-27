@@ -82,7 +82,6 @@ export class BufferGeometry {
 
         if (geo.index)
             this.setIndex(geo.index)
-        this.computeFaceNormals();
 
         return this;
     }
@@ -931,6 +930,52 @@ export class BufferGeometry {
 
         }
 
+    }
+
+    toFlat() {
+        var indices = this.index!.array;
+        var attributes = this.attributes;
+        var geometry2 = new BufferGeometry();
+        function convertBufferAttribute(attribute: BufferAttribute, indices: ArrayLike<number>) {
+
+            var array = attribute.array;
+            var itemSize = attribute.itemSize;
+
+            var array2 = new (array as any).constructor(indices.length * itemSize);
+
+            var index = 0, index2 = 0;
+
+            for (var i = 0, l = indices.length; i < l; i++) {
+
+                index = indices[i] * itemSize;
+
+                for (var j = 0; j < itemSize; j++) {
+
+                    array2[index2++] = array[index++];
+
+                }
+
+            }
+
+            return new BufferAttribute(array2, itemSize);
+
+        }
+
+        for (var name in attributes) {
+
+            var attribute = attributes[name];
+
+            var newAttribute = convertBufferAttribute(attribute, indices);
+
+            geometry2.setAttribute(name, newAttribute);
+
+        }
+
+        const indices2 = indices.map((v: number, i: number) => i);
+
+        geometry2.setIndex(indices2);
+
+        return geometry2;
     }
 
     toNonIndexed() {
