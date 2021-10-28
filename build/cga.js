@@ -90,7 +90,7 @@
 	 * 去掉重复元素
 	 * @param {Array} array
 	 * @param {Function} uniqueMethod  去重复
-	 * @param {Function} sortMethod 排序
+	 * @param {Function} sortMethod 排序 存在就先排序再去重复
 	 */
 
 	function unique(array, uniqueMethod, sortMethod) {
@@ -2914,8 +2914,17 @@
 	    var result = null;
 
 	    for (var i = 0; i < polyline.length - 1; i++) {
-	      var pti = polyline[i];
-	      var ptj = polyline[i + 1];
+	      var pti = void 0,
+	          ptj = void 0;
+
+	      if (Array.isArray(polyline)) {
+	        pti = polyline[i];
+	        ptj = polyline[i + 1];
+	      } else {
+	        pti = polyline.get(i);
+	        ptj = polyline.get(i + 1);
+	      }
+
 	      if (Math.abs(pti.x - this._x) > u && Math.abs(ptj.x - this._x) > u && (pti.x - this._x) * (ptj.x - this._x) > 0) continue;
 	      if (Math.abs(pti.y - this._y) > u && Math.abs(ptj.y - this._y) > u && (pti.y - this._y) * (ptj.y - this._y) > 0) continue;
 	      if (Math.abs(pti.z - this._z) > u && Math.abs(ptj.z - this._z) > u && (pti.z - this._z) * (ptj.z - this._z) > 0) continue;
@@ -5319,6 +5328,44 @@
 	var Euler_2 = Euler_1.euler;
 	var Euler_3 = Euler_1.Euler;
 
+	var types = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.isString = exports.isFinite = exports.isUndefined = exports.isDefined = void 0;
+
+	function isDefined(value) {
+	  return value !== undefined && value !== null;
+	}
+
+	exports.isDefined = isDefined; //Method
+
+	function isUndefined(value) {
+	  return value === undefined;
+	}
+
+	exports.isUndefined = isUndefined;
+
+	function isFinite(value) {
+	  return typeof value == 'number' && globalThis.isFinite(value);
+	}
+
+	exports.isFinite = isFinite;
+
+	function isString(value) {
+	  return typeof value == 'string';
+	}
+
+	exports.isString = isString;
+	});
+
+	unwrapExports(types);
+	var types_1 = types.isString;
+	var types_2 = types.isFinite;
+	var types_3 = types.isUndefined;
+	var types_4 = types.isDefined;
+
 	var Line_1 = createCommonjsModule(function (module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -5627,11 +5674,12 @@
 	  };
 
 	  Line.prototype.distancePolyline = function (polyline) {
+	    var polyl = polyline._array || polyline;
 	    var result = null;
 	    var maodian = -1;
 
-	    for (var i = 0; i < polyline.length - 1; i++) {
-	      var segment = new Segment_1.Segment(polyline[i], polyline[i + 1]);
+	    for (var i = 0; i < polyl.length - 1; i++) {
+	      var segment = new Segment_1.Segment(polyl[i], polyl[i + 1]);
 	      var oneres = this.distanceSegment(segment);
 
 	      if (!result || result.distance < oneres.distance) {
@@ -6092,44 +6140,6 @@
 	unwrapExports(Plane_1);
 	var Plane_2 = Plane_1.Plane;
 
-	var types = createCommonjsModule(function (module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.isString = exports.isFinite = exports.isUndefined = exports.isDefined = void 0;
-
-	function isDefined(value) {
-	  return value !== undefined && value !== null;
-	}
-
-	exports.isDefined = isDefined; //Method
-
-	function isUndefined(value) {
-	  return value === undefined;
-	}
-
-	exports.isUndefined = isUndefined;
-
-	function isFinite(value) {
-	  return typeof value == 'number' && globalThis.isFinite(value);
-	}
-
-	exports.isFinite = isFinite;
-
-	function isString(value) {
-	  return typeof value == 'string';
-	}
-
-	exports.isString = isString;
-	});
-
-	unwrapExports(types);
-	var types_1 = types.isString;
-	var types_2 = types.isFinite;
-	var types_3 = types.isUndefined;
-	var types_4 = types.isDefined;
-
 	var common = createCommonjsModule(function (module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -6164,21 +6174,23 @@
 
 	function clone(array) {
 	  if (!types.isDefined(array)) return array;
-	  var result = new Array();
 
-	  for (var i = 0; i < array.length; i++) {
-	    var ele = array[i];
-	    if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
-	      result[i] = ele.clone();
-	    } else if (ele instanceof Array) result[i] = clone(ele);else throw "数组有元素不能clone";
+	  if (Array.isArray(array)) {
+	    var result = new Array();
+
+	    for (var i = 0; i < array.length; i++) {
+	      result[i] = clone(array[i]);
+	    }
+
+	    return result;
+	  } else {
+	    if (array.clone) return array.clone();else return array;
 	  }
-
-	  return result;
 	}
 
 	exports.clone = clone;
 	/**
-	 * 点排序函数
+	 * 点排序函数 xyz 有序排序回调
 	 * @param {Vector*} a
 	 * @param {Vector*} b
 	 */
@@ -6220,7 +6232,7 @@
 	    numbers.push(points[i].y);
 	  } else if (points[0] instanceof Array) {
 	    for (var i = 0; i < points.length; i++) {
-	      numbers = numbers.concat(verctorToNumbers(points[i]));
+	      if (points[i].length > 0) numbers = numbers.concat(verctorToNumbers(points[i]));
 	    }
 	  } else {
 	    console.error("数组内部的元素不是向量");
@@ -6565,121 +6577,168 @@
 	var common_17 = common.vectorCompare;
 	var common_18 = common.clone;
 
-	var result = createCommonjsModule(function (module, exports) {
+	var ArrayList_1 = createCommonjsModule(function (module, exports) {
+
+	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
+	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+	  return r;
+	};
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	});
+	exports.ArrayList = void 0;
 
-	unwrapExports(result);
+	 // TMaterial extends Material | Material[] = Material | Material[],
 
-	var ArrayEx_1 = createCommonjsModule(function (module, exports) {
 
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.ArrayEx = void 0;
-
-	var ArrayEx =
+	var ArrayList =
 	/** @class */
-	function (_super) {
-	  __extends(ArrayEx, _super);
+	function () {
+	  function ArrayList(data) {
+	    var _a, _b;
 
-	  function ArrayEx() {
-	    var args = [];
-
-	    for (var _i = 0; _i < arguments.length; _i++) {
-	      args[_i] = arguments[_i];
-	    }
-
-	    return _super.apply(this, args) || this;
+	    this.isArrayList = true;
+	    this._array = new Array();
+	    if (Array.isArray(data)) (_a = this._array).push.apply(_a, data);else if (data.isArrayList === true) (_b = this._array).push.apply(_b, data === null || data === void 0 ? void 0 : data._array);
 	  }
 
-	  Object.defineProperty(ArrayEx.prototype, "last", {
+	  Object.defineProperty(ArrayList.prototype, "array", {
+	    get: function () {
+	      return this._array;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(ArrayList.prototype, "length", {
+	    get: function () {
+	      return this._array.length;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(ArrayList.prototype, "last", {
 	    get: function () {
 	      return this.get(-1);
 	    },
 	    enumerable: false,
 	    configurable: true
 	  });
+	  Object.defineProperty(ArrayList.prototype, "first", {
+	    get: function () {
+	      return this._array[0];
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
 
-	  ArrayEx.prototype.get = function (index) {
-	    if (index < 0) index = this.length + index;
-	    return this[index];
+	  ArrayList.prototype.map = function (callbackfn) {
+	    return this._array.map(callbackfn);
+	  };
+
+	  ArrayList.prototype.push = function () {
+	    var _a;
+
+	    var values = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      values[_i] = arguments[_i];
+	    }
+
+	    (_a = this._array).push.apply(_a, values);
+	  };
+
+	  ArrayList.prototype.reverse = function () {
+	    this._array.reverse();
+
+	    return this;
+	  };
+
+	  ArrayList.prototype.pop = function () {
+	    return Array.prototype.pop.apply(this._array);
+	  };
+
+	  ArrayList.prototype.unshift = function () {
+	    var _a;
+
+	    var items = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      items[_i] = arguments[_i];
+	    }
+
+	    return (_a = this._array).unshift.apply(_a, items);
+	  };
+
+	  ArrayList.prototype.insertAt = function (i) {
+	    var _a;
+
+	    var value = [];
+
+	    for (var _i = 1; _i < arguments.length; _i++) {
+	      value[_i - 1] = arguments[_i];
+	    }
+
+	    (_a = this._array).splice.apply(_a, __spreadArrays([i, 0], value));
+	  };
+
+	  ArrayList.prototype.splice = function (start, deleteCount) {
+	    var _a;
+
+	    var items = [];
+
+	    for (var _i = 2; _i < arguments.length; _i++) {
+	      items[_i - 2] = arguments[_i];
+	    }
+
+	    (_a = this._array).splice.apply(_a, __spreadArrays([start, deleteCount], items));
+	  };
+
+	  ArrayList.prototype.get = function (index) {
+	    if (index < 0) index = this._array.length + index;
+	    return this._array[index];
 	  };
 	  /**
-	   * 深度优先遍历
+	   * 遍历
 	   * @param {*} method
 	   */
 
 
-	  ArrayEx.prototype.forall = function (method) {
-	    for (var i = 0; i < this.length; i++) {
-	      method(this[i]);
-	      if (this[i] instanceof Array) this[i].forall(method);
+	  ArrayList.prototype.forall = function (method) {
+	    for (var i = 0; i < this._array.length; i++) {
+	      method(this._array[i]);
 	    }
 	  };
 	  /**
-	   *
-	  */
+	   * 克隆
+	   */
 
 
-	  ArrayEx.prototype.clone = function () {
-	    var result = new ArrayEx();
-
-	    for (var i = 0; i < this.length; i++) {
-	      var ele = this[i];
-	      if (ele instanceof Number || ele instanceof String) result[i] = ele;else if (ele.clone) {
-	        result[i] = ele.clone();
-	      } else throw "数组有元素不能clone";
-	    }
-
-	    return result;
+	  ArrayList.prototype.clone = function () {
+	    return new this.constructor(common.clone(this._array));
 	  };
 	  /**
 	   * 分类
 	   * example:
 	   *      var arry = [1,2,3,4,5,6]
-	   *      var result = classify(this,(a)={return a%2===0})
+	   *      var result = classify(this._array,(a)={return a%2===0})
 	   *
 	   * @param {Function} classifyMethod  分类方法
 	   */
 
 
-	  ArrayEx.prototype.classify = function (classifyMethod) {
+	  ArrayList.prototype.classify = function (classifyMethod) {
 	    var result = [];
 
-	    for (var i = 0; i < this.length; i++) {
+	    for (var i = 0; i < this._array.length; i++) {
 	      for (var j = 0; j < result.length; j++) {
-	        if (classifyMethod(this[i], result[j][0], result[j])) {
-	          result[j].push(this[i]);
+	        if (classifyMethod(this._array[i], result[j][0], result[j])) {
+	          result[j].push(this._array[i]);
 	        } else {
-	          result.push([this[i]]);
+	          result.push([this._array[i]]);
 	        }
 	      }
 	    }
@@ -6693,14 +6752,15 @@
 	   */
 
 
-	  ArrayEx.prototype.unique = function (uniqueMethod, sortMethod) {
+	  ArrayList.prototype.unique = function (uniqueMethod, sortMethod) {
 	    if (sortMethod) {
-	      this.sort(sortMethod);
+	      this._array.sort(sortMethod);
 
-	      for (var i = 0; i < this.length; i++) {
-	        for (var j = i + 1; j < this.length; j++) {
-	          if (uniqueMethod(this[i], this[j]) === true) {
-	            this.splice(j, 1);
+	      for (var i = 0; i < this._array.length; i++) {
+	        for (var j = i + 1; j < this._array.length; j++) {
+	          if (uniqueMethod(this._array[i], this._array[j]) === true) {
+	            this._array.splice(j, 1);
+
 	            j--;
 	          } else break;
 	        }
@@ -6709,10 +6769,11 @@
 	      return this;
 	    }
 
-	    for (var i = 0; i < this.length; i++) {
-	      for (var j = i + 1; j < this.length; j++) {
-	        if (uniqueMethod(this[i], this[j]) === true) {
-	          this.splice(j, 1);
+	    for (var i = 0; i < this._array.length; i++) {
+	      for (var j = i + 1; j < this._array.length; j++) {
+	        if (uniqueMethod(this._array[i], this._array[j]) === true) {
+	          this._array.splice(j, 1);
+
 	          j--;
 	        }
 	      }
@@ -6721,531 +6782,14 @@
 	    return this;
 	  };
 
-	  return ArrayEx;
-	}(Array);
-
-	exports.ArrayEx = ArrayEx;
-	});
-
-	unwrapExports(ArrayEx_1);
-	var ArrayEx_2 = ArrayEx_1.ArrayEx;
-
-	var Polyline_1 = createCommonjsModule(function (module, exports) {
-
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
+	  return ArrayList;
 	}();
 
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.Polyline = void 0;
-
-
-
-
-
-
-
-
-
-
-
-
-	/**
-	 *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
-	 */
-
-
-	var Polyline =
-	/** @class */
-	function (_super) {
-	  __extends(Polyline, _super);
-
-	  function Polyline(vs, normal) {
-	    if (vs === void 0) {
-	      vs = [];
-	    }
-
-	    if (normal === void 0) {
-	      normal = Vec3_1.Vec3.UnitY;
-	    }
-
-	    var _this = _super.call(this) || this;
-
-	    _this.normal = normal;
-	    _this.isPolyline = true;
-	    Object.setPrototypeOf(_this, Polyline.prototype);
-
-	    _this.push.apply(_this, vs);
-
-	    _this.isCoPlanar = true;
-	    return _this;
-	  }
-	  /**
-	   * 偏移
-	   * @param {Number} distance  偏移距离
-	   * @param {Vector3} normal  折线所在平面法线
-	   */
-
-
-	  Polyline.prototype.offset = function (distance, normal, endtype, jointype) {
-	    if (normal === void 0) {
-	      normal = Vec3_1.Vec3.UnitY;
-	    }
-
-	    if (endtype === void 0) {
-	      endtype = extrude_1.EndType.Butt;
-	    }
-
-	    if (jointype === void 0) {
-	      jointype = extrude_1.JoinType.Miter;
-	    }
-
-	    var segs = [];
-
-	    var _loop_1 = function (i) {
-	      var seg = new Segment_1.Segment(this_1[i].clone(), this_1[i + 1].clone());
-	      var segtangetvec = seg[1].clone().sub(seg[0]).normalize().applyAxisAngle(normal, Math.PI / 2).multiplyScalar(distance);
-	      seg.forEach(function (e) {
-	        return e.add(segtangetvec);
-	      });
-	      segs.push(seg);
-	    };
-
-	    var this_1 = this;
-
-	    for (var i = 0; i < this.length - 1; i++) {
-	      _loop_1(i);
-	    }
-
-	    for (var i = 0; i < segs.length - 1; i++) {
-	      var segi = segs[i];
-
-	      for (var j = i + 1; j < segs.length; j++) {
-	        var segj = segs[j];
-	        var disRes = segi.distanceSegment(segj);
-
-	        if (disRes.distance < _Math.gPrecision) {
-	          //相交
-	          segj[0].copy(disRes.closests[0]);
-	          segi[1].copy(disRes.closests[0]);
-	        }
-	      }
-	    }
-
-	    var offsetPts = [];
-	    offsetPts.push(segs[0].p0);
-
-	    for (var i = 0; i < segs.length; i++) {
-	      var element = segs[i];
-	      offsetPts.push(element.p1);
-	    }
-
-	    return new Polyline(offsetPts);
-	  };
-	  /**
-	   * 圆角   将折线拐点圆角化
-	   * @param {Number} useDistance 圆角段距离
-	   * @param {Number} segments 分切割段数
-	   */
-
-
-	  Polyline.prototype.corner = function (useDistance, normal) {
-	    if (normal === void 0) {
-	      normal = this.normal;
-	    }
-
-	    var polyline = new Polyline();
-
-	    for (var i = 0; i < this.length - 2; i++) {
-	      var p0 = this[i];
-	      var p1 = this[i + 1];
-	      var p2 = this[i + 2];
-	      polyline.push(p0);
-	      var fixedPoint0 = p0.distanceTo(p1) <= useDistance * 2 ? p0.clone().add(p1).multiplyScalar(0.5) : p0.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
-	      var fixedPoint1 = p2.distanceTo(p1) <= useDistance * 2 ? p2.clone().add(p1).multiplyScalar(0.5) : p2.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
-	      polyline.push(fixedPoint0);
-	      var binormal0 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2);
-	      var binormal1 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2); //计算圆弧点
-
-	      var line0 = new Line_1.Line(fixedPoint0, binormal0.add(fixedPoint0));
-	      var line1 = new Line_1.Line(fixedPoint1, binormal1.add(fixedPoint1));
-	      polyline.push(fixedPoint1);
-	    }
-
-	    return polyline;
-	  };
-
-	  return Polyline;
-	}(ArrayEx_1.ArrayEx);
-
-	exports.Polyline = Polyline;
+	exports.ArrayList = ArrayList;
 	});
 
-	unwrapExports(Polyline_1);
-	var Polyline_2 = Polyline_1.Polyline;
-
-	var Path_1 = createCommonjsModule(function (module, exports) {
-	/*
-	 * @Author       : 赵耀圣
-	 * @Date         : 2020-12-10 15:01:42
-	 * @QQ           : 549184003
-	 * @LastEditTime : 2021-09-07 15:40:10
-	 * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\struct\3d\Path.ts
-	 */
-
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.Path = void 0;
-
-
-
-
-
-
-
-
-
-	var Path =
-	/** @class */
-	function (_super) {
-	  __extends(Path, _super);
-
-	  function Path(vs) {
-	    var _this = _super.call(this, vs) || this;
-
-	    Object.setPrototypeOf(_this, Path.prototype);
-	    _this._closed = false;
-
-	    _this.init();
-
-	    return _this;
-	  }
-
-	  Object.defineProperty(Path.prototype, "closed", {
-	    get: function () {
-	      return this._closed;
-	    },
-	    set: function (val) {
-	      this._closed = val;
-	    },
-	    enumerable: false,
-	    configurable: true
-	  });
-
-	  Path.prototype.init = function () {
-	    if (this.length === 0) return;
-	    this[0].len = 0;
-	    this[0].tlen = 0;
-	    this[0].direction = this[1].clone().sub(this[0]).normalize();
-
-	    for (var i = 1; i < this.length; i++) {
-	      var e = this[i];
-	      e.len = this[i].distanceTo(this[i - 1]);
-	      e.tlen = this[i - 1].tlen + e.len;
-	      this[i].direction = this[i].clone().sub(this[i - 1]).normalize();
-	    }
-
-	    if (this._closed) {
-	      this.get(-1).direction.copy(this[0]).sub(this.get(-1)).normalize();
-	    }
-
-	    for (var i = 0; i < this.length + 2; i++) {
-	      // this[i % this.length].tangent = this[i % this.length].direction.clone()
-	      //     .add(this[(i + 1) % this.length]).normalize();
-	      this[i % this.length].tangent = this[i % this.length].direction.clone();
-	    }
-
-	    if (!this._closed) {
-	      this[0].tangent.copy(this[0].direction);
-	      this.get(-1).tangent.copy(this.get(-1).direction);
-	    }
-	  };
-
-	  Object.defineProperty(Path.prototype, "tlen", {
-	    get: function () {
-	      if (this.length === 0) return 0;
-	      return Math.max(this.get(-1).tlen, this[0].tlen);
-	    },
-	    enumerable: false,
-	    configurable: true
-	  });
-	  /**
-	   * 截取一段从from到to的path
-	   * @param {Number} from
-	   * @param {Number} to
-	   */
-
-	  Path.prototype.splitByFromToDistance = function (from, to) {
-	    if (from === void 0) {
-	      from = 0;
-	    }
-
-	    if (to === void 0) {
-	      to = 0;
-	    }
-
-	    if (to <= from) return null;
-	    var newPath = new Path([]);
-
-	    for (var i = 0; i < this.length - 1; i++) {
-	      var pt = this[i];
-	      var ptnext = this[i + 1];
-
-	      if (pt.tlen <= from && ptnext.tlen >= from) {
-	        var v3 = new Vec3_1.Vec3().lerpVecs(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
-	        newPath.add(v3);
-	      }
-
-	      if (pt.tlen > from && pt.tlen < to) {
-	        newPath.add(pt.clone());
-	      }
-
-	      if (pt.tlen <= to && ptnext.tlen >= to) {
-	        var v3 = new Vec3_1.Vec3().lerpVecs(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
-	        newPath.add(v3);
-	        return newPath;
-	      }
-	    }
-
-	    return newPath;
-	  };
-	  /**
-	   * 从起点出发到距离等于distance位置  的坐标 二分查找
-	   * @param {Number} distance
-	   */
-
-
-	  Path.prototype.getPointByDistance = function (arg_distance, left, right) {
-	    if (left === void 0) {
-	      left = 0;
-	    }
-
-	    if (right === void 0) {
-	      right = this.length - 1;
-	    }
-
-	    var distance = _Math.clamp(arg_distance, 0, this.get(-1).tlen);
-	    if (distance !== arg_distance) return null;
-
-	    if (right - left === 1) {
-	      return {
-	        isNode: false,
-	        point: new Vec3_1.Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len)
-	      };
-	    }
-
-	    var mid = left + right >> 1;
-	    if (this[mid].tlen > distance) return this.getPointByDistance(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistance(distance, mid, right);else return {
-	      isNode: true,
-	      point: new Vec3_1.Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len)
-	    };
-	  };
-	  /**
-	   * 从起点出发到距离等于distance位置  的坐标 二分查找
-	   * @param {Number} distance
-	   */
-
-
-	  Path.prototype.getPointByDistancePure = function (arg_distance, left, right) {
-	    if (left === void 0) {
-	      left = 0;
-	    }
-
-	    if (right === void 0) {
-	      right = this.length - 1;
-	    }
-
-	    var distance = _Math.clamp(arg_distance, 0, this.get(-1).tlen);
-	    if (distance !== arg_distance) return null;
-
-	    if (right - left === 1) {
-	      return new Vec3_1.Vec3().lerpVecs(this[left], this[right], (distance - this[left].tlen) / this[right].len);
-	    }
-
-	    var mid = left + right >> 1;
-	    if (this[mid].tlen > distance) return this.getPointByDistancePure(distance, left, mid);else if (this[mid].tlen < distance) return this.getPointByDistancePure(distance, mid, right);else return this[mid].clone();
-	  };
-	  /**
-	   * 平均切割为 splitCount 段
-	   * @param {Number} splitCount
-	   * @returns {Path} 新的path
-	   */
-
-
-	  Path.prototype.splitAverage = function (splitCount) {
-	    var tlen = this.last.tlen;
-	    var perlen = tlen / splitCount;
-	    var res = [];
-	    var curJ = 0;
-
-	    for (var i = 0; i <= splitCount; i++) {
-	      var plen = i * perlen;
-
-	      for (var j = curJ; j < this.length - 1; j++) {
-	        if (this[j].tlen <= plen && this[j + 1].tlen >= plen) {
-	          var p = new Vec3_1.Vec3().lerpVecs(this[j], this[j + 1], (plen - this[j].tlen) / this[j + 1].len);
-	          res.push(p);
-	          curJ = j;
-	          break;
-	        }
-	      }
-	    }
-
-	    return new Path(res);
-	  };
-	  /**
-	   * 通过测试
-	  * 平均切割为 splitCount 段
-	  * @param {Number} splitCount
-	  * @param {Boolean} integer 是否取整
-	  * @returns {Path} 新的path
-	  */
-
-
-	  Path.prototype.splitAverageLength = function (splitLength, integer) {
-	    if (integer === void 0) {
-	      integer = true;
-	    }
-
-	    var tlen = this.last.tlen;
-	    var count = tlen / splitLength;
-	    if (integer) count = Math.round(count);
-	    return this.splitAverage(count);
-	  };
-	  /**
-	   *
-	   * @param  {...any} ps
-	   */
-
-
-	  Path.prototype.add = function () {
-	    var ps = [];
-
-	    for (var _i = 0; _i < arguments.length; _i++) {
-	      ps[_i] = arguments[_i];
-	    }
-
-	    if (this.length == 0) {
-	      var firstpt = ps.shift();
-	      this.push(firstpt);
-	      this[0].len = 0;
-	      this[0].tlen = 0;
-	    }
-
-	    for (var i = 0; i < ps.length; i++) {
-	      var pt = ps[i];
-	      pt.len = pt.distanceTo(this.get(-1));
-	      pt.tlen = this.get(-1).tlen + pt.len;
-	      pt.direction = pt.clone().sub(this.get(-1)).normalize();
-	      if (!this.get(-1).direction) this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();else this.get(-1).direction.copy(pt.direction);
-	      this.push(pt);
-	    }
-	  };
-	  /**
-	   * @description : 计算一段线段的总长度
-	   * @param        {ArrayLike} ps
-	   * @return       {number}   总长度
-	   */
-
-
-	  Path.totalMileages = function (ps) {
-	    var alldisance = 0;
-
-	    for (var i = 0, len = ps.length - 1; i < len; i++) {
-	      alldisance += ps[i + 1].distanceTo(ps[i]);
-	    }
-
-	    return alldisance;
-	  };
-	  /**
-	   * @description : 获取没一点的里程  里程是指从第一个点出发的长度
-	   * @param        {ArrayLike} ps 里程上的点集
-	   * @param        {boolean} normalize 是否归一化
-	   * @return       {number[]}  每一个点的里程数组
-	   * @example     :
-	   */
-
-
-	  Path.getPerMileages = function (ps, normalize, totalMileage) {
-	    if (normalize === void 0) {
-	      normalize = false;
-	    }
-
-	    var res = [];
-	    var mileages = 0;
-	    res.push(mileages);
-
-	    for (var i = 0, len = ps.length - 1; i < len; i++) {
-	      mileages += ps[i + 1].distanceTo(ps[i]);
-	      res.push(mileages);
-	    }
-
-	    if (normalize) {
-	      var tl = types.isDefined(totalMileage) ? totalMileage : this.totalMileages(ps);
-
-	      for (var i = 0, len = ps.length; i < len; i++) {
-	        res[i] /= tl;
-	      }
-	    }
-
-	    return res;
-	  };
-
-	  return Path;
-	}(Polyline_1.Polyline);
-
-	exports.Path = Path;
-	});
-
-	unwrapExports(Path_1);
-	var Path_2 = Path_1.Path;
+	unwrapExports(ArrayList_1);
+	var ArrayList_2 = ArrayList_1.ArrayList;
 
 	var pointset = createCommonjsModule(function (module, exports) {
 
@@ -7618,6 +7162,345 @@
 	var pointset_12 = pointset.boundingBox;
 	var pointset_13 = pointset.verctorToNumbers;
 	var pointset_14 = pointset.VecCompare;
+
+	var Path_1 = createCommonjsModule(function (module, exports) {
+	/*
+	 * @Author       : 赵耀圣
+	 * @Date         : 2020-12-10 15:01:42
+	 * @QQ           : 549184003
+	 * @LastEditTime : 2021-09-07 15:40:10
+	 * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\struct\3d\Path.ts
+	 */
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Path = void 0;
+
+
+
+
+
+
+
+
+
+
+
+	var Path =
+	/** @class */
+	function (_super) {
+	  __extends(Path, _super);
+
+	  function Path(vs, closed) {
+	    if (closed === void 0) {
+	      closed = false;
+	    }
+
+	    var _this = _super.call(this, vs) || this;
+
+	    _this._closed = closed;
+
+	    _this.init();
+
+	    return _this;
+	  }
+
+	  Path.prototype.init = function () {
+	    if (this.length === 0) return;
+	    this.get(0).len = 0;
+	    this.get(0).tlen = 0;
+	    this.get(0).direction = this.get(1).clone().sub(this.get(0)).normalize();
+
+	    for (var i = 1; i < this.length; i++) {
+	      var e = this.get(i);
+	      e.len = this.get(i).distanceTo(this.get(i - 1));
+	      e.tlen = this.get(i - 1).tlen + e.len;
+	      this.get(i).direction = this.get(i).clone().sub(this.get(i - 1)).normalize();
+	    }
+
+	    if (this._closed) {
+	      this.get(-1).direction.copy(this.get(0)).sub(this.get(-1)).normalize();
+	    }
+	  };
+
+	  Object.defineProperty(Path.prototype, "closed", {
+	    get: function () {
+	      return this._closed;
+	    },
+	    set: function (val) {
+	      this._closed = val;
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+	  Object.defineProperty(Path.prototype, "tlen", {
+	    get: function () {
+	      if (this.length === 0) return 0;
+	      return Math.max(this.get(-1).tlen, this.get(0).tlen);
+	    },
+	    enumerable: false,
+	    configurable: true
+	  });
+
+	  Path.prototype.applyMat4 = function (mat4) {
+	    pointset.applyMat4(this._array, mat4);
+	  };
+	  /**
+	   * 截取一段从from到to的path
+	   * @param {Number} from
+	   * @param {Number} to
+	   */
+
+
+	  Path.prototype.splitByFromToDistance = function (from, to) {
+	    if (from === void 0) {
+	      from = 0;
+	    }
+
+	    if (to === void 0) {
+	      to = 0;
+	    }
+
+	    if (to <= from) return null;
+	    var newPath = new Path([]);
+
+	    for (var i = 0; i < this.length - 1; i++) {
+	      var pt = this.get(i);
+	      var ptnext = this.get(i + 1);
+
+	      if (pt.tlen <= from && ptnext.tlen >= from) {
+	        var v3 = new Vec3_1.Vec3().lerpVecs(pt, ptnext, (from - pt.tlen) / (ptnext.tlen - pt.tlen));
+	        newPath.add(v3);
+	      }
+
+	      if (pt.tlen > from && pt.tlen < to) {
+	        newPath.add(pt.clone());
+	      }
+
+	      if (pt.tlen <= to && ptnext.tlen >= to) {
+	        var v3 = new Vec3_1.Vec3().lerpVecs(pt, ptnext, (to - pt.tlen) / (ptnext.tlen - pt.tlen));
+	        newPath.add(v3);
+	        return newPath;
+	      }
+	    }
+
+	    return newPath;
+	  };
+	  /**
+	   * 从起点出发到距离等于distance位置  的坐标 二分查找
+	   * @param {Number} distance
+	   */
+
+
+	  Path.prototype.getPointByDistance = function (arg_distance, left, right) {
+	    if (left === void 0) {
+	      left = 0;
+	    }
+
+	    if (right === void 0) {
+	      right = this.length - 1;
+	    }
+
+	    var distance = _Math.clamp(arg_distance, 0, this.get(-1).tlen);
+	    if (distance !== arg_distance) return null;
+
+	    if (right - left === 1) {
+	      return {
+	        isNode: false,
+	        point: new Vec3_1.Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
+	      };
+	    }
+
+	    var mid = left + right >> 1;
+	    if (this.get(mid).tlen > distance) return this.getPointByDistance(distance, left, mid);else if (this.get(mid).tlen < distance) return this.getPointByDistance(distance, mid, right);else return {
+	      isNode: true,
+	      point: new Vec3_1.Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
+	    };
+	  };
+	  /**
+	   * 从起点出发到距离等于distance位置  的坐标 二分查找
+	   * @param {Number} distance
+	   */
+
+
+	  Path.prototype.getPointByDistancePure = function (arg_distance, left, right) {
+	    if (left === void 0) {
+	      left = 0;
+	    }
+
+	    if (right === void 0) {
+	      right = this.length - 1;
+	    }
+
+	    var distance = _Math.clamp(arg_distance, 0, this.get(-1).tlen);
+	    if (distance !== arg_distance) return null;
+
+	    if (right - left === 1) {
+	      return new Vec3_1.Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len);
+	    }
+
+	    var mid = left + right >> 1;
+	    if (this.get(mid).tlen > distance) return this.getPointByDistancePure(distance, left, mid);else if (this.get(mid).tlen < distance) return this.getPointByDistancePure(distance, mid, right);else return this.get(mid).clone();
+	  };
+	  /**
+	   * 平均切割为 splitCount 段
+	   * @param {Number} splitCount
+	   * @returns {Path} 新的path
+	   */
+
+
+	  Path.prototype.splitAverage = function (splitCount) {
+	    var tlen = this.last.tlen;
+	    var perlen = tlen / splitCount;
+	    var res = [];
+	    var curJ = 0;
+
+	    for (var i = 0; i <= splitCount; i++) {
+	      var plen = i * perlen;
+
+	      for (var j = curJ; j < this.length - 1; j++) {
+	        if (this.get(j).tlen <= plen && this.get(j + 1).tlen >= plen) {
+	          var p = new Vec3_1.Vec3().lerpVecs(this.get(j), this.get(j + 1), (plen - this.get(j).tlen) / this.get(j + 1).len);
+	          res.push(p);
+	          curJ = j;
+	          break;
+	        }
+	      }
+	    }
+
+	    return new Path(res);
+	  };
+	  /**
+	   * 通过测试
+	  * 平均切割为 splitCount 段
+	  * @param {Number} splitCount
+	  * @param {Boolean} integer 是否取整
+	  * @returns {Path} 新的path
+	  */
+
+
+	  Path.prototype.splitAverageLength = function (splitLength, integer) {
+	    if (integer === void 0) {
+	      integer = true;
+	    }
+
+	    var tlen = this.last.tlen;
+	    var count = tlen / splitLength;
+	    if (integer) count = Math.round(count);
+	    return this.splitAverage(count);
+	  };
+	  /**
+	   *
+	   * @param  {...any} ps
+	   */
+
+
+	  Path.prototype.add = function () {
+	    var ps = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      ps[_i] = arguments[_i];
+	    }
+
+	    if (this.length == 0) {
+	      var firstpt = ps.shift();
+	      this.push(firstpt);
+	      this.get(0).len = 0;
+	      this.get(0).tlen = 0;
+	    }
+
+	    for (var i = 0; i < ps.length; i++) {
+	      var pt = ps[i];
+	      pt.len = pt.distanceTo(this.get(-1));
+	      pt.tlen = this.get(-1).tlen + pt.len;
+	      pt.direction = pt.clone().sub(this.get(-1)).normalize();
+	      if (!this.get(-1).direction) this.get(-1).direction = pt.clone().sub(this.get(-1)).normalize();else this.get(-1).direction.copy(pt.direction);
+	      this.push(pt);
+	    }
+	  };
+	  /**
+	   * @description : 计算一段线段的总长度
+	   * @param        {ArrayLike} ps
+	   * @return       {number}   总长度
+	   */
+
+
+	  Path.totalMileages = function (ps) {
+	    var alldisance = 0;
+
+	    for (var i = 0, len = ps.length - 1; i < len; i++) {
+	      alldisance += ps[i + 1].distanceTo(ps[i]);
+	    }
+
+	    return alldisance;
+	  };
+	  /**
+	   * @description : 获取没一点的里程  里程是指从第一个点出发的长度
+	   * @param        {ArrayLike} ps 里程上的点集
+	   * @param        {boolean} normalize 是否归一化
+	   * @return       {number[]}  每一个点的里程数组
+	   * @example     :
+	   */
+
+
+	  Path.getPerMileages = function (ps, normalize, totalMileage) {
+	    if (normalize === void 0) {
+	      normalize = false;
+	    }
+
+	    var res = [];
+	    var mileages = 0;
+	    res.push(mileages);
+
+	    for (var i = 0, len = ps.length - 1; i < len; i++) {
+	      mileages += ps[i + 1].distanceTo(ps[i]);
+	      res.push(mileages);
+	    }
+
+	    if (normalize) {
+	      var tl = types.isDefined(totalMileage) ? totalMileage : this.totalMileages(ps);
+
+	      for (var i = 0, len = ps.length; i < len; i++) {
+	        res[i] /= tl;
+	      }
+	    }
+
+	    return res;
+	  };
+
+	  return Path;
+	}(ArrayList_1.ArrayList);
+
+	exports.Path = Path;
+	});
+
+	unwrapExports(Path_1);
+	var Path_2 = Path_1.Path;
 
 	var Vec_1 = createCommonjsModule(function (module, exports) {
 
@@ -8470,6 +8353,18 @@
 	      count: Infinity
 	    };
 	  }
+	  /**
+	   * 转化成BufferArray来计算
+	   * @param geo
+	   */
+
+
+	  BufferGeometry.prototype.setFromGeometry = function (geo) {
+	    this.setAttribute('position', new bufferAttribute.Float32BufferAttribute(geo.position, 3));
+	    if (geo.uv) this.setAttribute('uv', new bufferAttribute.Float32BufferAttribute(geo.uv, 2));
+	    if (geo.index) this.setIndex(geo.index);
+	    return this;
+	  };
 
 	  BufferGeometry.prototype.getIndex = function () {
 	    return this.index;
@@ -9057,6 +8952,42 @@
 
 	      normals.setXYZ(i, _vector.x, _vector.y, _vector.z);
 	    }
+	  };
+
+	  BufferGeometry.prototype.toFlat = function () {
+	    var indices = this.index.array;
+	    var attributes = this.attributes;
+	    var geometry2 = new BufferGeometry();
+
+	    function convertBufferAttribute(attribute, indices) {
+	      var array = attribute.array;
+	      var itemSize = attribute.itemSize;
+	      var array2 = new array.constructor(indices.length * itemSize);
+	      var index = 0,
+	          index2 = 0;
+
+	      for (var i = 0, l = indices.length; i < l; i++) {
+	        index = indices[i] * itemSize;
+
+	        for (var j = 0; j < itemSize; j++) {
+	          array2[index2++] = array[index++];
+	        }
+	      }
+
+	      return new bufferAttribute.BufferAttribute(array2, itemSize);
+	    }
+
+	    for (var name in attributes) {
+	      var attribute = attributes[name];
+	      var newAttribute = convertBufferAttribute(attribute, indices);
+	      geometry2.setAttribute(name, newAttribute);
+	    }
+
+	    var indices2 = indices.map(function (v, i) {
+	      return i;
+	    });
+	    geometry2.setIndex(indices2);
+	    return geometry2;
 	  };
 
 	  BufferGeometry.prototype.toNonIndexed = function () {
@@ -10221,108 +10152,13 @@
 	var mesh_3 = mesh.triangListToBuffer;
 	var mesh_4 = mesh.indexable;
 
-	var sort = createCommonjsModule(function (module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.vectorCompare = void 0;
-
-	function vectorCompare(a, b) {
-	  if (a.x === b.x) {
-	    if (a.z !== undefined && a.y === b.y) return a.z - b.z;else return a.y - b.y;
-	  } else return a.x - b.x;
-	}
-
-	exports.vectorCompare = vectorCompare;
-	});
-
-	unwrapExports(sort);
-	var sort_1 = sort.vectorCompare;
-
-	var recognition = createCommonjsModule(function (module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.recognitionPolygonNormal = exports.recognitionCCW = exports.recognitionPlane = void 0;
-
-
-
-
-
-
-	/**
-	 * 计算共面点集所在的平面 前提是所有的点都在一个平面上
-	 * @param {Array<Vec3>} points
-	 */
-
-
-	function recognitionPlane(points) {
-	  points.sort(sort.vectorCompare);
-	  var line = new Line_1.Line(points[0], points.get(-1));
-	  var maxDistance = -Infinity;
-	  var ipos = -1;
-
-	  for (var i = 1; i < points.length - 1; i++) {
-	    var pt = points[i];
-	    var distance = line.distancePoint(pt).distance;
-
-	    if (distance > maxDistance) {
-	      maxDistance = distance;
-	      ipos = i;
-	    }
-	  }
-
-	  var plane = new Plane_1.Plane();
-	  plane.setFromThreePoint(points[0], points.get(-1), points[ipos]);
-	  return plane;
-	}
-
-	exports.recognitionPlane = recognitionPlane;
-	/**
-	 * 识别多边形顺逆时针  格林求和 投影到XY平面
-	 * @param points
-	 */
-
-	function recognitionCCW(points) {
-	  var d = 0;
-
-	  for (var i = 0; i < points.length - 1; i++) {
-	    var p = points[i];
-	    var p1 = points[i + 1];
-	    d += -0.5 * (p1.y + p.y) * (p1.x + p.x);
-	  }
-
-	  return d > 0;
-	}
-
-	exports.recognitionCCW = recognitionCCW;
-	/**
-	 * robust 识别出点集或者多边形的法线
-	 * @param {Polygon|Array<Point|Vector3>} points
-	 * @returns {Vector3} 法线
-	 */
-
-	function recognitionPolygonNormal(points) {
-	  return recognitionPlane(points).normal;
-	}
-
-	exports.recognitionPolygonNormal = recognitionPolygonNormal;
-	});
-
-	unwrapExports(recognition);
-	var recognition_1 = recognition.recognitionPolygonNormal;
-	var recognition_2 = recognition.recognitionCCW;
-	var recognition_3 = recognition.recognitionPlane;
-
 	var extrude_1 = createCommonjsModule(function (module, exports) {
 	/*
 	 * @Description  : 挤压相关方法
 	 * @Author       : 赵耀圣
 	 * @QQ           : 549184003
 	 * @Date         : 2020-12-10 15:01:42
-	 * @LastEditTime : 2021-09-10 15:59:18
+	 * @LastEditTime : 2021-09-14 10:07:25
 	 * @FilePath     : \cesium-taji-dabaod:\github\cga.js\src\alg\extrude.ts
 	 */
 
@@ -10351,7 +10187,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.EndType = exports.JoinType = exports.isCCW = exports.extrude = exports.extrudeEx = exports.linkSides = exports.linkSide = void 0;
+	exports.EndType = exports.JoinType = exports.extrude_obsolete = exports.extrude = exports.linkSides = exports.linkSide = void 0;
+
+
 
 
 
@@ -10537,13 +10375,13 @@
 	      startTris.forEach(function (v, i) {
 	        startTris[i] = v + (index === null || index === void 0 ? void 0 : index.index);
 	      });
-	      index.index += shapes[shapes.length - 2].length;
+	      index.index += startShape.length;
 	      if (holess && holess[0]) startHoles.forEach(function (h) {
 	        index.index += h.length;
 	      });
 	    }
 
-	    triangles.push.apply(triangles, startTris.reverse());
+	    triangles.push.apply(triangles, startTris);
 	  }
 
 	  if (options.sealEnd) {
@@ -10563,7 +10401,7 @@
 	      endTris.forEach(function (v, i) {
 	        endTris[i] = v + (index === null || index === void 0 ? void 0 : index.index);
 	      });
-	      index.index += shapes[shapes.length - 1].length;
+	      index.index += endShape.length;
 	      if (holess && holess[0]) endHoles.forEach(function (h) {
 	        index.index += h.length;
 	      });
@@ -10726,7 +10564,7 @@
 	 */
 
 
-	function extrudeEx(options) {
+	function extrude(options) {
 	  options = __assign({
 	    sealEnd: true,
 	    sealStart: true,
@@ -10735,15 +10573,26 @@
 	    generateUV: true,
 	    autoIndex: true,
 	    axisPlane: trianglution.AxisPlane.XY,
-	    up: Vec3_1.Vec3.Up
+	    up: Vec3_1.Vec3.Up,
+	    smoothAngle: 30 * _Math.RADIANS_PER_DEGREE,
+	    enableSmooth: false
 	  }, options);
 	  var path = new Path_1.Path(options.path);
 	  var shapes = [];
 	  var shape = options.shape;
+	  if (options.shapeClosed && !shape[0].equals(shape[shape.length - 1])) shape.push(shape[0].clone());
+	  var shapePath = new Path_1.Path(shape, options.shapeClosed);
+	  if (options.enableSmooth) for (var i = 1; i < shapePath.length; i++) {
+	    //大角度插入点 角度过大为了呈现flat shader的效果
+	    if (shapePath.get(i).direction.dot(shapePath.get((i + 1) % shapePath.length).direction) < options.smoothAngle) {
+	      shapePath.splice(i + 1, 0, shapePath.get(i).clone());
+	      i++;
+	    }
+	  }
 	  var ups = options.ups || [];
 
-	  if (types.isUndefined(shape[0].z)) {
-	    shape = shape.map(function (e) {
+	  if (types.isUndefined(shapePath.first.z)) {
+	    shapePath.array = shapePath.array.map(function (e) {
 	      return Vec3_1.v3(e.x, e.y, 0);
 	    });
 	    options.normal = options.normal || Vec3_1.Vec3.UnitZ;
@@ -10754,17 +10603,19 @@
 	  var newholes = [];
 
 	  for (var i = 0; i < options.path.length; i++) {
-	    var point = path[i];
+	    var point = path.get(i);
 	    var direction = point.direction;
 	    var upi = void 0;
 	    upi = ups[i] || up || Vec3_1.v3().crossVecs(right, direction);
-	    if (!right) right = Vec3_1.v3().crossVecs(upi, direction);
+	    var righti = right;
+	    if (!right) righti = Vec3_1.v3().crossVecs(upi, direction).normalize();
 
-	    _matrix.makeBasis(right, upi, direction);
+	    _matrix.makeBasis(righti, upi, direction);
 
 	    _matrix.setPosition(point);
 
-	    var new_shape = pointset.applyMat4(shape, _matrix, false);
+	    var new_shape = shapePath.clone();
+	    new_shape.applyMat4(_matrix);
 	    shapes.push(new_shape);
 
 	    if (options.holes) {
@@ -10774,9 +10625,11 @@
 	  }
 
 	  var geo = linkSides({
-	    shapes: shapes,
+	    shapes: shapes.map(function (e) {
+	      return e._array;
+	    }),
 	    holes: newholes,
-	    orgShape: options.shape,
+	    orgShape: shapePath,
 	    orgHoles: options.holes,
 	    sealStart: options.sealStart,
 	    sealEnd: options.sealEnd,
@@ -10786,27 +10639,10 @@
 	    autoIndex: options.autoIndex,
 	    generateUV: options.generateUV
 	  });
-	  var index = geo.position.length / 3;
-	  //     const shapeStart = clone(shape);
-	  //     const holes = clone(options.holes || []);
-	  //     sealStartTris = triangulation(shapeStart, holes, { dim: 3 })
-	  //     for (let i = 0; i < sealStartTris.length; i++) {
-	  //         sealStartTris[i] += index;
-	  //     }
-	  //     index += shapeStart.length
-	  //     holes.forEach((v: any[]) => {
-	  //         index += v.length;
-	  //     });
-	  //     geo.position.push(verctorToNumbers([shapeStart, holes]));
-	  //     geo.index?.push(...sealStartTris);
-	  // }
-	  // if (options.sealEnd) {
-	  // }
-
 	  return geo;
 	}
 
-	exports.extrudeEx = extrudeEx;
+	exports.extrude = extrude;
 	/**
 	 * 挤压
 	 * @param {Polygon|Array<Point|Vec3> }  shape   多边形或顶点数组
@@ -10821,7 +10657,7 @@
 	 *      sealEnd: true,是否密封结束面}
 	 */
 
-	function extrude(shape, arg_path, options) {
+	function extrude_obsolete(shape, arg_path, options) {
 	  var _a, _b;
 
 	  if (options === void 0) {
@@ -10834,7 +10670,7 @@
 	    throw "路径节点数必须大于2";
 	  }
 
-	  var isCCW = recognition.recognitionCCW(shape);
+	  var isCCW = vector_1.vector.isCCW(shape);
 	  if (!isCCW) shape.reverse();
 	  var normal = options.normal;
 	  var startSeal = common.clone(shape);
@@ -10843,15 +10679,15 @@
 
 	  for (var i = 1; i < shapepath.length - 1; i++) {
 	    //大角度插入点 角度过大为了呈现flat shader的效果
-	    if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath[i].clone());
+	    if (Math.acos(shapepath.get(i).tangent.dot(shapepath.get(i + 1).tangent)) > options.smoothAngle) shape.splice(i + insertNum++, 0, shapepath.get(i).clone());
 	  }
 
 	  if (options.shapeClosed) {
 	    var dir1 = shapepath.get(-1).clone().sub(shapepath.get(-2)).normalize();
-	    var dir2 = shapepath[0].clone().sub(shapepath.get(-1)).normalize();
+	    var dir2 = shapepath.get(0).clone().sub(shapepath.get(-1)).normalize();
 	    if (Math.acos(dir1.dot(dir2)) > options.smoothAngle) shape.push(shape.get(-1).clone()); //新加起始点纹理拉伸
 
-	    shape.unshift(shape[0].clone());
+	    shape.unshift(shape.first.clone());
 	  }
 
 	  var path = arg_path;
@@ -10892,7 +10728,7 @@
 
 	  for (var i = 0; i < path.length; i++) {
 	    for (var j = 0; j < shapepath.length; j++) {
-	      uvs.push(shapepath[j].tlen * options.textureScale.x, path[i].tlen * options.textureScale.y);
+	      uvs.push(shapepath.get(j).tlen * options.textureScale.x, path.get(i).tlen * options.textureScale.y);
 	    }
 	  }
 
@@ -10966,25 +10802,7 @@
 	  };
 	}
 
-	exports.extrude = extrude;
-	/**
-	 * 是否逆时针
-	 * counterclockwise
-	 */
-
-	function isCCW(shape) {
-	  var d = 0;
-
-	  for (var i = 0; i < shape.length; i++) {
-	    var pt = shape[i];
-	    var ptnext = shape[(i + 1) % shape.length];
-	    d += -0.5 * (ptnext.y + pt.y) * (ptnext.x - pt.x);
-	  }
-
-	  return d > 0;
-	}
-
-	exports.isCCW = isCCW;
+	exports.extrude_obsolete = extrude_obsolete;
 	var JoinType;
 
 	(function (JoinType) {
@@ -11068,11 +10886,633 @@
 	unwrapExports(extrude_1);
 	var extrude_2 = extrude_1.EndType;
 	var extrude_3 = extrude_1.JoinType;
-	var extrude_4 = extrude_1.isCCW;
+	var extrude_4 = extrude_1.extrude_obsolete;
 	var extrude_5 = extrude_1.extrude;
-	var extrude_6 = extrude_1.extrudeEx;
-	var extrude_7 = extrude_1.linkSides;
-	var extrude_8 = extrude_1.linkSide;
+	var extrude_6 = extrude_1.linkSides;
+	var extrude_7 = extrude_1.linkSide;
+
+	var Polyline_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Polyline = void 0;
+
+
+
+
+
+
+
+
+
+
+
+
+	/**
+	 *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
+	 */
+
+
+	var Polyline =
+	/** @class */
+	function (_super) {
+	  __extends(Polyline, _super);
+
+	  function Polyline(vs, normal) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    var _this = _super.call(this, vs) || this;
+
+	    _this.isPolyline = true;
+	    _this.normal = normal;
+	    _this.isCoPlanar = true;
+	    return _this;
+	  }
+	  /**
+	   * 偏移
+	   * @param {Number} distance  偏移距离
+	   * @param {Vector3} normal  折线所在平面法线
+	   */
+
+
+	  Polyline.prototype.offset = function (distance, normal, endtype, jointype) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    if (endtype === void 0) {
+	      endtype = extrude_1.EndType.Butt;
+	    }
+
+	    if (jointype === void 0) {
+	      jointype = extrude_1.JoinType.Miter;
+	    }
+
+	    var segs = [];
+
+	    var _loop_1 = function (i) {
+	      var seg = new Segment_1.Segment(this_1.get(i).clone(), this_1.get(i + 1).clone());
+	      var segtangetvec = seg[1].clone().sub(seg[0]).normalize().applyAxisAngle(normal, Math.PI / 2).multiplyScalar(distance);
+	      seg.forEach(function (e) {
+	        return e.add(segtangetvec);
+	      });
+	      segs.push(seg);
+	    };
+
+	    var this_1 = this;
+
+	    for (var i = 0; i < this.length - 1; i++) {
+	      _loop_1(i);
+	    }
+
+	    for (var i = 0; i < segs.length - 1; i++) {
+	      var segi = segs[i];
+
+	      for (var j = i + 1; j < segs.length; j++) {
+	        var segj = segs[j];
+	        var disRes = segi.distanceSegment(segj);
+
+	        if (disRes.distance < _Math.gPrecision) {
+	          //相交
+	          segj[0].copy(disRes.closests[0]);
+	          segi[1].copy(disRes.closests[0]);
+	        }
+	      }
+	    }
+
+	    var offsetPts = [];
+	    offsetPts.push(segs[0].p0);
+
+	    for (var i = 0; i < segs.length; i++) {
+	      var element = segs[i];
+	      offsetPts.push(element.p1);
+	    }
+
+	    return new Polyline(offsetPts);
+	  };
+	  /**
+	   * 圆角   将折线拐点圆角化
+	   * @param {Number} useDistance 圆角段距离
+	   * @param {Number} segments 分切割段数
+	   */
+
+
+	  Polyline.prototype.corner = function (useDistance, normal) {
+	    if (normal === void 0) {
+	      normal = this.normal;
+	    }
+
+	    var polyline = new Polyline();
+
+	    for (var i = 0; i < this.length - 2; i++) {
+	      var p0 = this.get(i);
+	      var p1 = this.get(i + 1);
+	      var p2 = this.get(i + 2);
+	      polyline.push(p0);
+	      var fixedPoint0 = p0.distanceTo(p1) <= useDistance * 2 ? p0.clone().add(p1).multiplyScalar(0.5) : p0.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+	      var fixedPoint1 = p2.distanceTo(p1) <= useDistance * 2 ? p2.clone().add(p1).multiplyScalar(0.5) : p2.clone().sub(p1).normalize().multiplyScalar(useDistance).add(p1);
+	      polyline.push(fixedPoint0);
+	      var binormal0 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2);
+	      var binormal1 = p1.clone().sub(p0).applyAxisAngle(normal, Math.PI / 2); //计算圆弧点
+
+	      var line0 = new Line_1.Line(fixedPoint0, binormal0.add(fixedPoint0));
+	      var line1 = new Line_1.Line(fixedPoint1, binormal1.add(fixedPoint1));
+	      polyline.push(fixedPoint1);
+	    }
+
+	    return polyline;
+	  };
+
+	  return Polyline;
+	}(ArrayList_1.ArrayList);
+
+	exports.Polyline = Polyline;
+	});
+
+	unwrapExports(Polyline_1);
+	var Polyline_2 = Polyline_1.Polyline;
+
+	var Polygon_1 = createCommonjsModule(function (module, exports) {
+
+	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
+	  var extendStatics = function (d, b) {
+	    extendStatics = Object.setPrototypeOf || {
+	      __proto__: []
+	    } instanceof Array && function (d, b) {
+	      d.__proto__ = b;
+	    } || function (d, b) {
+	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    };
+
+	    return extendStatics(d, b);
+	  };
+
+	  return function (d, b) {
+	    extendStatics(d, b);
+
+	    function __() {
+	      this.constructor = d;
+	    }
+
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	  };
+	}();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Polygon = void 0;
+
+
+
+
+
+
+
+	var Polygon =
+	/** @class */
+	function (_super) {
+	  __extends(Polygon, _super);
+
+	  function Polygon(vs) {
+	    var _this = _super.call(this, vs) || this;
+
+	    _this.isPolygon = true;
+	    return _this;
+	  }
+
+	  Polygon.prototype.offset = function (distance, normal) {
+	    if (normal === void 0) {
+	      normal = Vec3_1.Vec3.UnitY;
+	    }
+
+	    var segments = [];
+
+	    for (var i = 0; i < this.length; i++) {
+	      var point = this.get(i);
+	      var pointNext = this.get((i + 1) % this.length);
+	      var segment = new Segment_1.Segment(point, pointNext);
+	      segments.push(segment);
+	      segment.offset(distance, normal);
+	    }
+
+	    for (var i = 0; i < this.length; i++) {
+	      var seg = segments[i];
+	      var segNext = segments[i + 1];
+	      var result = seg.distanceLine(segNext);
+	      seg.p1 = result.closests[0];
+	      segNext.p0 = result.closests[1];
+	    }
+
+	    for (var i = 0; i < this.length; i++) {
+	      var seg = segments[i];
+	    }
+
+	    return new Polygon();
+	  };
+
+	  Polygon.prototype.containPoint = function (point) {};
+
+	  return Polygon;
+	}(Polyline_1.Polyline);
+
+	exports.Polygon = Polygon;
+	});
+
+	unwrapExports(Polygon_1);
+	var Polygon_2 = Polygon_1.Polygon;
+
+	var vector_1 = createCommonjsModule(function (module, exports) {
+	/**
+	 * 当向量以数组的方式出现，一个计算单元库
+	 * @Description  : 向量数组
+	 * @Author       : 赵耀圣
+	 * @QQ           : 549184003
+	 * @Date         : 2021-08-02 15:09:33
+	 * @LastEditTime : 2021-08-02 15:50:16
+	 * @FilePath     : \cga.js\src\math\VecArray.ts
+	 */
+
+	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
+	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+	  return r;
+	};
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.vector = void 0;
+
+
+
+
+
+
+
+
+
+	var ckeckVec = function (vs, component) {
+	  if (vs.length % component !== 0) throw "向量组件数量不一样";
+	};
+
+	var vector =
+	/** @class */
+	function () {
+	  function vector() {}
+	  /**
+	   * 检测相邻没有重复点
+	   */
+
+
+	  vector.uniqueNeighbor = function (vs, component) {
+	    if (component === void 0) {
+	      component = 3;
+	    }
+
+	    for (var i = 0; i < vs.length; i += component) {
+	      for (var j = i + 3; j < vs.length;) {
+	        var lensq = 0;
+
+	        for (var c = 0; c < component; c++) {
+	          lensq += (vs[i + c] - vs[j + c]) * (vs[i + c] - vs[j + c]);
+	        }
+
+	        if (Math.sqrt(lensq) < 1e-5) vs.splice(j, component);else break;
+	      }
+	    }
+
+	    return vs;
+	  };
+	  /**
+	   * 去除任意重复点
+	   * @param vs 向量数组
+	   * @param component 向量组件数量
+	   * @returns 无重复向量数组
+	   */
+
+
+	  vector.unique = function (vs, component) {
+	    if (component === void 0) {
+	      component = 3;
+	    }
+
+	    for (var i = 0; i < vs.length; i += component) {
+	      for (var j = i + 3; j < vs.length;) {
+	        var lensq = 0;
+
+	        for (var c = 0; c < component; c++) {
+	          lensq += (vs[i + c] - vs[j + c]) * (vs[i + c] - vs[j + c]);
+	        }
+
+	        if (Math.sqrt(lensq) < 1e-5) vs.splice(j, component);else j += component;
+	      }
+	    }
+
+	    return vs;
+	  };
+	  /**
+	   *  翻转向量数组
+	   * @param vecs 向量数组
+	   * @param component  组件数量
+	   * @returns
+	   */
+
+
+	  vector.reverse = function (vecs, component) {
+	    if (component === void 0) {
+	      component = 3;
+	    }
+
+	    ckeckVec(vecs, component);
+	    var length = vecs.length;
+
+	    for (var i = 0; i < length; i += component) {
+	      vecs.unshift.apply(vecs, vecs.splice(i, component));
+	    }
+
+	    return vecs;
+	  };
+	  /**
+	   * 点积
+	   * @param vecs
+	   * @returns
+	   */
+
+
+	  vector.dot = function () {
+	    var vecs = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      vecs[_i] = arguments[_i];
+	    }
+
+	    if (vecs.length % 2 !== 0) throw "两个向量组件数量不一样";
+	    var len = vecs.length / 2;
+	    var dot = 0;
+
+	    for (var i = 0; i < len; i++) {
+	      dot += vecs[i] * vecs[len + i];
+	    }
+
+	    return dot;
+	  };
+	  /**
+	   * 长度平方
+	   * @param vecs
+	   * @returns
+	   */
+
+
+	  vector.distanceSq = function () {
+	    var vecs = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      vecs[_i] = arguments[_i];
+	    }
+
+	    if (vecs.length % 2 !== 0) throw "向量组件数量不一样";
+	    var len = vecs.length / 2;
+	    var lenSq = 0;
+
+	    for (var i = 0; i < len; i++) {
+	      var d = vecs[i] - vecs[len + i];
+	      lenSq += d * d;
+	    }
+
+	    return lenSq;
+	  };
+	  /**
+	   * 长度
+	   * @param vecs
+	   * @returns
+	   */
+
+
+	  vector.distance = function () {
+	    var vecs = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      vecs[_i] = arguments[_i];
+	    }
+
+	    return Math.sqrt(this.distanceSq.apply(this, vecs));
+	  };
+	  /**
+	   * 相加
+	   * @param vecs
+	   * @returns
+	   */
+
+
+	  vector.add = function () {
+	    var vecs = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      vecs[_i] = arguments[_i];
+	    }
+
+	    if (vecs.length % 2 !== 0) throw "两个向量组件数量不一样";
+
+	    if (Array.isArray(vecs[0]) && Array.isArray(vecs[1])) {
+	      for (var i = 0; i < vecs[0].length; i++) {
+	        vecs[0][i] += vecs[1][i];
+	      }
+
+	      return vecs[0];
+	    }
+
+	    if (vecs.length % 2 !== 0) console.error("VecArray:distanceSq  向量错误!!!");
+	    var len = vecs.length / 2;
+	    var res = [];
+
+	    for (var i = 0; i < len; i++) {
+	      res[i] = res[len + i] + res[i];
+	    }
+
+	    return res;
+	  };
+	  /**
+	   * 相减
+	   * @param vecs
+	   * @returns
+	   */
+
+
+	  vector.sub = function () {
+	    var vecs = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      vecs[_i] = arguments[_i];
+	    }
+
+	    ckeckVec(vecs, 2);
+
+	    if (Array.isArray(vecs[0]) && Array.isArray(vecs[1])) {
+	      for (var i = 0; i < vecs[0].length; i++) {
+	        vecs[0][i] -= vecs[1][i];
+	      }
+
+	      return vecs[0];
+	    }
+
+	    if (vecs.length % 2 !== 0) console.error("VecArray:distanceSq  向量错误!!!");
+	    var len = vecs.length / 2;
+	    var res = [];
+
+	    for (var i = 0; i < len; i++) {
+	      res[i] = res[i] - res[len + i];
+	    }
+
+	    return res;
+	  };
+	  /**
+	   * 相乘
+	   * @param vecs
+	   * @returns
+	   */
+
+
+	  vector.mul = function () {
+	    var vecs = [];
+
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	      vecs[_i] = arguments[_i];
+	    }
+
+	    ckeckVec(vecs, 2);
+
+	    if (Array.isArray(vecs[0]) && Array.isArray(vecs[1])) {
+	      for (var i = 0; i < vecs[0].length; i++) {
+	        vecs[0][i] *= vecs[1][i];
+	      }
+
+	      return vecs[0];
+	    }
+
+	    if (vecs.length % 2 !== 0) console.error("VecArray:distanceSq  向量错误!!!");
+	    var len = vecs.length / 2;
+	    var res = [];
+
+	    for (var i = 0; i < len; i++) {
+	      res[i] = res[i] * res[len + i];
+	    }
+
+	    return res;
+	  };
+	  /**
+	   * 获取矢量数组的i个矢量
+	   * @param vecs
+	   * @param i
+	   * @param component
+	   * @returns
+	   */
+
+
+	  vector.getVecAt = function (vecs, i, component) {
+
+	    return [vecs[3 * i], vecs[3 * i + 1], vecs[3 * i + 2]];
+	  };
+	  /**
+	   * 在第 i 个位置插入一个向量
+	   * @param vecs
+	   * @param i
+	   * @param vec
+	   */
+
+
+	  vector.insertAt = function (vecs, i) {
+	    var vec = [];
+
+	    for (var _i = 2; _i < arguments.length; _i++) {
+	      vec[_i - 2] = arguments[_i];
+	    }
+
+	    vecs.splice.apply(vecs, __spreadArrays([i * vecs.length, 0], vecs));
+	  }; //
+
+	  /**
+	   * 是否逆时针
+	   * counterclockwise
+	   */
+
+
+	  vector.isCCW = function (shape, component) {
+	    if (component === void 0) {
+	      component = 3;
+	    }
+
+	    var d = 0;
+	    if (shape instanceof Polyline_1.Polyline || shape instanceof Polygon_1.Polygon) for (var i = 0; i < shape.length; i++) {
+	      var pt = shape.get(i);
+	      var ptnext = shape.get((i + 1) % shape.length);
+	      d += -0.5 * (ptnext.y + pt.y) * (ptnext.x - pt.x);
+	    } else if (Array.isArray(shape) && shape.length > 0) {
+	      if (shape[0] instanceof Vec3_1.Vec3 || shape[0] instanceof Vec2_1.Vec2) {
+	        for (var i = 0; i < shape.length; i++) {
+	          var pt = shape[i];
+	          var ptnext = shape[(i + 1) % shape.length];
+	          d += -0.5 * (ptnext.y + pt.y) * (ptnext.x - pt.x);
+	        }
+	      } else if (!isNaN(shape[0])) {
+	        for (var i = 0; i < shape.length; i += component) {
+	          var ptx = shape[i];
+	          var pty = shape[(i + 1) % shape.length];
+	          var ptnextx = shape[(i + 3) % shape.length];
+	          var ptnexty = shape[(i + 4) % shape.length];
+	          d += -0.5 * (ptnexty + pty) * (ptnextx - ptx);
+	        }
+	      }
+	    }
+	    return d > 0;
+	  };
+
+	  return vector;
+	}();
+
+	exports.vector = vector;
+	});
+
+	unwrapExports(vector_1);
+	var vector_2 = vector_1.vector;
+
+	var result = createCommonjsModule(function (module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	});
+
+	unwrapExports(result);
 
 	var delaunator = createCommonjsModule(function (module, exports) {
 
@@ -12765,97 +13205,6 @@
 	unwrapExports(Point_1);
 	var Point_2 = Point_1.Point;
 
-	var Polygon_1 = createCommonjsModule(function (module, exports) {
-
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.Polygon = void 0;
-
-
-
-
-
-
-
-	var Polygon =
-	/** @class */
-	function (_super) {
-	  __extends(Polygon, _super);
-
-	  function Polygon(vs) {
-	    var _this = _super.call(this, vs) || this;
-
-	    _this.isPolygon = true;
-	    Object.setPrototypeOf(_this, Polygon.prototype);
-	    return _this;
-	  }
-
-	  Polygon.prototype.offset = function (distance, normal) {
-	    if (normal === void 0) {
-	      normal = Vec3_1.Vec3.UnitY;
-	    }
-
-	    var segments = [];
-
-	    for (var i = 0; i < this.length; i++) {
-	      var point = this[i];
-	      var pointNext = this[(i + 1) % this.length];
-	      var segment = new Segment_1.Segment(point, pointNext);
-	      segments.push(segment);
-	      segment.offset(distance, normal);
-	    }
-
-	    for (var i = 0; i < this.length; i++) {
-	      var seg = segments[i];
-	      var segNext = segments[i + 1];
-	      var result = seg.distanceLine(segNext);
-	      seg.p1 = result.closests[0];
-	      segNext.p0 = result.closests[1];
-	    }
-
-	    for (var i = 0; i < this.length; i++) {
-	      var seg = segments[i];
-	    }
-
-	    return new Polygon();
-	  };
-
-	  Polygon.prototype.containPoint = function (point) {};
-
-	  return Polygon;
-	}(Polyline_1.Polyline);
-
-	exports.Polygon = Polygon;
-	});
-
-	unwrapExports(Polygon_1);
-	var Polygon_2 = Polygon_1.Polygon;
-
 	var Ray_1 = createCommonjsModule(function (module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -13249,7 +13598,7 @@
 	 */
 
 	function extrudeToGeometryBuffer(shape, arg_path, options) {
-	  var extrudeRes = extrude_1.extrude(shape, arg_path, options);
+	  var extrudeRes = extrude_1.extrude_obsolete(shape, arg_path, options);
 	  return mesh.toGeoBuffer(extrudeRes.vertices, extrudeRes.index, extrudeRes.uvs);
 	}
 
@@ -13370,7 +13719,10 @@
 
 	__exportStar(_Math, exports);
 
-	__exportStar(Euler_1, exports);
+	__exportStar(Euler_1, exports); //common
+
+
+	__exportStar(vector_1, exports);
 
 	__exportStar(common, exports);
 
