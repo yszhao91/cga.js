@@ -679,83 +679,26 @@ export enum EndType {
     Butt
 }
 
-// /**
-//  * 
-//  * @param shape 
-//  * @param followPath 
-//  * @param options 
-//  */
-// export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<number>, followPath: Array<Vec3> | Path, options: IExtrudeNextOptions = defaultExtrudeOption) {
 
-//     var shapeAry: Array<Vec3> = [];
-//     if (!isNaN(shape[0])) {
-//         //数字数组转向量数据
-//         var axis = ['x', 'y', 'z'];
-//         for (let i = 0; i < shape.length; i += options.vecdim!) {
-//             var pt: any = new Vec3();
-//             for (let j = 0; j < options.vecdim!; j++) {
-//                 pt[axis[j]] = shape[i + j];
-//             }
-//             shapeAry.push(pt);
-//         }
-//         shape = shapeAry;
-//     }
+export interface IExtrudeNextOptions {
+    shape: Array<Vec3 | Vec2>;
+    path: Array<Vec3>;
+    jointType?: JoinType;
+    endType?: EndType;
+    up?: Vec3 | Array<Vec3>;
+    right?: Vec3 | Array<Vec3>
+    sealStart?: boolean;
+    sealEnd?: boolean;
+    shapeClosed?: boolean;
+    pathClosed?: boolean;
+}
 
-//     //截面所在的平面
+/**
+ * 
+ * @param shape 
+ * @param followPath 
+ * @param options 
+ */
+export function extrudeNext(options: IExtrudeNextOptions) {
 
-//     if (!recognitionCCW(shape as Vec3[])) {
-//         //逆时针
-//         shape.reverse();
-//     }
-//     if (!options.normal) {
-//         //识别法线
-//         options.normal = recognitionPlane(shape).normal;
-//     }
-//     //旋转到xy平面
-
-//     if (options.center) {
-//         //偏移
-//         translate(shape, options.center)
-//     }
-
-//     const shapepath = new Path(shape);
-//     let insertNum = 0;
-//     for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
-//         if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
-//             shape.splice(i + insertNum++, 0, shapepath[i].clone());
-//     }
-
-//     if (options.sealStart) {
-
-//     }
-
-//     if (options.sealEnd) {
-
-//     }
-
-
-//     //计算截面uv 
-//     for (let i = 0; i < shape.length; i++) {
-//         const pt = shape[i];
-//         pt.u = pt.tlen;
-
-//         var linkShapes = [];
-//         for (let i = 1; i < followPath.length - 1; i++) {
-//             const node = followPath[i];
-//             var dir = node.tangent;
-//             var newShape = clone(shape);
-
-//             //节点平分线
-//             const pnormal = followPath[i + 1].clone().sub(followPath[i]).normalize().add(followPath[i].clone().sub(followPath[i - 1]).normalize()).normalize();
-//             const jointPlane = Plane.setFromPointNormal(node, pnormal);
-//             jointPlane.negate();
-//             var projectDir = v3().subVecs(node, followPath[i - 1]).normalize();
-
-//             projectOnPlane(newShape, jointPlane, projectDir);
-
-//             linkShapes.push(newShape);
-//         }
-
-//         linksToGeometry(linkShapes);
-//     }
-// }
+}
