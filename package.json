@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.61",
+  "version": "0.0.62",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -34,6 +34,9 @@
     "gis"
   ],
   "license": "MIT",
+  "dependencies": {
+    "earcut": "^2.2.3"
+  },
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@types/earcut": "^2.1.1",
