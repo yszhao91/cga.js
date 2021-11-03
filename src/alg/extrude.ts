@@ -186,11 +186,12 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
     const index = options.index;
 
     var allVertics = [shapes];
-    if (holess && holess.length > 0)
-        allVertics.push(holess);
+    if (hasHole)
+        allVertics.push(holess as any);
 
-    var orgShape = options.orgShape || shapes[0]
-    var orgHoles = options.orgHoles || (holess && holess[0])
+    var orgShape = options.orgShape || shapes[0];
+    var orgHoles = options.orgHoles || (holess && holess[0]);
+
     if (index)
         indexable(allVertics, index);
 
@@ -210,7 +211,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             allVertics.push(startHoles)
         }
 
-        var startTris = triangulation(startShape, startHoles, { feature: options.axisPlane });
+        var startTris = triangulation(orgShape, orgHoles, { feature: AxisPlane.XYZ });
         if (index) {
             startTris.forEach((v: number, i: number) => {
                 startTris[i] = v + index?.index;
@@ -233,7 +234,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             var endHoles = clone(clone(holess[holess.length - 1]));
             allVertics.push(endHoles)
         }
-        var endTris = triangulation(endShape, endHoles, { feature: options.axisPlane });
+        var endTris = triangulation(orgShape, orgHoles, { feature: AxisPlane.XYZ });
         if (index) {
             endTris.forEach((v: number, i: number) => {
                 endTris[i] = v + index?.index;
@@ -428,7 +429,7 @@ const _vec1 = v3();
  *    normal?: Vec3,//面的法线
  *    autoIndex?: boolean,
  *    index?: { index: number }
- *   holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[]
+ *    holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[] 
  *}
  * @return       {IGeometry} 
  * @example     : 
@@ -474,6 +475,7 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
     var up: Vec3 = options.up as Vec3;
     var right: Vec3 = options.right as Vec3;
     var newholes = [];
+
     for (let i = 0; i < options.path.length; i++) {
         const point = path.get(i);
         const direction = (point as any).direction;
@@ -496,11 +498,10 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
             newholes.push(mholes);
         }
     }
-
     const geo: IGeometry = linkSides({
         shapes: shapes.map(e => e._array),
         holes: newholes,
-        orgShape: shapePath,
+        orgShape: shapePath._array,
         orgHoles: options.holes,
         sealStart: options.sealStart,
         sealEnd: options.sealEnd,
@@ -679,26 +680,83 @@ export enum EndType {
     Butt
 }
 
+// /**
+//  * 
+//  * @param shape 
+//  * @param followPath 
+//  * @param options 
+//  */
+// export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<number>, followPath: Array<Vec3> | Path, options: IExtrudeNextOptions = defaultExtrudeOption) {
 
-export interface IExtrudeNextOptions {
-    shape: Array<Vec3 | Vec2>;
-    path: Array<Vec3>;
-    jointType?: JoinType;
-    endType?: EndType;
-    up?: Vec3 | Array<Vec3>;
-    right?: Vec3 | Array<Vec3>
-    sealStart?: boolean;
-    sealEnd?: boolean;
-    shapeClosed?: boolean;
-    pathClosed?: boolean;
-}
+//     var shapeAry: Array<Vec3> = [];
+//     if (!isNaN(shape[0])) {
+//         //数字数组转向量数据
+//         var axis = ['x', 'y', 'z'];
+//         for (let i = 0; i < shape.length; i += options.vecdim!) {
+//             var pt: any = new Vec3();
+//             for (let j = 0; j < options.vecdim!; j++) {
+//                 pt[axis[j]] = shape[i + j];
+//             }
+//             shapeAry.push(pt);
+//         }
+//         shape = shapeAry;
+//     }
 
-/**
- * 
- * @param shape 
- * @param followPath 
- * @param options 
- */
-export function extrudeNext(options: IExtrudeNextOptions) {
+//     //截面所在的平面
 
-}
+//     if (!recognitionCCW(shape as Vec3[])) {
+//         //逆时针
+//         shape.reverse();
+//     }
+//     if (!options.normal) {
+//         //识别法线
+//         options.normal = recognitionPlane(shape).normal;
+//     }
+//     //旋转到xy平面
+
+//     if (options.center) {
+//         //偏移
+//         translate(shape, options.center)
+//     }
+
+//     const shapepath = new Path(shape);
+//     let insertNum = 0;
+//     for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+//         if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
+//             shape.splice(i + insertNum++, 0, shapepath[i].clone());
+//     }
+
+//     if (options.sealStart) {
+
+//     }
+
+//     if (options.sealEnd) {
+
+//     }
+
+
+//     //计算截面uv 
+//     for (let i = 0; i < shape.length; i++) {
+//         const pt = shape[i];
+//         pt.u = pt.tlen;
+
+//         var linkShapes = [];
+//         for (let i = 1; i < followPath.length - 1; i++) {
+//             const node = followPath[i];
+//             var dir = node.tangent;
+//             var newShape = clone(shape);
+
+//             //节点平分线
+//             const pnormal = followPath[i + 1].clone().sub(followPath[i]).normalize().add(followPath[i].clone().sub(followPath[i - 1]).normalize()).normalize();
+//             const jointPlane = Plane.setFromPointNormal(node, pnormal);
+//             jointPlane.negate();
+//             var projectDir = v3().subVecs(node, followPath[i - 1]).normalize();
+
+//             projectOnPlane(newShape, jointPlane, projectDir);
+
+//             linkShapes.push(newShape);
+//         }
+
+//         linksToGeometry(linkShapes);
+//     }
+// }

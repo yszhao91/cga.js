@@ -16,6 +16,10 @@ export class ArrayList<T> {
         return this._array;
     }
 
+    set array(val: T[]) {
+        this._array = val;
+    }
+
     get length() {
         return this._array.length;
     }

@@ -21,7 +21,6 @@ import { applyMat4 } from '../../alg/pointset';
 export interface IDistanceResut {
     isNode: boolean;//是否在节点上
     point: Vec3;
-    direction: Vec3;
 }
 
 export class Path<T extends Vec3> extends ArrayList<T> {
@@ -109,8 +108,7 @@ export class Path<T extends Vec3> extends ArrayList<T> {
         if (right - left === 1) {
             return {
                 isNode: false,//是否在节点上
-                point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len),
-                direction: this.get(left).diretion,
+                point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
             }
         }
         var mid = (left + right) >> 1;
@@ -120,8 +118,7 @@ export class Path<T extends Vec3> extends ArrayList<T> {
             return this.getPointByDistance(distance, mid, right);
         else return {
             isNode: true,//是否在节点上
-            point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len),
-            direction: this.get(left).direction
+            point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
         }
     }
     /**
