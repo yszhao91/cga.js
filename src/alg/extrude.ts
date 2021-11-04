@@ -16,7 +16,7 @@ import { clone, rotateByUnitVectors, verctorToNumbers } from './common';
 import { applyMat4, projectOnPlane, translate } from './pointset';
 import { indexable } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
-import { flat } from '../utils/array';
+import { flat, unique } from '../utils/array';
 import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
@@ -70,12 +70,12 @@ export function linkSide(options: ILinkSideOption) {
             var v11 = side1[(i + 1) % orgLen];
 
             triangles.push(v00);
-            triangles.push(v10);
+            triangles.push(v01);
             triangles.push(v11);
 
             triangles.push(v00);
             triangles.push(v11);
-            triangles.push(v01);
+            triangles.push(v10);
         }
     } else {
         if (isDefined(side0[0].index)) {
@@ -87,12 +87,12 @@ export function linkSide(options: ILinkSideOption) {
                 var v11 = side1[(i + 1) % orgLen];
 
                 triangles.push(v00.index);
-                triangles.push(v10.index);
+                triangles.push(v01.index);
                 triangles.push(v11.index);
 
                 triangles.push(v00.index);
                 triangles.push(v11.index);
-                triangles.push(v01.index);
+                triangles.push(v10.index);
             }
         } else {
             //三角形顶点
@@ -103,12 +103,12 @@ export function linkSide(options: ILinkSideOption) {
                 var v11 = side1[(i + 1) % orgLen];
 
                 triangles.push(v00);
-                triangles.push(v10);
+                triangles.push(v01);
                 triangles.push(v11);
 
                 triangles.push(v00);
-                triangles.push(v01);
                 triangles.push(v11);
+                triangles.push(v10);
             }
         }
     }
@@ -223,7 +223,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                     index.index += h.length
                 })
         }
-        triangles.push(...startTris);
+        triangles.push(...startTris.reverse());
     }
 
     if (options.sealEnd) {
@@ -246,7 +246,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                     index.index += h.length
                 })
         }
-        triangles.push(...endTris.reverse());
+        triangles.push(...endTris);
     }
     triangles.shapes = allVertics;
 
@@ -446,6 +446,14 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
         enableSmooth: false,
         ...options
     }
+
+    if (!vector.isCCW(options.shape))
+        options.shape.reverse();
+    if (options.holes)
+        options.holes.forEach((hole) => {
+            if (!vector.isCCW(options.shape))
+                hole.reverse();
+        })
 
     const path = new Path(options.path as any);
     const shapes = [];
@@ -670,9 +678,10 @@ export function extrude_obsolete<T extends Vec3>(shape: ArrayList<T>, arg_path: 
 
 
 export enum JoinType {
-    Bevel,
+    Square = 0,
     Round,
-    Miter
+    Miter,
+    Bevel = 0,
 }
 export enum EndType {
     Square,
@@ -680,83 +689,56 @@ export enum EndType {
     Butt
 }
 
-// /**
-//  * 
-//  * @param shape 
-//  * @param followPath 
-//  * @param options 
-//  */
-// export function extrudeNext(shape: Polygon | Polyline | Array<Vec3> | Array<number>, followPath: Array<Vec3> | Path, options: IExtrudeNextOptions = defaultExtrudeOption) {
 
-//     var shapeAry: Array<Vec3> = [];
-//     if (!isNaN(shape[0])) {
-//         //数字数组转向量数据
-//         var axis = ['x', 'y', 'z'];
-//         for (let i = 0; i < shape.length; i += options.vecdim!) {
-//             var pt: any = new Vec3();
-//             for (let j = 0; j < options.vecdim!; j++) {
-//                 pt[axis[j]] = shape[i + j];
-//             }
-//             shapeAry.push(pt);
-//         }
-//         shape = shapeAry;
-//     }
-
-//     //截面所在的平面
-
-//     if (!recognitionCCW(shape as Vec3[])) {
-//         //逆时针
-//         shape.reverse();
-//     }
-//     if (!options.normal) {
-//         //识别法线
-//         options.normal = recognitionPlane(shape).normal;
-//     }
-//     //旋转到xy平面
-
-//     if (options.center) {
-//         //偏移
-//         translate(shape, options.center)
-//     }
-
-//     const shapepath = new Path(shape);
-//     let insertNum = 0;
-//     for (let i = 1; i < shapepath.length - 1; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
-//         if (Math.acos(shapepath[i].tangent.dot(shapepath[i + 1].tangent)) > options.smoothAngle!)
-//             shape.splice(i + insertNum++, 0, shapepath[i].clone());
-//     }
-
-//     if (options.sealStart) {
-
-//     }
-
-//     if (options.sealEnd) {
-
-//     }
+export interface IExtrudeOptionsNext {
+    shape: Array<Vec3 | IVec3 | Vec2 | IVec2>;//shape默认的矩阵为正交矩阵
+    path: Array<Vec3 | IVec3>;
+    ups?: Array<Vec3 | IVec3>;
+    up?: Vec3 | IVec3;
+    right?: Vec3;
+    shapeClosed?: boolean;//闭合为多边形 界面
+    pathClosed?: boolean;//首尾闭合为圈
+    textureEnable?: boolean;
+    smoothAngle?: number;
+    enableSmooth?: boolean;
+    sealStart?: boolean;
+    sealEnd?: boolean;
+    normal?: Vec3,
+    autoIndex?: boolean,
+    axisPlane?: AxisPlane,
+    generateUV?: boolean,
+    index?: { index: number },
+    holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[]
+    jtType?: JoinType;
+    etType?: EndType
+}
+/**
+ * 
+ * @param shape 
+ * @param followPath 
+ * @param options 
+ */
+export function extrudeNext(option: IExtrudeOptionsNext) {
+    const path = option.path;
+    const shape = option.shape;
+    unique(path, (a, b) => a.equals(b));
+    unique(shape, (a, b) => a.equals(b));
 
 
-//     //计算截面uv 
-//     for (let i = 0; i < shape.length; i++) {
-//         const pt = shape[i];
-//         pt.u = pt.tlen;
+    switch (option.jtType) {
+        case JoinType.Square: //切角
 
-//         var linkShapes = [];
-//         for (let i = 1; i < followPath.length - 1; i++) {
-//             const node = followPath[i];
-//             var dir = node.tangent;
-//             var newShape = clone(shape);
+            break;
+        case JoinType.Round://圆角
 
-//             //节点平分线
-//             const pnormal = followPath[i + 1].clone().sub(followPath[i]).normalize().add(followPath[i].clone().sub(followPath[i - 1]).normalize()).normalize();
-//             const jointPlane = Plane.setFromPointNormal(node, pnormal);
-//             jointPlane.negate();
-//             var projectDir = v3().subVecs(node, followPath[i - 1]).normalize();
+            break;
 
-//             projectOnPlane(newShape, jointPlane, projectDir);
+        case JoinType.Miter://直角
 
-//             linkShapes.push(newShape);
-//         }
+            break;
 
-//         linksToGeometry(linkShapes);
-//     }
-// }
+        default:
+            break;
+    }
+
+}
