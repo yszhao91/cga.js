@@ -892,8 +892,24 @@ export class Mat4 {
     return this;
   }
 
-  makeShear(x: number, y: number, z: number) {
-    this.set(1, y, z, 0, x, 1, z, 0, x, y, 1, 0, 0, 0, 0, 1);
+
+  /**
+   *  6个参数 都是由两个值来影响  [v1][v2]  v1表示v2轴在v1轴产生效果
+   * @param xy  
+   * @param xz 
+   * @param yx 
+   * @param yz 
+   * @param zx 
+   * @param zy 
+   * @returns 
+   */
+  makeShear(xy: number, xz: number, yx: number, yz: number, zx: number, zy: number) {
+    this.set(
+      1, yx, zx, 0,
+      xy, 1, zy, 0,
+      xz, yz, 1, 0,
+      0, 0, 0, 1
+    );
 
     return this;
   }

@@ -12,7 +12,7 @@ import { Vec2 } from '../math/Vec2';
 import { Polygon } from '../struct/3d/Polygon';
 import { Polyline } from '../struct/3d/Polyline';
 import { Path } from '../struct/3d/Path';
-import { clone, rotateByUnitVectors, verctorToNumbers } from './common';
+import { clone, rotateByUnitVectors, verctorToNumbers, angle } from './common';
 import { applyMat4, projectOnPlane, translate } from './pointset';
 import { indexable } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
@@ -23,6 +23,7 @@ import { IGeometry } from '../render/geometry';
 import { RADIANS_PER_DEGREE } from '../math/Math';
 import { vector } from '../math/vector';
 import { ArrayList } from '../struct/data/ArrayList';
+import { Plane } from '../struct/3d/Plane';
 
 export interface ILinkSideOption {
     side0: { x: number, y: number, z: number, index?: number }[] | number[];//可能是点  也可能是索引
@@ -691,14 +692,14 @@ export enum EndType {
 
 
 export interface IExtrudeOptionsNext {
-    shape: Array<Vec3 | IVec3 | Vec2 | IVec2>;//shape默认的矩阵为正交矩阵
+    shape: Array<Vec3>;//shape默认的矩阵为正交矩阵
     path: Array<Vec3 | IVec3>;
-    ups?: Array<Vec3 | IVec3>;
-    up?: Vec3 | IVec3;
-    right?: Vec3;
+    up?: Array<Vec3 | IVec3> | Vec3 | IVec3;
+    right?: Array<Vec3> | Vec3;
     shapeClosed?: boolean;//闭合为多边形 界面
     pathClosed?: boolean;//首尾闭合为圈
     textureEnable?: boolean;
+    shapeCenter?: Vec3; //shape的中心点  模型是零点
     smoothAngle?: number;
     enableSmooth?: boolean;
     sealStart?: boolean;
@@ -711,21 +712,51 @@ export interface IExtrudeOptionsNext {
     holes?: Array<Vec3 | IVec3 | Vec2 | IVec2>[]
     jtType?: JoinType;
     etType?: EndType
+    bevelSize?: any;
 }
+
+const _plane1 = new Plane()
 /**
- * 
+ * 将路径看做挤压操作中心
+ *  
  * @param shape 
  * @param followPath 
  * @param options 
  */
-export function extrudeNext(option: IExtrudeOptionsNext) {
-    const path = option.path;
-    const shape = option.shape;
+export function extrudeNext(options: IExtrudeOptionsNext) {
+    const path = options.shapeCenter ? translate(options.path, options.shapeCenter!, false) : options.path;
+    const shape = options.shape;
     unique(path, (a, b) => a.equals(b));
     unique(shape, (a, b) => a.equals(b));
 
+    const pathPath: Path<Vec3> = new Path(path, options.shapeClosed, true);
 
-    switch (option.jtType) {
+    const starti = options.shapeClosed ? 0 : 1;
+
+
+
+    let shapePath: Path<Vec3> | any = new Path(shape, options.shapeClosed);
+
+    if (options.enableSmooth)
+        for (let i = 1; i < shapePath.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
+            if (shapePath.get(i).direction.dot(shapePath.get((i + 1) % shapePath.length).direction) < options.smoothAngle!) {
+                shapePath.splice(i + 1, 0, shapePath.get(i).clone());
+                i++;
+            }
+        }
+
+
+
+    options.normal = options.normal || Vec3.UnitZ;
+    if (isUndefined(shapePath.first.z)) {
+        shapePath.array = shapePath.array.map((e: any) => v3(e.x, e.y, 0));
+    }
+
+    var up = options.up;
+    var right = options.right;
+
+
+    switch (options.jtType) {
         case JoinType.Square: //切角
 
             break;
@@ -734,7 +765,25 @@ export function extrudeNext(option: IExtrudeOptionsNext) {
             break;
 
         case JoinType.Miter://直角
+            for (let i = starti; i < pathPath.length; i++) {
+                const p: Vec3 = pathPath.get(i);
+                const dir: Vec3 = (p as any).direction;
+                const bdir: Vec3 = (p as any).bdirection;
 
+                const angle = dir.dot(bdir);
+                _plane1.setFromPointNormal(p, (p as any).bdirection);
+                const upi = up && (Array.isArray(up) ? up[i] : up) || up || (p as any).normal;
+                const righti = right && (Array.isArray(right) ? right[i] : right) || v3().crossVecs(upi, dir).normalize();
+
+                _matrix.makeBasis(righti, upi, dir);
+                _matrix.setPosition(p);
+
+                var new_shape = shapePath.clone();
+                new_shape.applyMat4(_matrix);
+
+                _matrix.makeShear(0, 0, 0, 0, angle, 0);
+
+            }
             break;
 
         default:

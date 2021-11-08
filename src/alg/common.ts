@@ -1,6 +1,6 @@
 import { Vec3, v3 } from '../math/Vec3';
 import { Point } from '../struct/3d/Point';
-import { gPrecision } from '../math/Math';
+import { delta4 } from '../math/Math';
 import { Line } from '../struct/3d/Line';
 import { circle, Circle } from '../struct/3d/Circle';
 import { Quat } from '../math/Quat';
@@ -285,7 +285,7 @@ export function recognitionPlane(points: Vec3[] | any) {
  * @param {*} precision 
  * @returns {Boolean|Plane} 如果在同一个平面返回所在平面，否则返回false 
  */
-export function isInOnePlane(points: Vec3[] | any, precision = gPrecision) {
+export function isInOnePlane(points: Vec3[] | any, precision = delta4) {
     var plane = recognitionPlane(points);
     for (let i = 0; i < points.length; i++) {
         const pt = points[i];
@@ -313,10 +313,10 @@ export function pointsCollinear(...ps: Vec3[]) {
         var ilens = ps[i].distanceTo(ps[0]);
         var ilene = ps[i].distanceTo(ps[ps.length - 1]);
         if (ilens < ilene) {
-            if (Math.abs(ps[i].clone().sub(ps[0]).dot(sedir) - selen * ilens) > gPrecision)
+            if (Math.abs(ps[i].clone().sub(ps[0]).dot(sedir) - selen * ilens) > delta4)
                 return false
         } else {
-            if (Math.abs(ps[i].clone().sub(ps[ps.length - 1]).dot(sedir) - selen * ilene) > gPrecision)
+            if (Math.abs(ps[i].clone().sub(ps[ps.length - 1]).dot(sedir) - selen * ilene) > delta4)
                 return false
         }
     }

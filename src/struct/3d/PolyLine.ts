@@ -1,5 +1,5 @@
 import { EndType, JoinType } from "../../alg/extrude";
-import { gPrecision } from "../../math/Math";
+import { delta4 } from "../../math/Math";
 import { IVec3, Vec3 } from '../../math/Vec3';
 import { Line } from "./Line";
 import { Segment } from "./Segment";
@@ -42,7 +42,7 @@ export class Polyline<T> extends ArrayList<T> {
                 const segj = segs[j];
 
                 const disRes = segi.distanceSegment(segj);
-                if (disRes.distance! < gPrecision) {
+                if (disRes.distance! < delta4) {
                     //相交
                     segj[0].copy(disRes.closests![0])
                     segi[1].copy(disRes.closests![0])

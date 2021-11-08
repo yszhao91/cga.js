@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.64",
+  "version": "0.0.65",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",

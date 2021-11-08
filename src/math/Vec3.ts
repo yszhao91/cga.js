@@ -1,7 +1,7 @@
 import { Quat, quat } from './Quat';
 import { Mat3 } from './Mat3';
 import { Mat4 } from './Mat4';
-import { clamp, gPrecision } from './Math';
+import { clamp, delta4 } from './Math';
 import { Euler } from './Euler';
 import { DistanceResult } from '../alg/result';
 import { Line, line } from '../struct/3d/Line';
@@ -587,6 +587,11 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this.copy(vec).multiplyScalar(scalar);
   }
 
+  /**
+   * 投影到法线的所在平面  相当于平面上距离点最近的点
+   * @param planeNormal 
+   * @returns 
+   */
   projectOnPlaneNormal(planeNormal: any) {
     _vec.copy(this).projectOnVec(planeNormal);
 
@@ -595,8 +600,23 @@ export class Vec3 extends EventHandler implements IVec3 {
 
   /**
    * 投影到平面
-   * @param plane 
+   * @param normal 正交化的法线
+   * @param w  距离
+   * @returns 
    */
+  projectOnPlaneNormalDis(normal: Vec3, w: number) {
+    var scalar = normal.dot(this) - w;
+
+    _vec.copy(normal).multiplyScalar(scalar);
+
+    return this.sub(_vec);
+  }
+
+  /**
+ * 投影到平面
+ * @param plane 平面 
+ * @returns 
+ */
   projectOnPlane(plane: Plane) {
     var scalar = plane.normal.dot(this) - plane.w;
 
@@ -914,7 +934,7 @@ export class Vec3 extends EventHandler implements IVec3 {
     var PmC = this.clone().sub(circle.center);
     var QmC = PmC.clone().sub(circle.normal.clone().multiplyScalar(circle.normal.dot(PmC)));
     var lengthQmC = QmC.length();
-    if (lengthQmC > gPrecision) {
+    if (lengthQmC > delta4) {
       result.circleClosest = QmC.clone().multiplyScalar(circle.radius / lengthQmC).add(circle.center);
       result.equidistant = false;
     }

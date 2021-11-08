@@ -7,7 +7,7 @@
  * @FilePath     : \cga.js\src\struct\3d\Plane.ts
  */
 import { Vec3 } from '../../math/Vec3';
-import { approximateEqual, sign, gPrecision } from "../../math/Math";
+import { approximateEqual, sign, delta4 } from "../../math/Math";
 import { Segment } from './Segment';
 import { Orientation } from '../data/type';
 import { Triangle } from './Triangle';
@@ -229,7 +229,7 @@ class Plane {
      */
     orientationPoint(point: Vec3): Orientation {
         let signDistance = this.normal.clone().dot(point) - this.w;
-        if (Math.abs(signDistance) < gPrecision)
+        if (Math.abs(signDistance) < delta4)
             return Orientation.Intersect;
         else if (signDistance < 0)
             return Orientation.Negative;

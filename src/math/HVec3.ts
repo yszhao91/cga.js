@@ -9,7 +9,7 @@
 import { Quat, quat } from './Quat';
 import { Mat3 } from './Mat3';
 import { Mat4 } from './Mat4';
-import { clamp, gPrecision, toRadians } from './Math';
+import { clamp, delta4, toRadians } from './Math';
 import { euler, Euler } from './Euler';
 import { DistanceResult } from '../alg/result';
 import { Line, line } from '../struct/3d/Line';

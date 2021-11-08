@@ -7,9 +7,9 @@
  */
 
 
-import { Vec3 } from '../../math/Vec3';
+import { Vec3, v3 } from '../../math/Vec3';
 import { Point } from './Point';
-import { clamp } from '../../math/Math';
+import { clamp, delta6 } from '../../math/Math';
 import { Polyline } from './Polyline';
 import { isDefined } from '../../utils/types';
 // import { Polyline } from './PolyLine';
@@ -21,23 +21,33 @@ import { applyMat4 } from '../../alg/pointset';
 export interface IDistanceResut {
     isNode: boolean;//是否在节点上
     point: Vec3;
+    direction: Vec3;
 }
 
 export class Path<T extends Vec3> extends ArrayList<T> {
     _closed: boolean;
-    constructor(vs: Array<T> | ArrayList<T>, closed: boolean = false) {
+    _calcNoraml: boolean = false
+    /**
+     * 
+     * @param vs  假定是没有重复的点集
+     * @param closed 
+     * @param calcNormal 
+     */
+    constructor(vs: Array<T> | ArrayList<T>, closed: boolean = false, calcNormal: boolean = false) {
         super(vs);
         this._closed = closed;
-        this.init();
+        this.init(calcNormal);
     }
 
-    init() {
+    init(calcNormal: boolean) {
         if (this.length === 0)
             return
         this.get(0).len = 0;
         this.get(0).tlen = 0;
         this.get(0).direction = this.get(1).clone().sub(this.get(0)).normalize();
-        for (let i = 1; i < this.length; i++) {
+
+        const start = this._closed ? 0 : 1
+        for (let i = start; i < this.length; i++) {
             const e = this.get(i);
             e.len = this.get(i).distanceTo(this.get(i - 1));
             e.tlen = this.get(i - 1).tlen + e.len;
@@ -46,6 +56,24 @@ export class Path<T extends Vec3> extends ArrayList<T> {
         if (this._closed) {
             this.get(-1).direction.copy(this.get(0)).sub(this.get(-1)).normalize();
         }
+
+        if (calcNormal)
+            for (let i = start; i < this.length; i++) {
+                const d1: Vec3 = this.get(i - 1).direction
+                const d2: Vec3 = this.get(i).direction
+                if (Math.abs(d1.dot(d2) - 1) > delta6) {
+                    //应该同时考虑长度差        
+                    //TODO
+                    const normal = new Vec3();
+                    normal.cross(d1, d2).normalize();
+                    this.get(i).normal = normal;
+                    this.get(i).bdirection = v3().subVecs(d1, d2).normalize();
+                    this.get(i).bnormal = v3().crossVecs(d1, normal);
+                    this.get(i).bnormal = v3().crossVecs(d1, normal);
+                }
+            }
+
+
     }
 
 
@@ -108,7 +136,8 @@ export class Path<T extends Vec3> extends ArrayList<T> {
         if (right - left === 1) {
             return {
                 isNode: false,//是否在节点上
-                point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
+                point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len),
+                direction: this.get(left).diretion,
             }
         }
         var mid = (left + right) >> 1;
@@ -118,7 +147,8 @@ export class Path<T extends Vec3> extends ArrayList<T> {
             return this.getPointByDistance(distance, mid, right);
         else return {
             isNode: true,//是否在节点上
-            point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len)
+            point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len),
+            direction: this.get(left).direction
         }
     }
     /**

@@ -2,7 +2,7 @@ import earcut from "earcut";
 import { Vec3 } from '../math/Vec3';
 import { flat } from '../utils/array';
 import { clone, rotateByUnitVectors } from './common';
-import { gPrecision } from '../math/Math';
+import { delta4 } from '../math/Math';
 import { verctorToNumbers } from './pointset';
 
 export enum AxisPlane {
@@ -33,7 +33,7 @@ export function triangulation(inboundary: any, holes: any[] = [], options: ITria
     let feature = options.feature;
     let dim = options.dim;
     let normal = options.normal;
-    if (normal && normal.dot(Vec3.UnitZ) < 1 - gPrecision) {
+    if (normal && normal.dot(Vec3.UnitZ) < 1 - delta4) {
         boundary = clone(inboundary);
         rotateByUnitVectors(boundary, normal, Vec3.UnitZ);
     } else {

@@ -1,4 +1,9 @@
-export const gPrecision = 1e-4;
+export const delta4 = 1e-4;
+export const delta5 = 1e-5;
+export const delta6 = 1e-6;
+export const delta7 = 1e-7;
+export const delta8 = 1e-8;
+export const delta9 = 1e-9;
 
 /**
  * pi
@@ -102,7 +107,7 @@ export function sign(value: number) {
     return value >= 0 ? 1 : -1;
 }
 
-export function approximateEqual(v1: number, v2: number, precision = gPrecision) {
+export function approximateEqual(v1: number, v2: number, precision = delta4) {
     return Math.abs(v1 - v2) < precision
 }
 
@@ -197,7 +202,7 @@ export function toFixed(obj: { toFixed: (arg0: any) => string; x: number | undef
  * @param {Array} array 
  * @param {Number} precision 
  */
-export function toFixedAry(array: Array<any>, precision: number = gPrecision) {
+export function toFixedAry(array: Array<any>, precision: number = delta4) {
     for (let i = 0; i < array.length; i++) {
         const e = array[i];
         if (e instanceof Array)

@@ -6,7 +6,7 @@
  * @LastEditTime : 2021-09-10 11:15:02
  * @FilePath     : \object_framed:\github\cga.js\src\utils\array.ts
  */
-import { gPrecision, toFixed as toFixedOne } from '../math/Math';
+import { delta4, toFixed as toFixedOne } from '../math/Math';
 
 (Array.prototype as any).get = function (index: number): any {
     if (index < 0)

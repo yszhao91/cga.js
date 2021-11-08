@@ -1,6 +1,6 @@
 import { Quat } from "../math/Quat";
 import { v3, Vec3 } from "../math/Vec3";
-import { gPrecision } from "../math/Math";
+import { delta4 } from "../math/Math";
 import { Line } from "../struct/3d/Line";
 import { Plane } from "../struct/3d/Plane";
 import { Mat4 } from '../math/Mat4';
@@ -255,10 +255,10 @@ export function recognitionPlane(points: any) {
  * @param {*} precision 
  * @returns {Boolean|Plane} 如果在同一个平面返回所在平面，否则返回false 
  */
-export function isInOnePlane(points: string | any[], precision = gPrecision) {
+export function isInOnePlane(points: string | any[], precision = delta4) {
     var plane = recognitionPlane(points);
     for (let i = 0; i < points.length; i++) {
-        const pt = points[i];
+        const pt = points[i];        
         if (plane.distancePoint(pt) >= precision)
             return false;
     }

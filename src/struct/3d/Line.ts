@@ -1,7 +1,7 @@
 import { v3, Vec3 } from "../../math/Vec3";
 import { DistanceResult } from '../../alg/result';
 import { Segment } from './Segment';
-import { gPrecision } from '../../math/Math';
+import { delta4 } from '../../math/Math';
 import { Ray } from './Ray';
 import { Triangle } from './Triangle';
 import { Polyline } from './Polyline';
@@ -226,7 +226,7 @@ export class Line {
     var normal = edge0.clone().cross(edge1).normalize();
     var NdD = normal.dot(this.direction);
 
-    if (Math.abs(NdD) >= gPrecision) {
+    if (Math.abs(NdD) >= delta4) {
       // The line and triangle are not parallel, so the line
       // intersects/ the plane of the triangle.
       var diff = this.origin.clone().sub(triangle.p0);
@@ -311,7 +311,7 @@ export class Line {
       if (!result || (result as any).distance < (oneres as any).distance) {
         result = oneres;
       }
-      if ((result as any).distance < gPrecision) {
+      if ((result as any).distance < delta4) {
         maodian = i;
         break;
       }
