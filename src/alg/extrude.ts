@@ -9,10 +9,11 @@
 
 import { Vec3, v3, IVec3, IVec2 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
+import { quat } from '../math/Quat';
 import { Polygon } from '../struct/3d/Polygon';
 import { Polyline } from '../struct/3d/Polyline';
 import { Path } from '../struct/3d/Path';
-import { clone, rotateByUnitVectors, verctorToNumbers, angle } from './common';
+import { clone, rotateByUnitVectors, verctorToNumbers, angle, applyQuat, scale } from './common';
 import { applyMat4, projectOnPlane, translate } from './pointset';
 import { indexable } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
@@ -412,6 +413,9 @@ export interface IExtrudeOptionsEx {
 }
 
 const _matrix = m4();
+const _matrix1 = m4();
+const _quat = quat();
+const _quat1 = quat();
 const _vec1 = v3();
 /**
  * @description : 挤压形状生成几何体
@@ -467,13 +471,11 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
 
     if (options.enableSmooth)
         for (let i = 1; i < shapePath.length; i++) { //大角度插入点 角度过大为了呈现flat shader的效果
-            if (shapePath.get(i).direction.dot(shapePath.get((i + 1) % shapePath.length).direction) < options.smoothAngle!) {
+            if (shapePath.get(i).direction.dot(shapePath.get((i + 1) % shapePath.length).direction) < Math.cos(options.smoothAngle!)) {
                 shapePath.splice(i + 1, 0, shapePath.get(i).clone());
                 i++;
             }
         }
-
-
 
     const ups = options.ups || [];
     if (isUndefined(shapePath.first.z)) {
@@ -715,7 +717,7 @@ export interface IExtrudeOptionsNext {
     bevelSize?: any;
 }
 
-const _plane1 = new Plane()
+
 /**
  * 将路径看做挤压操作中心
  *  
@@ -724,16 +726,24 @@ const _plane1 = new Plane()
  * @param options 
  */
 export function extrudeNext(options: IExtrudeOptionsNext) {
+    options = {
+        sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
+        generateUV: true,
+        autoIndex: true,
+        axisPlane: AxisPlane.XY,
+        smoothAngle: 30 * RADIANS_PER_DEGREE,
+        enableSmooth: false,
+        ...options
+    }
+
     const path = options.shapeCenter ? translate(options.path, options.shapeCenter!, false) : options.path;
     const shape = options.shape;
     unique(path, (a, b) => a.equals(b));
     unique(shape, (a, b) => a.equals(b));
 
-    const pathPath: Path<Vec3> = new Path(path, options.shapeClosed, true);
+    const pathPath: Path<Vec3> = new Path(path, options.pathClosed, true);
 
     const starti = options.shapeClosed ? 0 : 1;
-
-
 
     let shapePath: Path<Vec3> | any = new Path(shape, options.shapeClosed);
 
@@ -745,8 +755,6 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
             }
         }
 
-
-
     options.normal = options.normal || Vec3.UnitZ;
     if (isUndefined(shapePath.first.z)) {
         shapePath.array = shapePath.array.map((e: any) => v3(e.x, e.y, 0));
@@ -755,7 +763,11 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
     var up = options.up;
     var right = options.right;
 
-
+    const shapes = [], newholes: any = [];
+    const accMat = m4();
+    /**
+     * 如果路径闭合  要考虑首尾shape矩阵变化后还能一致吻合
+     */
     switch (options.jtType) {
         case JoinType.Square: //切角
 
@@ -765,29 +777,80 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
             break;
 
         case JoinType.Miter://直角
-            for (let i = starti; i < pathPath.length; i++) {
+            for (let i = 0; i < pathPath.length; i++) {
                 const p: Vec3 = pathPath.get(i);
                 const dir: Vec3 = (p as any).direction;
                 const bdir: Vec3 = (p as any).bdirection;
+                const bnormal: Vec3 = (p as any).bnormal;
+                const normal: Vec3 = (p as any).normal;
 
-                const angle = dir.dot(bdir);
-                _plane1.setFromPointNormal(p, (p as any).bdirection);
-                const upi = up && (Array.isArray(up) ? up[i] : up) || up || (p as any).normal;
-                const righti = right && (Array.isArray(right) ? right[i] : right) || v3().crossVecs(upi, dir).normalize();
+                //相邻两个向量发生的旋转
+                if (i === 0) {
+                    _quat.setFromUnitVecs(Vec3.UnitZ, dir);
+                }
+                else { _quat.setFromUnitVecs(pathPath.get(i - 1).direction, dir); }
 
-                _matrix.makeBasis(righti, upi, dir);
+                let new_shape: Path<Vec3> = shapePath.clone();
+
+                //旋转
+                _matrix.makeRotationFromQuat(_quat);
+                accMat.premultiply(_matrix)
+
+
+                _quat.setFromUnitVecs(dir, bdir);
+                _matrix.makeRotationFromQuat(_quat);
+                _matrix.multiply(accMat);
+
+                // /旋转到原地缩放----开始-----------------------
+                let cosA = dir.dot(bdir);
+                const shear = 1 / cosA;
+
+                _vec1.crossVecs(normal, bdir);
+
+                _matrix1.copy(_matrix);
+                _matrix1.invert();
+                _vec1.applyMat4(_matrix1);
+
+                _quat.setFromUnitVecs(_vec1, Vec3.Up)
+                _matrix1.makeRotationFromQuat(_quat);
+                new_shape.applyMat4(_matrix1)
+                new_shape.scale(1, shear, 1)
+                new_shape.applyMat4(_matrix1.invert());
+                // /旋转到原地缩放----结束-----------------------
+
+                //位置
                 _matrix.setPosition(p);
-
-                var new_shape = shapePath.clone();
                 new_shape.applyMat4(_matrix);
 
-                _matrix.makeShear(0, 0, 0, 0, angle, 0);
+                // if (options.holes) {
+                //     const mholes = applyMat4(options.holes, _matrix1, false);
+                //     applyMat4(mholes, _matrix, true);
+                //     newholes.push(mholes);
+                // }  
 
+
+                shapes.push(new_shape);
             }
             break;
 
         default:
             break;
     }
+
+    const geo: IGeometry = linkSides({
+        shapes: shapes.map((e: Path<Vec3>) => e.array),
+        holes: newholes,
+        orgShape: shapePath._array,
+        orgHoles: options.holes,
+        sealStart: options.sealStart,
+        sealEnd: options.sealEnd,
+        shapeClosed: options.shapeClosed,
+        pathClosed: options.pathClosed,
+        axisPlane: options.axisPlane,
+        autoIndex: options.autoIndex,
+        generateUV: options.generateUV,
+    })
+
+    return geo;
 
 }

@@ -17,6 +17,7 @@ import { Polygon } from './Polygon';
 import { ArrayList } from '../data/ArrayList';
 import { Mat4 } from '../../math/Mat4';
 import { applyMat4 } from '../../alg/pointset';
+import { scale } from '../../alg/common';
 
 export interface IDistanceResut {
     isNode: boolean;//是否在节点上
@@ -44,34 +45,56 @@ export class Path<T extends Vec3> extends ArrayList<T> {
             return
         this.get(0).len = 0;
         this.get(0).tlen = 0;
-        this.get(0).direction = this.get(1).clone().sub(this.get(0)).normalize();
 
-        const start = this._closed ? 0 : 1
-        for (let i = start; i < this.length; i++) {
+        const end = this.length;
+        for (let i = 0; i < end; i++) {
             const e = this.get(i);
             e.len = this.get(i).distanceTo(this.get(i - 1));
             e.tlen = this.get(i - 1).tlen + e.len;
-            this.get(i).direction = this.get(i).clone().sub(this.get(i - 1)).normalize();
+            this.get(i).direction = this.get((i + 1) % this.length).clone().sub(this.get(i)).normalize();
         }
-        if (this._closed) {
-            this.get(-1).direction.copy(this.get(0)).sub(this.get(-1)).normalize();
+        if (!this._closed) {
+            this.get(-1).direction.copy(this.get(-2).direction);
         }
 
-        if (calcNormal)
-            for (let i = start; i < this.length; i++) {
-                const d1: Vec3 = this.get(i - 1).direction
-                const d2: Vec3 = this.get(i).direction
-                if (Math.abs(d1.dot(d2) - 1) > delta6) {
-                    //应该同时考虑长度差        
-                    //TODO
-                    const normal = new Vec3();
-                    normal.cross(d1, d2).normalize();
-                    this.get(i).normal = normal;
-                    this.get(i).bdirection = v3().subVecs(d1, d2).normalize();
-                    this.get(i).bnormal = v3().crossVecs(d1, normal);
-                    this.get(i).bnormal = v3().crossVecs(d1, normal);
-                }
+        if (calcNormal) {
+            for (let i = 0; i < end; i++) {
+                const d1: Vec3 = this.get(i - 1).direction;
+                const d2: Vec3 = this.get(i).direction;
+                // if (Math.abs(d1.dot(d2) - 1) > delta6) {
+                //应该同时考虑长度差        
+                //normal是两条线段所在的平面的法线
+                //bdirection是两条方向线的等分线
+                //TODO
+                const normal = new Vec3();
+                normal.crossVecs(d1, d2).normalize();
+                this.get(i).normal = normal;
+                const bdir = v3().addVecs(d1, d2).normalize();
+                this.get(i).bdirection = bdir;
+                this.get(i).bnormal = v3().crossVecs(bdir, normal).normalize();
+                // }
             }
+
+            if (!this._closed) { //不闭合路径 最后一个点没有
+                this.get(-1).bdirection = v3()
+                this.get(-1).normal = v3()
+                this.get(-1).bnormal = v3()
+            }
+
+            if (!this._closed) {
+                // 不闭合的情况下怎么样去计算端点的up和normal
+                this.get(0).normal.copy(this.get(1).normal)
+                this.get(0).bdirection.copy(this.get(0).direction)
+                let bdir = this.get(0).bdirection;
+                this.get(0).bnormal.crossVecs(bdir, this.get(0).normal)
+
+                this.get(-1).normal.copy(this.get(-2).normal)
+                this.get(-1).bdirection.copy(this.get(-1).direction)
+                bdir = this.get(-1).bdirection;
+                this.get(-1).bnormal.crossVecs(bdir, this.get(-1).normal).normalize();
+            }
+        }
+
 
 
     }
@@ -91,9 +114,14 @@ export class Path<T extends Vec3> extends ArrayList<T> {
         return Math.max(this.get(-1).tlen, this.get(0).tlen);
     }
 
-    applyMat4(mat4: Mat4,) {
+    applyMat4(mat4: Mat4) {
         applyMat4(this._array, mat4);
     }
+
+    scale(x: number, y: number, z: number) {
+        scale(this._array, v3(x, y, z), true);
+    }
+
 
 
     /**

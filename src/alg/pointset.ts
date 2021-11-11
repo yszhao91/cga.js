@@ -131,23 +131,6 @@ export function rotateByUnitVecs(points: any, vFrom: any, vTo: any, ref = true) 
 
 
 /**
- * 缩放
- * @param {*} points 
- * @param {*} axis 
- * @param {*} angle 
- * @param {*} ref 
- */
-export function scale(points: any, scale: (arg0: any[]) => any, ref = true) {
-    if (ref) {
-        points.flat(Infinity).forEach((point: { scale: { multiply: (arg0: any) => void; }; }) => {
-            point.scale.multiply(scale);
-        });
-        return points;
-    }
-    return scale(clone(points));
-}
-
-/**
  * 响应矩阵
  * @param {*} points 
  * @param {*} axis 
@@ -258,7 +241,7 @@ export function recognitionPlane(points: any) {
 export function isInOnePlane(points: string | any[], precision = delta4) {
     var plane = recognitionPlane(points);
     for (let i = 0; i < points.length; i++) {
-        const pt = points[i];        
+        const pt = points[i];
         if (plane.distancePoint(pt) >= precision)
             return false;
     }
