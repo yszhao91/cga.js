@@ -1,7 +1,10 @@
 import { v3, Vec3 } from '../../math/Vec3';
 import { DistanceResult } from '../../alg/result';
+import { Plane } from './Plane';
+import { IDistanceResut } from './Path';
 
 export class Segment extends Array {
+
   center: Vec3;
   extentDirection: Vec3;
   extentSqr: number;
@@ -16,14 +19,27 @@ export class Segment extends Array {
   constructor(_p0: Vec3 = v3(), _p1: Vec3 = v3()) {
     super();
     Object.setPrototypeOf(this, Segment.prototype);
-    this.push(_p0, _p1);
-    this.center = _p0.clone()
-      .add(_p1)
-      .multiplyScalar(0.5);
-    this.extentDirection = _p1.clone().sub(_p0);
+    this.push(v3().copy(_p0), v3().copy(_p1));
+    this.center = v3().addVecs(_p0, _p1).multiplyScalar(0.5);
+    this.extentDirection = v3().subVecs(_p1, _p0);
     this.extentSqr = this.extentDirection.lengthSq();
     this.extent = Math.sqrt(this.extentSqr);
-    this.direction = this.extentDirection.clone().normalize();
+    this.direction = v3().copy(this.extentDirection).normalize();
+  }
+
+  set(p0: Vec3, p1: Vec3) {
+    this[0].copy(p0);
+    this[0].copy(p1);
+
+    this.change();
+  }
+
+  private change() {
+    this.center.addVecs(this[1], this[0]).multiplyScalar(0.5)
+    this.extentDirection.subVecs(this[1], this[0]);
+    this.extentSqr = this.extentDirection.lengthSq();
+    this.extent = Math.sqrt(this.extentSqr);
+    this.direction.copy(this.extentDirection.clone()).normalize();
   }
 
 
@@ -33,6 +49,7 @@ export class Segment extends Array {
 
   set p0(v: Vec3) {
     this[0].copy(v);
+    this.change();
   }
 
   get p1() {
@@ -41,6 +58,7 @@ export class Segment extends Array {
 
   set p1(v: Vec3) {
     this[1].copy(v);
+    this.change();
   }
 
   offset(distance: number, normal: Vec3 = Vec3.UnitY) {
@@ -283,13 +301,24 @@ export class Segment extends Array {
     return result;
   }
 
+
+  distancePlane(plane: Plane) {
+    const result: DistanceResult = {
+      parameters: [],
+      closests: []
+    };
+
+    plane.orientationPoint(this.p0)
+
+  }
+
   //---Intersect--------------------------------------------------------------------------------------------
 
   intersectSegment(segment: Segment) {
     const result = {
       colinear: false,
       intersected: false,
-      
+
     }
   }
 }

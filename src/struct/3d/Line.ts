@@ -5,6 +5,9 @@ import { delta4 } from '../../math/Math';
 import { Ray } from './Ray';
 import { Triangle } from './Triangle';
 import { Polyline } from './Polyline';
+import { Plane } from "./Plane";
+
+const _v1 = new Vec3;;
 
 export class Line {
 
@@ -16,12 +19,20 @@ export class Line {
       .normalize();
   }
 
+  set(origin: Vec3, end: Vec3) {
+    this.origin.copy(origin)
+    this.end.copy(end);
+
+    return this;
+  }
+
   distancePoint(pt: Vec3): DistanceResult {
     var res: DistanceResult = pt.distanceLine(this)!;
     // res.closests?.reverse();
     // res.parameters?.reverse();
     return res;
   }
+
 
   distanceSegment(segment: Segment): DistanceResult {
     var result: DistanceResult = {
@@ -324,6 +335,41 @@ export class Line {
       segmentIndex: maodian,
     }
   }
+
+  //---intersect--------------------------
+
+  /**
+   * 线与平面相交
+   * @param plane 
+   * @param result 
+   */
+  intersectPlane(plane: Plane, result?: Vec3): Vec3 | undefined {
+    if (!result)
+      result = new Vec3();
+
+    const direction = this.direction;
+    const denominator = plane.normal.dot(direction);
+
+    if (denominator === 0) {
+      // line is coplanar, return origin
+      if (this.distancePoint(this.origin).distance === 0) {
+        return result.copy(this.origin);
+      } // Unsure if this is the correct method to handle this case.
+
+
+      return;
+    }
+
+    const t = -(this.origin.dot(plane.normal) - plane.w) / denominator;
+
+    if (t < 0 || t > 1) {
+      return;
+    }
+
+    return result.copy(direction).multiplyScalar(t).add(this.origin);
+
+  }
+
 }
 
 export function line(start?: Vec3, end?: Vec3) {

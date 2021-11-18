@@ -49,8 +49,10 @@ export class Path<T extends Vec3> extends ArrayList<T> {
         const end = this.length;
         for (let i = 0; i < end; i++) {
             const e = this.get(i);
-            e.len = this.get(i).distanceTo(this.get(i - 1));
-            e.tlen = this.get(i - 1).tlen + e.len;
+            if (i !== 0) {
+                e.len = this.get(i).distanceTo(this.get(i - 1));
+                e.tlen = this.get(i - 1).tlen + e.len;
+            }
             this.get(i).direction = this.get((i + 1) % this.length).clone().sub(this.get(i)).normalize();
         }
         if (!this._closed) {

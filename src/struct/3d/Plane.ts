@@ -13,8 +13,13 @@ import { Orientation } from '../data/type';
 import { Triangle } from './Triangle';
 import { IGeometry } from '../../render/geometry';
 import { ISplitResult } from '../../alg/split';
+import { Line } from './Line';
+import { Polyline } from './Polyline';
+import { Path } from './Path';
+import { indexable } from '../../render/mesh';
 
 class Plane {
+
     normal: Vec3;
     w: number;
     origin: Vec3;
@@ -34,6 +39,25 @@ class Plane {
     setFromPointNormal(p: Vec3, normal: Vec3) {
         this.normal = normal;
         this.w = p.dot(normal)
+    }
+    set(normal: Vec3, w: number) {
+        this.normal = normal;
+        this.w = w;
+    }
+
+
+    setComponents(x: number, y: number, z: number, w: number) {
+        this.normal.set(x, y, z);
+        this.w = w;
+        return this;
+    }
+
+    normalize() {
+        const inverseNormalLength = 1.0 / this.normal.length();
+        this.normal.multiplyScalar(inverseNormalLength);
+        this.w *= inverseNormalLength;
+
+        return this;
     }
 
     setFromThreePoint(p0: Vec3, p1: Vec3, p2: Vec3) {
@@ -101,6 +125,13 @@ class Plane {
 
         return null;
     }
+
+
+    intersectLine(line: Line, result?: Vec3) {
+        return line.intersectPlane(this, result)
+    }
+
+
     /**
        * 切割线段 代码完成  等待测试
        * @param {Segment} segment 
@@ -144,6 +175,7 @@ class Plane {
             var intersectPoint = this.normal.clone().multiplyScalar(dist).add(segment[0]);
             result.positive.push(intersectPoint);
             result.negative.push(intersectPoint);
+            result.intersectPoint = intersectPoint;
         }
 
         return result;
@@ -219,6 +251,33 @@ class Plane {
         }
 
         return result;
+    }
+
+    /**
+     * 平面切割线段
+     * @param polyVS 
+     */
+    splitPolyVS(polyVS: Vec3[]) {
+        polyVS = [...polyVS];
+        indexable(polyVS);
+
+        let jd0 = -1;//找出第一个交点 
+        let jdp0: any;//找出第一个交点 
+        let lastOriention = this.orientationPoint(polyVS[0]);
+        for (let i = 0; i < polyVS.length - 1; i++) {
+            const v = polyVS[i];
+            const oriention = this.orientationPoint(v);
+            if (oriention === Orientation.Common || lastOriention !== Orientation.None && lastOriention !== oriention) {
+                jd0 = i;
+                jdp0 = v.clone();
+                lastOriention = oriention;
+                break;
+            }
+            lastOriention = oriention;
+            //TODO
+        }
+
+
     }
 
     //---orientation------------------------------
