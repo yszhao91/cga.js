@@ -19,11 +19,8 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 [文档与演示（github）](https://yszhao91.github.io/cga.js/)
 
 - [点与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distPointAll.html](http://dcgraph.gitee.io/cga.js/guide/distPointAll.html)
-
 - [线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distLineAll.html](http://dcgraph.gitee.io/cga.js/guide/distLineAll.html)
-
 - [射线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distRayAll.html](http://dcgraph.gitee.io/cga.js/guide/distRayAll.html)
-
 - [线段与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html)
 - [常用 https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html)
 
@@ -125,8 +122,6 @@ npm run dev  //运行项目，自己更改源码测试
 > ```
 
 ### delauny 三角网构建
-
-> ![三角剖分](./docs/.vuepress/public/delaunay.png)
 
 > ```js
 > var vs = [];
@@ -233,8 +228,20 @@ simplifyPointList(points, maxDistance, maxAngle);
 
 ## 讨论
 
-> QQ 群：284389784 by: dc
+> QQ 群：284389784 by: 贵阳赵耀圣
 
 > 本人 2013 接触从事 webgl/threejs 工作，开发经验 7 年左右，一直以来都想着开源，结交更多志同道合的朋友,可接 threejs 项目
 
-> 其他开源项目 看我的 github 主页 地址：<https://github.com/yszhao91> 欢迎大家 follow star,希望开源能帮到大家
+> 其他开源项目 看我的 github 主页 地址：[https://github.com/yszhao91](https://github.com/yszhao91) 欢迎大家 follow star,希望开源能帮到大家
+
+## 吃包子
+
+如果觉得这个项目对你有帮助，可以请我吃个包子
+
+支付宝：
+
+![1640758500266.png](image/readme/1640758500266.png)
+
+微信：
+
+![1640758513361.png](image/readme/1640758513361.png)
