@@ -13,6 +13,12 @@ export class Sphere {
         this.radius = radius;
     }
 
+    setComponents(cx: number, cy: number, cz: number, radius: number) {
+        this.center.set(cx, cy, cz);
+        this.radius = radius;
+        return this;
+    }
+
     copy(sphere: Sphere) {
         this.center.copy(sphere.center)
         this.radius = sphere.radius;

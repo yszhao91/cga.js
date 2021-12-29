@@ -62,42 +62,6 @@ export function vectorCompare(a: any | Vec3, b: any | Vec3) {
 }
 
 /**
- * 将向量拆解为数字
- * @param {Array} points 
- * @param {String} feature 
- * @returns {Array<Number>} 数字数组
- */
-export function verctorToNumbers(points: any, feature = "xyz"): any {
-    if (!(points instanceof Array)) {
-        console.error("传入参数必须是数组");
-        return;
-    }
-
-    var numbers: any = [];
-    if (points[0].x !== undefined && points[0].y !== undefined && points[0].z !== undefined) {
-        for (var i = 0; i < points.length; i++) {
-            for (let j = 0; j < feature.length; j++) {
-                numbers.push(points[i][feature[j]]);
-            }
-        }
-    } else if (points[0].x !== undefined && points[0].y !== undefined)
-        for (var i = 0; i < points.length; i++) {
-            numbers.push(points[i].x);
-            numbers.push(points[i].y);
-        }
-    else if (points[0] instanceof Array) {
-        for (var i = 0; i < points.length; i++) {
-            if (points[i].length > 0)
-                numbers = numbers.concat(verctorToNumbers(points[i]));
-        }
-    } else {
-        console.error("数组内部的元素不是向量");
-    }
-
-    return numbers;
-}
-
-/**
  * 计算包围盒
  * @param {*} points  点集
  * @returns {Array[min,max]} 返回最小最大值

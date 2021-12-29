@@ -10,9 +10,11 @@
 
 import { Polygon } from "../struct/3d/Polygon"
 import { Polyline } from "../struct/3d/Polyline"
-import { Vec2 } from "./Vec2"
+import { Vec2 } from './Vec2';
 import { Vec3 } from './Vec3';
 import { ArrayList } from '../struct/data/ArrayList';
+import { Vec4 } from './Vec4';
+import { delta4 } from './Math';
 
 
 
@@ -20,12 +22,30 @@ const ckeckVec = (vs: any, component: number) => {
     if (vs.length % component !== 0)
         throw ("向量组件数量不一样")
 }
-
-export class vector {
+/**
+ * 矢量几何操作，数字数组/矢量数组，常用工具集合
+ */
+export default class vector {
     /**
-     * 检测相邻没有重复点
+     * 去除相邻的重复向量
+     * @param vs 矢量集合
+     * @param delta 误差 
+     * @returns 
      */
-    static uniqueNeighbor(vs: number[], component: number = 3) {
+    static uniqueNeighborVecs(vs: Array<Vec3>, delta: number = delta4) {
+
+        for (let i = 0; i < vs.length - 1; i++) {
+            const lenSq = vs[i].distanceTo(vs[i + 1])
+            if (lenSq < delta)
+                vs.splice(i, 1);
+        }
+
+        return vs;
+    }
+    /**
+     * 去除相邻没有重复点
+     */
+    static uniqueNeighbor(vs: number[], component: number = 3, delta: number = delta4) {
 
         for (let i = 0; i < vs.length; i += component) {
             for (let j = i + 3; j < vs.length;) {
@@ -34,8 +54,8 @@ export class vector {
                     lensq += (vs[i + c] - vs[j + c]) * (vs[i + c] - vs[j + c])
                 }
 
-                if (Math.sqrt(lensq) < 1e-5)
-                    vs.splice(j, component)
+                if (Math.sqrt(lensq) < delta)
+                    vs.splice(j, component);
                 else
                     break;
             }
@@ -276,4 +296,83 @@ export class vector {
         return d > 0;
     }
 
+
+
+
+    /**
+     * 将向量深度拆解为数字
+     * @param {Array} Array<Vec4 | Vec3 | Vec2 | any> | any 
+     * @param {String} comSort  'x','y','z','w' 按顺序选取后自由组合
+     * @returns {Array<Number>} 数字数组 
+     */
+    static verctorToNumbers(vecs: Array<Vec4 | Vec3 | Vec2 | any> | any, comSort = "xyz"): number[] {
+        if (!(vecs instanceof Array)) {
+            console.error("传入参数必须是数组");
+            return [];
+        }
+
+        var numbers: number[] = [];
+        if (vecs[0].x !== undefined && vecs[0].y !== undefined && vecs[0].z !== undefined && vecs[0].w !== undefined) {
+            comSort = comSort.length !== 4 ? 'xyzw' : comSort;
+            for (var i = 0; i < vecs.length; i++) {
+                for (let j = 0; j < comSort.length; j++) {
+                    numbers.push(vecs[i][comSort[j]]);
+                }
+            }
+        }
+        if (vecs[0].x !== undefined && vecs[0].y !== undefined && vecs[0].z !== undefined) {
+            comSort = comSort.length !== 3 ? 'xyz' : comSort;
+            for (var i = 0; i < vecs.length; i++) {
+                for (let j = 0; j < comSort.length; j++) {
+                    numbers.push(vecs[i][comSort[j]]);
+                }
+            }
+        } else if (vecs[0].x !== undefined && vecs[0].y !== undefined) {
+            comSort = comSort.length !== 2 ? 'xy' : comSort;
+            for (var i = 0; i < vecs.length; i++) {
+                for (let j = 0; j < comSort.length; j++) {
+                    numbers.push(vecs[i][comSort[j]]);
+                }
+            }
+        }
+        else if (vecs[0] instanceof Array) {
+            for (var i = 0; i < vecs.length; i++) {
+                numbers = numbers.concat(vector.verctorToNumbers(vecs[i]));
+            }
+        } else {
+            console.error("数组内部的元素不是向量");
+        }
+
+        return numbers;
+    }
+
+    static vec(component: number = 3) {
+        if (component === 2)
+            return new Vec2;
+        if (component === 3)
+            return new Vec3;
+        if (component === 4)
+            return new Vec4;
+
+        throw ('暂时不支持4维以上的矢量')
+    }
+
+    /**
+     * 数字数组 转 适量数组
+     * @param vss  数字数组
+     * @param component 矢量维度，默认为3
+     * @returns 
+     */
+    static numbersToVecs(vss: number[], component: number = 3): Vec2[] | Vec3[] | Vec4[] {
+        const result: any = []
+        const length = vss.length;
+
+        for (let i = 0; i < length; i += component) {
+            const vec = vector.vec(component);
+            vec.fromArray(vss.slice(i, i + component));
+            result.push(vec);
+        }
+
+        return result;
+    }
 }

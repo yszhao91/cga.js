@@ -6,24 +6,7 @@
  * @LastEditTime : 2021-08-03 11:32:10
  * @FilePath     : \cga.js\src\math\HVec3.ts
  */
-import { Quat, quat } from './Quat';
-import { Mat3 } from './Mat3';
-import { Mat4 } from './Mat4';
-import { clamp, delta4, toRadians } from './Math';
-import { euler, Euler } from './Euler';
-import { DistanceResult } from '../alg/result';
-import { Line, line } from '../struct/3d/Line';
-import { Ray } from '../struct/3d/Ray';
-import { Segment } from '../struct/3d/Segment';
-import { Plane } from '../struct/3d/Plane';
-import { buildAccessors } from '../render/thing';
 import { EventHandler } from '../render/eventhandler';
-import { Triangle } from '../struct/3d/Triangle';
-import { Capsule } from '../struct/3d/Capsule';
-import { Rectangle } from '../struct/3d/Rectangle';
-import { Circle } from '../struct/3d/Circle';
-import { Disk } from '../struct/3d/Disk';
-import { Polyline } from '..';
 
 import Decimal from 'decimal.js';
 // import { wgs84RadiiSquared } from '../gis/gis';
@@ -38,7 +21,7 @@ export interface IHVec4 extends IHVec3 {
   w: Decimal;
 }
 
-export class Vec3 extends EventHandler implements IHVec3 {
+export class HVec3 extends EventHandler implements IHVec3 {
   x: Decimal;
   y: Decimal;
   z: Decimal;
@@ -59,21 +42,21 @@ export class Vec3 extends EventHandler implements IHVec3 {
   get isVec3() { return true; }
 
   static get Up() {
-    return new Vec3(0, 1, 0);
+    return new HVec3(0, 1, 0);
   }
 
   static get Down() {
-    return new Vec3(0, 1, 0);
+    return new HVec3(0, 1, 0);
   }
 
   static get UnitX() {
-    return new Vec3(1, 0, 0);
+    return new HVec3(1, 0, 0);
   }
   static get UnitY() {
-    return new Vec3(0, 1, 0);
+    return new HVec3(0, 1, 0);
   }
   static get UnitZ() {
-    return new Vec3(0, 0, 1);
+    return new HVec3(0, 0, 1);
   }
 
 
@@ -110,7 +93,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
     return this;
   }
 
-  add(v: Vec3, w?: Vec3) {
+  add(v: HVec3, w?: HVec3) {
     if (w !== undefined) {
       console.warn(
         "Vec3: .add() now only accepts one argument. Use .addVecs( a, b ) instead."
@@ -126,7 +109,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
   }
 
 
-  addVecs(a: Vec3, b: Vec3) {
+  addVecs(a: HVec3, b: HVec3) {
     this.x = new Decimal(a.x).add(b.x);
     this.y = new Decimal(a.y).add(b.y);
     this.z = new Decimal(a.z).add(b.z);
@@ -135,7 +118,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
   }
 
 
-  sub(v: Vec3, w?: Vec3) {
+  sub(v: HVec3, w?: HVec3) {
     if (w !== undefined) {
       console.warn(
         "Vec3: .sub() now only accepts one argument. Use .subVecs( a, b ) instead."
@@ -151,7 +134,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
   }
 
 
-  subVecs(a: Vec3, b: Vec3) {
+  subVecs(a: HVec3, b: HVec3) {
     this.x = new Decimal(a.x).sub(b.x);
     this.y = new Decimal(a.y).sub(b.y);
     this.z = new Decimal(a.z).sub(b.z);
@@ -170,7 +153,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
   }
 
 
-  cross(v: Vec3, w?: Vec3) {
+  cross(v: HVec3, w?: HVec3) {
     if (w !== undefined) {
       console.warn(
         "Vec3: .cross() now only accepts one argument. Use .crossVecs( a, b ) instead."
@@ -181,7 +164,7 @@ export class Vec3 extends EventHandler implements IHVec3 {
     return this.crossVecs(this, v);
   }
 
-  crossVecs(a: Vec3, b: Vec3) {
+  crossVecs(a: HVec3, b: HVec3) {
     var ax = a.x,
       ay = a.y,
       az = a.z;
@@ -196,11 +179,11 @@ export class Vec3 extends EventHandler implements IHVec3 {
     return this;
   }
 
-  dot(v: Vec3) {
+  dot(v: HVec3) {
     return this.x.mul(v.x).add(this.y.mul(v.y)).add(this.z.mul(v.z));
   }
 
-  lerp(v: Vec3, alpha: number | Decimal) {
+  lerp(v: HVec3, alpha: number | Decimal) {
     this.x.add(v.x.sub(this.x).mul(alpha));
     this.y.add(v.y.sub(this.y).mul(alpha));
     this.z.add(v.z.sub(this.z).mul(alpha));
@@ -209,8 +192,8 @@ export class Vec3 extends EventHandler implements IHVec3 {
   }
 
 
-  clone(): Vec3 {
-    return new Vec3(this.x, this.y, this.z);
+  clone(): HVec3 {
+    return new HVec3(this.x, this.y, this.z);
   }
 
   length() {

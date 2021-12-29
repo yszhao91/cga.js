@@ -2,8 +2,19 @@ import { EventHandler } from './eventhandler';
 import { v4 as uuidv4 } from 'uuid';
 
 export class Thing extends EventHandler {
-  [x: string]: any;
   protected cache: any = {};
+  uuid: any;
+  id: any;
+  name: any;
+  alias: any;
+  isThing: boolean;
+  parent: any;
+  children: any[];
+  meta: any;
+  needsUpdate: boolean;
+  _renderObject: any;
+  _useData: any = {};
+  tag: string;
   constructor(opts?: any) {
     super();
     opts = opts || {};
@@ -26,14 +37,14 @@ export class Thing extends EventHandler {
 
     for (const key in opts) {
       if (opts.hasOwnProperty(key)) {
-        if (!this[key]) {
-          this[key] = opts[key]
+        if (!(this as any)[key]) {
+          (this as any)[key] = opts[key]
         }
       }
     }
   }
 
-  add(thing: this, force: boolean = false) {
+  add(thing: any, force: boolean = false) {
     if (arguments.length > 1) {
       for (var i = 0; i < arguments.length; i++) {
         this.add(arguments[i]);
@@ -73,9 +84,6 @@ export class Thing extends EventHandler {
         this.remove(arguments[i]);
       }
       return this;
-    } else {
-      //自身从父节点移除
-      this.parent.remove(this);
     }
 
     var index = this.children.indexOf(thing);
@@ -100,7 +108,7 @@ export class Thing extends EventHandler {
 
   getObjectByProperty(name: string, value: any) {
 
-    if (this[name] === value) return this;
+    if ((this as any)[name] === value) return this;
 
     for (var i = 0, l = this.children.length; i < l; i++) {
 
@@ -148,7 +156,7 @@ export class Thing extends EventHandler {
     })
   }
 
-  buildAccessor(name: any, bindObject = this) {
+  buildAccessor(name: any, bindObject: any = this) {
     if (!bindObject)
       return
     Object.defineProperty(bindObject, name, {

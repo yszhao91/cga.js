@@ -512,8 +512,7 @@ export class Quat extends EventHandler {
     );
   }
 
-  fromArray(array: { [x: string]: number; }, offset: number | undefined) {
-    if (offset === undefined) offset = 0;
+  fromArray(array: Array<number>, offset: number = 0) {
 
     this._x = array[offset];
     this._y = array[offset + 1];

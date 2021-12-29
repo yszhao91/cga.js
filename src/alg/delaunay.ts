@@ -5,7 +5,7 @@ const tau = 2 * Math.PI, pow = Math.pow;
 
 
 
-// A triangulation is collinear if all its triangles have a non-null area
+// 如果三角剖分的所有三角形都具有非空区域，则三角剖分是共线的
 function collinear(d: any) {
     const { triangles, coords } = d;
     for (let i = 0; i < triangles.length; i += 3) {
@@ -98,6 +98,7 @@ export default class Delaunay {
     voronoi(bounds: [number, number, number, number] | undefined) {
         return new Voronoi(this, bounds);
     }
+
     *neighbors(i: number) {
         const { inedges, hull, _hullIndex, halfedges, triangles, collinear } = this;
 
@@ -124,14 +125,14 @@ export default class Delaunay {
             }
         } while (e !== e0);
     }
-    find(x:number, y:number, i = 0) {
+    find(x: number, y: number, i = 0) {
         if ((x = +x, x !== x) || (y = +y, y !== y)) return -1;
         const i0 = i;
         let c;
         while ((c = this._step(i, x, y)) >= 0 && c !== i && c !== i0) i = c;
         return c;
     }
-    _step(i:number, x:number, y:number) {
+    _step(i: number, x: number, y: number) {
         const { inedges, hull, _hullIndex, halfedges, triangles, points } = this;
         if (inedges[i] === -1 || !points.length) return (i + 1) % (points.length >> 1);
         let c = i;
@@ -156,7 +157,7 @@ export default class Delaunay {
         return c;
     }
 
-    
-   
+
+
 }
 

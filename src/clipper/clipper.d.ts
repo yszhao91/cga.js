@@ -54,6 +54,13 @@ declare module ClipperLib {
 	export enum PolyType { ptSubject, ptClip }
 	export enum PolyFillType { pftEvenOdd, pftNonZero, pftPositive, pftNegative }
 	export enum JoinType { jtSquare, jtRound, jtMiter }
+	export enum EndType {
+		etOpenSquare,
+		etOpenRound,
+		etOpenButt,
+		etClosedLine,
+		etClosedPolygon
+	}
 	export enum EdgeSide { esLeft, esRight }
 	export enum Protects { ipNone, ipLeft, ipRight, ipBoth }
 	export enum Direction { dRightToLeft, dLeftToRight }
@@ -275,9 +282,11 @@ declare module ClipperLib {
 		constructor(x: number, y: number);
 	}
 
-	export class ClipperOffset{
-		AddPath():void;
-		Execute():void;
+	export class ClipperOffset {
+		constructor(miterLimt?: number, arcTolera?: number)
+		AddPath(path: Array<{ X: number, Y: number }>, joinType?: JoinType, endType?: EndType): void;
+		Execute(path: any, offset: number): void;
+		AddPaths(path: Array<{ X: number, Y: number }>, joinType?: JoinType, endType?: EndType): void;
 	}
 
 	export class PolyOffsetBuilder {
@@ -308,6 +317,7 @@ declare module ClipperLib {
 	}
 	module JS {
 		export function ScaleUpPath(path: ArrayLike<any>, scale: any): void;
+		export function ScaleUpPaths(path: ArrayLike<any>, scale: any): void;
 	}
 
 }

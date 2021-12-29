@@ -9,12 +9,10 @@
 
 import { Vec3, v3, IVec3, IVec2 } from '../math/Vec3';
 import { Vec2 } from '../math/Vec2';
-import { quat } from '../math/Quat';
-import { Polygon } from '../struct/3d/Polygon';
-import { Polyline } from '../struct/3d/Polyline';
+import { quat, Quat } from '../math/Quat';
 import { Path } from '../struct/3d/Path';
-import { clone, rotateByUnitVectors, verctorToNumbers, angle, applyQuat, scale } from './common';
-import { applyMat4, projectOnPlane, translate } from './pointset';
+import { clone, rotateByUnitVectors, angle } from './common';
+import { applyMat4, translate } from './pointset';
 import { indexable } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
 import { flat, unique } from '../utils/array';
@@ -22,9 +20,9 @@ import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
 import { RADIANS_PER_DEGREE } from '../math/Math';
-import { vector } from '../math/vector';
+import vector from '../math/vector';
 import { ArrayList } from '../struct/data/ArrayList';
-import { Plane } from '../struct/3d/Plane';
+import { Distance } from '../basic/distance';
 
 export interface ILinkSideOption {
     side0: { x: number, y: number, z: number, index?: number }[] | number[];//可能是点  也可能是索引
@@ -362,7 +360,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
     //     }
     // }
 
-    const positions = verctorToNumbers(allVertics);
+    const positions = vector.verctorToNumbers(allVertics);
     shapes.pop();
     shapes.pop();
 
@@ -417,6 +415,7 @@ const _matrix1 = m4();
 const _quat = quat();
 const _quat1 = quat();
 const _vec1 = v3();
+const _vec2 = v3();
 /**
  * @description : 挤压形状生成几何体
  * @param        {IExtrudeOptionsEx} options
@@ -456,7 +455,7 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
         options.shape.reverse();
     if (options.holes)
         options.holes.forEach((hole) => {
-            if (!vector.isCCW(options.shape))
+            if (!vector.isCCW(hole))
                 hole.reverse();
         })
 
@@ -689,7 +688,11 @@ export enum JoinType {
 export enum EndType {
     Square,
     Round,
-    Butt
+    Butt,
+    etClosedLine,
+    etClosedPolygon,
+    etOpenButt,
+    etOpenSquare
 }
 
 
@@ -773,8 +776,92 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
 
             break;
         case JoinType.Round://圆角
+            /**
+             * 原理，计算所有交点处的平分面， 
+             * 两条相接不共线的的线段可以确定一个平面，平面法线与
+             */
+            for (let i = 0; i < pathPath.length; i++) {
+                const p: Vec3 = pathPath.get(i);
+                const pLast: Vec3 = pathPath.get(i - 1);
+                const pNext: Vec3 = pathPath.get(i + 1);
+
+                const dir: Vec3 = (p as any).direction;
+                //两个外向
+                const bdir: Vec3 = (p as any).bdirection;
+                const bnormal: Vec3 = (p as any).bnormal;
+                const normal: Vec3 = (p as any).normal;
+
+                //相邻两个向量发生的旋转
+                if (i === 0) {
+                    _quat.setFromUnitVecs(Vec3.UnitZ, dir);
+                }
+                else { _quat.setFromUnitVecs(pathPath.get(i - 1).direction, dir); }
+
+                let new_shape: Path<Vec3> = shapePath.clone();
+
+                //旋转 
+                _quat.setFromUnitVecs(dir, bdir);
+                _matrix.makeRotationFromQuat(_quat);
+                _matrix.multiply(accMat);
+
+
+                //位置
+                _matrix.setPosition(p);
+                new_shape.applyMat4(_matrix);
+
+                // 找出最近一个点  绕此点旋转 
+                let min = Infinity;
+                let anchor = 0;
+                for (let i = 0; i < new_shape.array.length; i++) {
+                    const p = new_shape.get(i);
+                    let tdot = bdir.dot(_vec1.copy(p).sub(new_shape.get(0)));
+                    if (tdot < min) {
+                        min = tdot;
+                        anchor = i;
+                    }
+                }
+                const minPoint = new_shape.get(anchor);
+
+                //找出距离连个线段最近的点
+                // 垂直的两个点  这两个点与
+                if (i !== 0 && i !== pathPath.length - 1) {
+                    const P0 = Distance.Point2Line_Vec3(minPoint, pLast, _vec1.copy(p).sub(pLast).normalize());
+                    const P1 = Distance.Point2Line_Vec3(minPoint, p, _vec1.copy(pNext).sub(p).normalize());
+
+                    _vec1.copy(P0).sub(minPoint);
+                    _vec2.copy(P1).sub(minPoint);
+
+                    const angle = _vec1.angleTo(_vec2, normal);
+
+                    const seg = Math.ceil(angle / 0.1);
+                    const perAngle = angle / seg;
+
+                    for (let i = 0; i <= seg; i++) {
+                        const cAngle = i * perAngle;
+
+                        for (let j = 0; j < new_shape.length; j++) {
+                            const np = new_shape.get(j);
+                            const v = new Vec3().slerpVecs(_vec1, _vec2, cAngle);
+                            const t = np.clone().sub(minPoint);
+
+                        }
+
+                    }
+
+                    // if (options.holes) {
+                    //     const mholes = applyMat4(options.holes, _matrix1, false);
+                    //     applyMat4(mholes, _matrix, true);
+                    //     newholes.push(mholes);
+                    // } 
+                }
+
+                shapes.push(new_shape);
+
+            }
 
             break;
+
+
 
         case JoinType.Miter://直角
             for (let i = 0; i < pathPath.length; i++) {
@@ -794,7 +881,7 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
 
                 //旋转
                 _matrix.makeRotationFromQuat(_quat);
-                accMat.premultiply(_matrix)
+                accMat.premultiply(_matrix);
 
 
                 _quat.setFromUnitVecs(dir, bdir);
@@ -813,8 +900,8 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
 
                 _quat.setFromUnitVecs(_vec1, Vec3.Up)
                 _matrix1.makeRotationFromQuat(_quat);
-                new_shape.applyMat4(_matrix1)
-                new_shape.scale(1, shear, 1)
+                new_shape.applyMat4(_matrix1);
+                new_shape.scale(1, shear, 1);
                 new_shape.applyMat4(_matrix1.invert());
                 // /旋转到原地缩放----结束-----------------------
 
@@ -827,7 +914,6 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
                 //     applyMat4(mholes, _matrix, true);
                 //     newholes.push(mholes);
                 // }  
-
 
                 shapes.push(new_shape);
             }
@@ -852,5 +938,4 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
     })
 
     return geo;
-
 }

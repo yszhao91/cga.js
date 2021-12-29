@@ -555,6 +555,23 @@ export class Vec3 extends EventHandler implements IVec3 {
       .add(v1);
   }
 
+  slerp(v2: any, radian: number) {
+    return this.slerpVecs(this, v2, radian);
+  }
+
+  /**
+   *  v1 到 v2 选择angle弧度  v1，v2构成一个平面
+   * @param v1 
+   * @param v2 
+   * @param alpha 
+   * @returns 
+   */
+  slerpVecs(v1: Vec3, v2: any, radian: number) {
+    this.crossVecs(v1, v2).normalize();
+    _quat.setFromAxisAngle(this, radian);
+    this.applyQuat(_quat);
+  }
+
   cross(v: Vec3, w?: Vec3) {
     if (w !== undefined) {
       console.warn(

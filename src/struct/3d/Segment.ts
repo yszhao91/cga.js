@@ -29,7 +29,7 @@ export class Segment extends Array {
 
   set(p0: Vec3, p1: Vec3) {
     this[0].copy(p0);
-    this[0].copy(p1);
+    this[1].copy(p1);
 
     this.change();
   }

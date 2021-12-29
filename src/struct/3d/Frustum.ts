@@ -5,6 +5,7 @@ import { BufferGeometry } from '../../render/geometry';
 import { Sphere } from './Sphere';
 import { applyMat4 } from '../../alg/pointset';
 import { Segment } from './Segment';
+import { Path } from './Path';
 
 const _sphere = new Sphere()
 /**
@@ -18,6 +19,7 @@ export class Frustum {
     constructor() {
 
     }
+
     get front(): Plane {
         return this.planes[0]
     }
@@ -62,16 +64,13 @@ export class Frustum {
 
     }
 
+
     static fromProjectionMatrix(m: Mat4) {
         return new Frustum().setFromProjectionMatrix(m);
     }
 
     setFromPerspective(position: Vec3, target: Vec3, up: Vec3, fov: number, aspect: number, near: number, far: number) {
-
-    }
-
-    setFromOrgitic(fov: number, aspect: number, near: number, far: number) {
-
+        const direction = target.clone().sub(position);
     }
 
     intersectsObject(geometry: BufferGeometry, mat: Mat4) {
@@ -116,6 +115,13 @@ export class Frustum {
 
     }
 
+    intersectsSphereComponents(cx: number, cy: number, cz: number, radius: number) {
+
+        _sphere.setComponents(cx, cy, cz, radius)
+
+        return this.intersectsSphere(_sphere)
+    }
+
 
     containsPoint(point: Vec3) {
 
@@ -135,15 +141,39 @@ export class Frustum {
 
     }
 
-    intersectSegment(segment: Segment) {
+    intersectSegment(segment: Segment | Vec3[]) {
         const planes = this.planes;
         for (let i = 0; i < 6; i++) {
-            if (planes[i].splitSegment < 0) {
-
-                return false;
-
+            const intersectPoint = planes[i].intersectSegmentLw(segment)
+            if (intersectPoint !== null) {
+                return intersectPoint;
             }
         }
+        return null;
+    }
+
+    simpleIntersectVS(vs: Vec3[]) {
+        const contains: boolean[] = vs.map(v => this.containsPoint(v))
+        const res = []
+        let oneres: Vec3[] = []
+        for (let i = 0; i < vs.length; i++) {
+            const p: Vec3 = vs[i];
+            const c0 = contains[i];
+            (p as any).index = i;
+            if (c0) {
+                res.push(p);
+            }
+        }
+
+        if (res.length > 0) {
+            const startI = (res[0] as any).index;
+            const endI = (res[res.length - 1] as any).index;
+            if (startI > 0)
+                res.unshift(vs[startI - 1])
+            if (endI < vs.length - 2)
+                res.push(vs[endI + 1])
+        }
+        return res;
     }
 
     copy(frustum: Frustum) {

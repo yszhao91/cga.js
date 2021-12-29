@@ -38,7 +38,7 @@ class Plane {
 
     setFromPointNormal(p: Vec3, normal: Vec3) {
         this.normal = normal;
-        this.w = p.dot(normal)
+        this.w = -p.dot(normal)
     }
     set(normal: Vec3, w: number) {
         this.normal = normal;
@@ -62,12 +62,12 @@ class Plane {
 
     setFromThreePoint(p0: Vec3, p1: Vec3, p2: Vec3) {
         this.normal = p1.clone().sub(p0).cross(p2.clone().sub(p0)).normalize();
-        this.w = p0.dot(this.normal);
+        this.w = -p0.dot(this.normal);
     }
 
     negate() {
+        this.w *= - 1;
         this.normal.negate();
-        this.w = -this.w;
     }
 
     /**
@@ -84,7 +84,7 @@ class Plane {
 
     //---Distance-------------------------------------------------------------------------------
     distancePoint(point: any) {
-        return this.normal.dot(point) - this.w;
+        return this.normal.dot(point) + this.w;
     }
 
     distanceRay(ray: any) {
@@ -102,11 +102,12 @@ class Plane {
     distancePlane(plane: any) {
 
     }
+
     //---Intersect-----------------------------------
     /**
      * 只返回交点
      * Lw --Lightweight
-     * @param {Segment|Array<Vector3></Vector3>} segment 
+     * @param {Segment|Array<Vec3> segment 
      */
     intersectSegmentLw(segment: Segment | Vec3[]) {
         let orientation0 = this.orientationPoint(segment[0]);
@@ -122,7 +123,6 @@ class Plane {
             var intersectPoint = this.normal.clone().multiplyScalar(dist).add(segment[0]);
             return intersectPoint;
         }
-
         return null;
     }
 
@@ -287,7 +287,7 @@ class Plane {
      * @returns {Orientation} 方位
      */
     orientationPoint(point: Vec3): Orientation {
-        let signDistance = this.normal.clone().dot(point) - this.w;
+        let signDistance = this.normal.clone().dot(point) + this.w;
         if (Math.abs(signDistance) < delta4)
             return Orientation.Intersect;
         else if (signDistance < 0)
