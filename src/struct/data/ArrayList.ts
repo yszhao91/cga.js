@@ -7,9 +7,9 @@ export class ArrayList<T> {
     constructor(data?: Array<T> | ArrayList<T>) {
         this._array = new Array()
         if (Array.isArray(data))
-            this._array.push(...data);
+            data.forEach((v, i: number) => { (v as any).i = i; this._array.push(v)})
         else if ((data as any).isArrayList === true)
-            this._array.push(...data?._array as Array<T>)
+            (data?._array as Array<T>).forEach((v, i: number) => { (v as any).i = i; this._array.push(v)});
     }
 
     get array() {

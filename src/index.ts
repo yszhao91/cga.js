@@ -31,6 +31,7 @@ export * from "./struct/3d/Ray"
 export * from "./struct/3d/Segment"
 export * from "./struct/3d/Triangle"
 export * from "./struct/3d/Frustum"
+export * from "./struct/3d/Sphere"
 
 export * from "./alg/delaunator"
 export * from "./alg/voronoi"

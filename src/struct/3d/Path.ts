@@ -167,7 +167,7 @@ export class Path<T extends Vec3> extends ArrayList<T> {
             return {
                 isNode: false,//是否在节点上
                 point: new Vec3().lerpVecs(this.get(left), this.get(right), (distance - this.get(left).tlen) / this.get(right).len),
-                direction: this.get(left).diretion,
+                direction: this.get(left).direction,
             }
         }
         var mid = (left + right) >> 1;

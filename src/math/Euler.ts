@@ -175,7 +175,7 @@ export class Euler extends EventHandler {
     return this;
   }
 
-  setFromQuat(q: Quat, order: any, update?: boolean) {
+  setFromQuat(q: Quat, order?: any, update?: boolean) {
     _matrix.makeRotationFromQuat(q);
 
     return this.setFromRotationMat(_matrix, order, update);
