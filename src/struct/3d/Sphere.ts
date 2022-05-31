@@ -1,4 +1,4 @@
-import { Mat4 } from '@/cga/math/Mat4';
+import { Mat4 } from '../../math/Mat4';
 import { v3, Vec3 } from '../../math/Vec3';
 
 export class Sphere {

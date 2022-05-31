@@ -1,6 +1,6 @@
 {
   "name": "xtorcga",
-  "version": "0.0.66",
+  "version": "0.0.67",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -35,7 +35,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "earcut": "^2.2.3"
+    "earcut": "^2.2.3",
+    "decimal.js": "^10.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
@@ -46,6 +47,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "core-js": "^2.6.12",
     "css-loader": "^3.5.3",
+    "element-ui": "^2.15.8",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "html-loader": "^1.1.0",
     "html-webpack-plugin": "^4.2.0",
@@ -53,16 +55,16 @@
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-gzip": "^2.2.0",
-    "three": "^0.125.2",
     "rollup-plugin-node-resolve": "^5.0.1",
     "rollup-plugin-uglify": "^6.0.4",
     "rollup-watch": "^4.3.1",
     "style-loader": "^1.2.1",
+    "three": "^0.125.2",
     "ts-loader": "^7.0.4",
     "tsconfig-paths": "^3.9.0",
     "tsconfig-paths-webpack-plugin": "3.2.0",
     "typescript": "^3.9.2",
-    "vuepress": "^1.7.1",
+    "vuepress": "^1.9.7",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0"

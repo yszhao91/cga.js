@@ -1,4 +1,4 @@
-import { Vec3 } from "src/math/HVec3";
+import { HVec3 } from "src/math/HVec3";
 import Decimal from "decimal.js"
 const EPSILON = new Decimal(1e-15);
 
@@ -19,9 +19,9 @@ enum Side {
 export class Polygon {
 
     w: Decimal = new Decimal(0);
-    normal: Vec3 = new Vec3;
-    vertices: Vec3[];
-    constructor(vertices: Vec3[] = []) {
+    normal: HVec3 = new HVec3;
+    vertices: HVec3[];
+    constructor(vertices: HVec3[] = []) {
         this.vertices = vertices
 
         this.vertices = vertices;
@@ -53,11 +53,11 @@ export class Polygon {
 
     /**
      * @description : 判断点与当前多边形所在的平面的位置关系
-     * @param        {Vec3} vertex
+     * @param        {HVec3} vertex
      * @return       {*}
      * @example     : 
      */
-    classifyVertex(vertex: Vec3) {
+    classifyVertex(vertex: HVec3) {
         var side_value: Decimal = this.normal.dot(vertex).sub(this.w);
 
         if (side_value.lessThan(-EPSILON)) {
@@ -132,10 +132,10 @@ export class Polygon {
 
             var i: number, j: number,
                 ti: Side, tj: Side,
-                vi: Vec3, vj: Vec3,
-                t: Decimal, v: Vec3,
-                f: Vec3[] = [],
-                b: Vec3[] = [];
+                vi: HVec3, vj: HVec3,
+                t: Decimal, v: HVec3,
+                f: HVec3[] = [],
+                b: HVec3[] = [];
 
             let vslen;
 

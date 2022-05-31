@@ -46,7 +46,7 @@ export class Vec {
 
     dot(v: Vec): Decimal {
         if (!this.check(v))
-            return;
+            console.error('dim not equal')
 
         let res = new Decimal(0);
         for (let i = 0; i < this._data.length; i++) {
