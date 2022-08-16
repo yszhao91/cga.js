@@ -13,7 +13,7 @@
     "rollup": "rollup -c",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "deploy": "deploy.sh"
+    "deploy": "tsc && git.sh && deploy.sh"
   },
   "private": false,
   "repository": {
