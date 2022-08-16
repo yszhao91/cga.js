@@ -10,7 +10,9 @@ yarn-error.log*
 /test/unit/coverage/
 dist
 dist/
-*/dist/*
+*/dist
+*/dist/
+docs/.vuepress/dist/
 # Editor directories and files
 .idea
 .vscode
