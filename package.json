@@ -1,11 +1,11 @@
 {
   "name": "xtorcga",
-  "version": "0.0.67",
+  "version": "0.0.71",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "release": "tsc && npm publish && git.sh",
+    "release": "tsc && git.sh",
     "dev": "webpack-dev-server",
     "build:dev": "webpack --mode development",
     "build:prod": "webpack --mode production",
