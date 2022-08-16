@@ -14,14 +14,14 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 
 案例：
 
-[文档与演示（国内镜像）网速快](http://dcgraph.gitee.io/cga.js/)
+[ 国内镜像 ](https://gitee.com/yszhao91/cga.js) 
 
 [文档与演示（github）](https://yszhao91.github.io/cga.js/)
 
-- [点与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distPointAll.html](http://dcgraph.gitee.io/cga.js/guide/distPointAll.html)
-- [线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distLineAll.html](http://dcgraph.gitee.io/cga.js/guide/distLineAll.html)
-- [射线与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distRayAll.html](http://dcgraph.gitee.io/cga.js/guide/distRayAll.html)
-- [线段与其他元素的距离 http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html](http://dcgraph.gitee.io/cga.js/guide/distSegmentAll.html)
+- [点与其他元素的距离 https://yszhao91.github.io/cga.js/guide/distPointAll.html](https://yszhao91.github.io/cga.js/guide/distPointAll.html)
+- [线与其他元素的距离 https://yszhao91.github.io/cga.js/guide/distLineAll.html](https://yszhao91.github.io/cga.js/guide/distLineAll.html)
+- [射线与其他元素的距离 https://yszhao91.github.io/cga.js/guide/distRayAll.html](https://yszhao91.github.io/cga.js/guide/distRayAll.html)
+- [线段与其他元素的距离 https://yszhao91.github.io/cga.js/guide/distSegmentAll.html](https://yszhao91.github.io/cga.js/guide/distSegmentAll.html)
 - [常用 https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html](https://yszhao91.github.io/cga.js/guide/%E5%B8%B8%E7%94%A8.html)
 
 ## 安装

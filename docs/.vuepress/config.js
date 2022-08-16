@@ -45,7 +45,7 @@ module.exports = {
               },
               {
                 text: '国内镜像',
-                link: 'https://gitee.com/Dcgraph/cga.js'
+                link: 'https://gitee.com/yszhao91/cga.js'
               }
             ]
           }

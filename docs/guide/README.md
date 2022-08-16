@@ -4,7 +4,7 @@ cga 计算库基于 JavaScript，主要用于（**web 图形**）场景的几何
 
 > github 地址：[https://github.com/yszhao91/cga.js(主要地址)](https://github.com/yszhao91/cga.js)
 
-> 码云地址：[https://gitee.com/Dcgraph/cga.js](https://gitee.com/Dcgraph/cga.jss)
+> 码云地址：[https://gitee.com/yszhao91/cga.js](https://gitee.com/yszhao91/cga.js)
 
 - **距离**
 
