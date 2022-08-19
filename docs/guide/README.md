@@ -54,9 +54,9 @@ cga 计算库基于 JavaScript，主要用于（**web 图形**）场景的几何
 - npm 安装
 
 ```sh
-npm install @xtor/cga.js -D
+npm i @xtor/cga -D
 #国内镜像
-cnpm install @xtor/cga.js -D
+cnpm i @xtor/cga -D
 ```
 
 <!-- - yarn 安装
