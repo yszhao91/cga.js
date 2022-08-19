@@ -75,7 +75,7 @@ export class BufferGeometry {
      * 转化成BufferArray来计算
      * @param geo 
      */
-    setFromGeometry(geo: IGeometry) {
+    setFromGeometry(geo: IGeometry | IBufferGeometry) {
         this.setAttribute('position', new Float32BufferAttribute(geo.position, 3))
         if (geo.uv)
             this.setAttribute('uv', new Float32BufferAttribute(geo.uv, 2));
@@ -932,7 +932,7 @@ export class BufferGeometry {
 
     }
 
-    toFlat() {
+    toFlat() {  
         var indices = this.index!.array;
         var attributes = this.attributes;
         var geometry2 = new BufferGeometry();
