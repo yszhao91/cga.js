@@ -69,7 +69,7 @@ yarn add @jiaminghi/data-view
 
 ```js
 // 全部引用
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 ```
 
 ## 按需引入
@@ -77,15 +77,15 @@ import * as cga from "@xtor/cga.js";
 按需引入仅支持基于**ES module**的**tree shaking**，按需引入示例如下：
 
 ```js
-import { Point, Segment } from "@xtor/cga.js";
+import { Point, Segment } from "@xtor/cga";
 ```
 
 ## UMD 版
 
-`UMD`版可直接使用`script`标签引入，`UMD`版文件下载请移步[UMD](https://github.com/yszhao91/@xtor/cga.js/tree/master/build)， 直接引入使用
+`UMD`版可直接使用`script`标签引入，`UMD`版文件下载请移步[UMD](https://github.com/yszhao91/cga.js/tree/master/build)， 直接引入使用
 
 ```html
-<script src="./build/cga.js" />
+<script src="./build/@xort_cga.js" />
 ```
 
 <!--

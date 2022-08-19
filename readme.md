@@ -71,9 +71,9 @@ var result = point.distanceSegment(seg);
 - 网页嵌入：直接下载使用 build 目录下面的 @xort/cga，包含到项目中
 
 ```html
-<script src="@xort/cga" />
+<script src="@xort/@xort_cga.js" />
 或者
-<script src="https://raw.githack.com/yszhao91/@xort/cga/master/build/@xort/cga" />
+<script src="https://raw.githack.com/yszhao91/@xort/cga/master/build/@xort_cga.js" />
 <script>
   var point = new cga.Point(1, 2, 3);
   var line = new cga.Line(

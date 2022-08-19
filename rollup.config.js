@@ -59,7 +59,7 @@ export default {
     external: ['lodash'],
     plugins: plugins,
     output: {
-        file: path.join(DIST ? 'dist' : 'build', 'cga' + (MIN ? '.min' : '') + '.js'),
+        file: path.join(DIST ? 'dist' : 'build', '@xort_cga' + (MIN ? '.min' : '') + '.js'),
         format: 'umd',
         // format: 'umd',
         name: 'cga',
