@@ -37,7 +37,7 @@ cnpm i @xort/cga
 - 全部引用;：
 
 ```javascript
-import * as cga from "xtorcga";
+import * as cga from "@xort/cga";
 function randomV3() {
   return cga.v3(
     Math.random() * 100 - 50,
@@ -54,7 +54,7 @@ var result = point.distanceSegment(seg);
 - 按需求引用：
 
 ```javascript
-import { v3, Point, Segment } from "xtorcga";
+import { v3, Point, Segment } from "@xort/cga";
 function randomV3() {
   return v3(
     Math.random() * 100 - 50,
@@ -68,12 +68,12 @@ var seg = new Segment(randomV3(), randomV3());
 var result = point.distanceSegment(seg);
 ```
 
-- 网页嵌入：直接下载使用 build 目录下面的 xtorcga，包含到项目中
+- 网页嵌入：直接下载使用 build 目录下面的 @xort/cga，包含到项目中
 
 ```html
-<script src="xtorcga" />
+<script src="@xort/cga" />
 或者
-<script src="https://raw.githack.com/yszhao91/xtorcga/master/build/xtorcga" />
+<script src="https://raw.githack.com/yszhao91/@xort/cga/master/build/@xort/cga" />
 <script>
   var point = new cga.Point(1, 2, 3);
   var line = new cga.Line(
@@ -87,7 +87,7 @@ var result = point.distanceSegment(seg);
 ## 项目编译
 
 ```shell
-npm run build //js 编译到build目录下生成xtorcga dist目录下生成每个文件的js和.d.ts
+npm run build //js 编译到build目录下生成@xort/cga dist目录下生成每个文件的js和.d.ts
 npm run dev  //运行项目，自己更改源码测试
 ```
 
