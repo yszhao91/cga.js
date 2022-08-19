@@ -27,9 +27,9 @@ Computional Geometry Algorithm implement JavaScript,javascript 实现计算机�
 ## 安装
 
 ```
-npm install xtorcga -D
+npm i @xort/cga
 国内
-cnpm install xtorcga -D
+cnpm i @xort/cga
 ```
 
 ## 使用
