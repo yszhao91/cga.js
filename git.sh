@@ -3,10 +3,10 @@
 # 确保脚本抛出遇到的错误
 set -e
 
-cnpm sync xtorcga
+cnpm sync @xort/cga
   
 git add -A
 # git add .
-git commit -m 'xtorcga' 
+git commit -m '@xort/cga' 
 
 git push origin master 
