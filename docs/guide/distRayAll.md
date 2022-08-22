@@ -14,7 +14,7 @@ title:射线
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var ray0 = new cga.Ray(randomV3(), randomV3().normalize());
 var ray1 = new cga.Ray(randomV3(), randomV3().normalize());
 var result = ray0.distanceLine(ray1);
@@ -30,7 +30,7 @@ var result = ray0.distanceLine(ray1);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var ray = new cga.Ray(randomV3(), randomV3().normalize());
 var segment = new cga.Segment(randomV3(), randomV3());
 var result = ray.distanceSegment(segment);
@@ -46,7 +46,7 @@ var result = ray.distanceSegment(segment);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var ray = new cga.Ray(randomV3(), randomV3().normalize());
 var triangle = new cga.Triangle(randomV3(), randomV3()，randomV3());
 var result = ray.distanceTriangle(segment);
@@ -62,7 +62,7 @@ var result = ray.distanceTriangle(segment);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var ray = new cga.Ray(randomV3(), randomV3());
 var tringle = new cga.Tringle(randomV3(), randomV3(), randomV3());
 var result = ray.distanceTriangle(triangle);

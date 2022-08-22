@@ -5,7 +5,7 @@
 ## 三维向量点
 
 ```js
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 function randomV3() {
   return cga.Vec3(
     Math.random() * 100 - 50,
@@ -25,7 +25,7 @@ function randomV3() {
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var point0 = new cga.Vec3().copy(randomV3());
 var point1 = new cga.Vec3().copy(randomV3());
 var result = point0.distancePoint(point1);
@@ -41,7 +41,7 @@ var result = point0.distancePoint(point1);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var point = new cga.Vec3().copy(randomV3());
 var line = new cga.Line(randomV3(), randomV3());
 var result = point.distanceTo(line);
@@ -55,7 +55,7 @@ var result = point.distanceTo(line);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var point = new cga.Vec3().copy(randomV3());
 var ray = new cga.Ray(randomV3(), randomV3().normalize());
 var result = point.distanceRay(ray);
@@ -69,7 +69,7 @@ var result = point.distanceRay(ray);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var point = new cga.Vec3().copy(randomV3());
 var seg = new cga.Segment(randomV3(), randomV3());
 var result = point.distanceSegment(seg);
@@ -83,7 +83,7 @@ var result = point.distanceSegment(seg);
 </ClientOnly>
 
 ```javascript
-import * as cga from "@xtor/cga.js";
+import * as cga from "@xtor/cga";
 var vs = [];
 for (let i = 0; i < 100000; i++) {
   vs.push(randomV3());
