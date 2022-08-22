@@ -36,8 +36,11 @@ export class EventHandler {
      * });
      * obj.fire('test', 1, 2); // prints 3 to the console
      */
-    on(name: string, callback: any, scope?: any) {
-        this._addCallback(name, callback, scope, false);
+    on(name: string | string[], callback: any, scope?: any) {
+        if (Array.isArray(name))
+            name.forEach(v => this._addCallback(v, callback, scope, false));
+        else
+            this._addCallback(name, callback, scope, false);
 
         return this;
     }

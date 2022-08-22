@@ -36,6 +36,8 @@ export * from "./struct/3d/Sphere"
 export * from "./alg/delaunator"
 export * from "./alg/voronoi"
 
+export * from "./render/eventhandler"
+
 export * from "./extends/geometryaid"
 
 //Geometry 
