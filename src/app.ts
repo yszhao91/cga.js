@@ -214,6 +214,7 @@ import * as THREE from "three"
 import { diamondMaterial } from "./diamondMaterialShader";
 import { BreathLight } from "./effect/breath-light";
 import { Mat4 } from "./math/Mat4";
+import { Color } from "./index";
 var tgeo = new THREE.BufferGeometry();
 tgeo.setAttribute('position', new THREE.Float32BufferAttribute(geometry.getAttribute('position').array, 3));
 tgeo.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.getAttribute('normal').array, 3));
@@ -233,9 +234,11 @@ glv.add(mesh);
 //     glv.renderer.setRenderTarget(renderTarget);
 //     glv.render();
 //     glv.renderer.setRenderTarget(null);
-// }) 
+// })
 
 
+const color = new Color()
+debugger
 
 class LabelTexture {
     width: number;
