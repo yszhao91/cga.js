@@ -1,38 +1,14 @@
-import { EventHandler } from "src/render/eventhandler";
-import * as THREE from "three"
-
-
-export function hue2rgb(p: number, q: number, t: number) {
-
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1 / 6) return p + (q - p) * 6 * t;
-    if (t < 1 / 2) return q;
-    if (t < 2 / 3) return p + (q - p) * 6 * (2 / 3 - t);
-    return p;
-
-}
-
-export function SRGBToLinear(c: number) {
-
-    return (c < 0.04045) ? c * 0.0773993808 : Math.pow(c * 0.9478672986 + 0.0521327014, 2.4);
-
-}
-
-export function LinearToSRGB(c: number) {
-
-    return (c < 0.0031308) ? c * 12.92 : 1.055 * (Math.pow(c, 0.41666)) - 0.055;
-
-}
+import { EventHandler } from "../render/eventhandler";  
 
 export class Color extends EventHandler {
+    constructor(private _r: number = 0, private _g: number = 0, private _b: number = 0, private _a: number = 1) {
+        super();
+    }
+ 
     get isColor() {
         return true;
     }
 
-    constructor(private _r: number = 0, private _g: number = 0, private _b: number = 0, private _a: number = 1) {
-        super();
-    }
 
     get r() {
         return this._r;
@@ -64,8 +40,7 @@ export class Color extends EventHandler {
         if (this._b !== value) {
             this._b = value;
             this.fire('change', 'b', this._b, value)
-        }
-        THREE.Color
+        } 
     }
 
     get a() {
