@@ -70,6 +70,12 @@ export class Color extends EventHandler {
         } else if (typeof value === 'number') {
             this.setHex(value);
         }
+        if (typeof value === 'string') {
+            if (value.indexOf("#") === 0)
+                this.setHexCssString(value);
+            else
+                console.error("未匹配的颜色数据")
+        }
 
         return this;
     }
