@@ -1,11 +1,12 @@
 {
   "name": "@xort/cga",
-  "version": "0.0.75",
+  "version": "0.0.76",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "release": "tsc && npm publish && git.sh",
+    pr
+    "release": " 8002 && tsc && npm publish && git.sh",
     "dev": "webpack-dev-server",
     "build:dev": "webpack --mode development",
     "build:prod": "webpack --mode production",
