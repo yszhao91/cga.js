@@ -5,6 +5,7 @@ export class Color extends EventHandler {
     _g: number = 0.0;
     _b: number = 0.0;
     _a: number = 1.0;
+
     constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1) {
         super();
         this._r = r;
@@ -75,21 +76,15 @@ export class Color extends EventHandler {
 
     setHex(hex: number) {
         hex = Math.floor(hex);
-        if (hex > 0xffffff) {
-            this._r = (hex >> 32 & 255) / 255;
-            this._g = (hex >> 16 & 255) / 255;
-            this._b = (hex >> 8 & 255) / 255;
-            this._a = (hex & 255) / 255;
-        } else {
-            this._r = (hex >> 16 & 255) / 255;
-            this._g = (hex >> 8 & 255) / 255;
-            this._b = (hex & 255) / 255;
-        }
+
+        this._r = (hex >> 16 & 255) / 255;
+        this._g = (hex >> 8 & 255) / 255;
+        this._b = (hex & 255) / 255;
 
         return this;
     }
 
-    setStyle(style: string) {
+    setHexCssString(style: string) {
         let m: any = /^\#([A-Fa-f\d]+)$/.exec(style)
         // hex color
 
@@ -169,13 +164,39 @@ export class Color extends EventHandler {
 
         return array;
     }
+    private byteToFloat(val: number) {
+        return val / 255.0;
+    };
 
-    getHex() {
-        return (this.r * 255) << 24 ^ (this.g * 255) << 16 ^ (this.b * 255) << 8 ^ (this.a * 255) << 0;
+    private floatToByte(val: number) {
+        return val === 1.0 ? 255.0 : (val * 256.0) | 0;
+    };
+
+    getHexCssString() {
+        let r = this.floatToByte(this._r).toString(16);
+        if (r.length < 2) {
+            r = `0${r}`;
+        }
+        let g = this.floatToByte(this._g).toString(16);
+        if (g.length < 2) {
+            g = `0${g}`;
+        }
+        let b = this.floatToByte(this._b).toString(16);
+        if (b.length < 2) {
+            b = `0${b}`;
+        }
+        if (this._a < 1) {
+            let hexAlpha = this.floatToByte(this._a).toString(16);
+            if (hexAlpha.length < 2) {
+                hexAlpha = `0${hexAlpha}`;
+            }
+            return `#${r}${g}${b}${hexAlpha}`;
+        }
+        return `#${r}${g}${b}`;
     }
 
     toJSON() {
-        return this.getHex();
+        return this.getHexCssString();
     }
 
 }
