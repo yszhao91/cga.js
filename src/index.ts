@@ -7,6 +7,7 @@ export * from "./math/Mat4"
 export * from "./math/Quat"
 export * from "./math/Math"
 export * from "./math/Euler"
+export * from "./math/Color"
 //common
 export * from "./math/vector"
 
