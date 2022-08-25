@@ -1,14 +1,21 @@
-import { EventHandler } from "../render/eventhandler";  
+import { EventHandler } from "../render/eventhandler";
 
 export class Color extends EventHandler {
-    constructor(private _r: number = 0, private _g: number = 0, private _b: number = 0, private _a: number = 1) {
+    _r: number =0.0;
+    _g: number =0.0;
+    _b: number =0.0;
+    _a: number =1.0;
+    constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1) {
         super();
+        this._r = r;
+        this._g = g;
+        this._b = b;
+        this._a = a;
     }
- 
+
     get isColor() {
         return true;
     }
-
 
     get r() {
         return this._r;
@@ -40,7 +47,7 @@ export class Color extends EventHandler {
         if (this._b !== value) {
             this._b = value;
             this.fire('change', 'b', this._b, value)
-        } 
+        }
     }
 
     get a() {
@@ -128,5 +135,5 @@ export class Color extends EventHandler {
     toJSON() {
         return this.getHex();
     }
- 
+
 }
