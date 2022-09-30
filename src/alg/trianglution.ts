@@ -3,7 +3,7 @@ import { Vec3 } from '../math/Vec3';
 import { flat } from '../utils/array';
 import { clone, rotateByUnitVectors } from './common';
 import { delta4 } from '../math/Math';
-import vector from '../math/vector';
+import { vecs } from '../math/vecs';
 
 export enum AxisPlane {
     XY = 'xy',
@@ -41,7 +41,7 @@ export function triangulation(inboundary: any, holes: any[] = [], options: ITria
     }
 
     var allV = [...boundary, ...flat(holes)];
-    var vertextNumbers: any | number[] = vector.verctorToNumbers(allV, feature);
+    var vertextNumbers: any | number[] = vecs.verctorToNumbers(allV, feature);
 
     var holesIndex = [];
     var baseIndex = boundary.length;

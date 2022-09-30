@@ -10,7 +10,7 @@ export * from "./math/Euler"
 
 export * from "./math/Color"
 //common
-export * from "./math/vector"
+export * from "./math/vecs"
 
 export * from "./alg/common"
 export * from "./alg/result"

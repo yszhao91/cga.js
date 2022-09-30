@@ -8,7 +8,7 @@ import { BufferAttribute, Float32BufferAttribute, Uint16BufferAttribute, Uint32B
 import { isBufferArray, TypedArray } from "./types";
 import { Vec2 } from "../math/Vec2";
 import { Vec4 } from "../math/Vec4";
-import vector from "../math/vector";
+import { vecs } from "../math/vecs";
 
 
 export interface IGeometry {
@@ -119,13 +119,13 @@ export class BufferGeometry {
     addAttribute(name: string, attribute: BufferAttribute | TypedArray | Array<number | Vec2 | Vec3 | Vec4>, itemSize: number = 1) {
         if (Array.isArray(attribute)) {
             if (attribute[0] instanceof Vec2) {
-                var nums = vector.verctorToNumbers(attribute);
+                var nums = vecs.verctorToNumbers(attribute);
                 this.setAttribute(name, new Float32BufferAttribute(nums, 2))
             } else if (attribute[0] instanceof Vec3) {
-                var nums = vector.verctorToNumbers(attribute);
+                var nums = vecs.verctorToNumbers(attribute);
                 this.setAttribute(name, new Float32BufferAttribute(nums, 3))
             } else if (attribute[0] instanceof Vec4) {
-                var nums = vector.verctorToNumbers(attribute);
+                var nums = vecs.verctorToNumbers(attribute);
                 this.setAttribute(name, new Float32BufferAttribute(nums, 4))
             } else if (!isNaN(attribute[0])) {
                 this.setAttribute(name, new Float32BufferAttribute(attribute, itemSize));
@@ -932,7 +932,7 @@ export class BufferGeometry {
 
     }
 
-    toFlat() {  
+    toFlat() {
         var indices = this.index!.array;
         var attributes = this.attributes;
         var geometry2 = new BufferGeometry();

@@ -20,7 +20,7 @@ import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
 import { RADIANS_PER_DEGREE } from '../math/Math';
-import vector from '../math/vector';
+import {vecs} from '../math/vecs';
 import { ArrayList } from '../struct/data/ArrayList';
 import { Distance } from '../basic/distance';
 
@@ -360,7 +360,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
     //     }
     // }
 
-    const positions = vector.verctorToNumbers(allVertics);
+    const positions = vecs.verctorToNumbers(allVertics);
     shapes.pop();
     shapes.pop();
 
@@ -451,11 +451,11 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
         ...options
     }
 
-    if (!vector.isCCW(options.shape))
+    if (!vecs.isCCW(options.shape))
         options.shape.reverse();
     if (options.holes)
         options.holes.forEach((hole) => {
-            if (!vector.isCCW(hole))
+            if (!vecs.isCCW(hole))
                 hole.reverse();
         })
 
@@ -545,7 +545,7 @@ export function extrude_obsolete<T extends Vec3>(shape: ArrayList<T>, arg_path: 
     }
     if (arg_path.length < 2) { throw ("路径节点数必须大于2") }
 
-    var isCCW = vector.isCCW(shape);
+    var isCCW = vecs.isCCW(shape);
     if (!isCCW)
         shape.reverse();
 

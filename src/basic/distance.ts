@@ -1,5 +1,5 @@
 import { Vec3 } from "../math/Vec3";
-import vector from "../math/vector";
+import {vecs} from "../math/vecs";
 
 
 /*
@@ -14,7 +14,7 @@ const _vec3_1 = new Vec3();
 export class Distance {
 
     static Point2Point_Number(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) {
-        return vector.distance(x0, y0, z0, x1, y1, z1)
+        return vecs.distance(x0, y0, z0, x1, y1, z1)
     }
 
     static Point2Line_Number(x0: number, y0: number, z0: number, sox: number, soy: number, soz: number, sdx: number, sdy: number, sdz: number) {

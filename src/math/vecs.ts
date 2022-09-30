@@ -25,7 +25,7 @@ const ckeckVec = (vs: any, component: number) => {
 /**
  * 矢量几何操作，数字数组/矢量数组，常用工具集合
  */
-export default class vector {
+export class vecs {
     /**
      * 去除相邻的重复向量
      * @param vs 矢量集合
@@ -305,39 +305,39 @@ export default class vector {
      * @param {String} comSort  'x','y','z','w' 按顺序选取后自由组合
      * @returns {Array<Number>} 数字数组 
      */
-    static verctorToNumbers(vecs: Array<Vec4 | Vec3 | Vec2 | any> | any, comSort = "xyz"): number[] {
-        if (!(vecs instanceof Array)) {
+    static verctorToNumbers(vectors: Array<Vec4 | Vec3 | Vec2 | any> | any, comSort = "xyz"): number[] {
+        if (!(vectors instanceof Array)) {
             console.error("传入参数必须是数组");
             return [];
         }
 
         var numbers: number[] = [];
-        if (vecs[0].x !== undefined && vecs[0].y !== undefined && vecs[0].z !== undefined && vecs[0].w !== undefined) {
+        if (vectors[0].x !== undefined && vectors[0].y !== undefined && vectors[0].z !== undefined && vectors[0].w !== undefined) {
             comSort = comSort.length !== 4 ? 'xyzw' : comSort;
-            for (var i = 0; i < vecs.length; i++) {
+            for (var i = 0; i < vectors.length; i++) {
                 for (let j = 0; j < comSort.length; j++) {
-                    numbers.push(vecs[i][comSort[j]]);
+                    numbers.push(vectors[i][comSort[j]]);
                 }
             }
         }
-        if (vecs[0].x !== undefined && vecs[0].y !== undefined && vecs[0].z !== undefined) {
+        if (vectors[0].x !== undefined && vectors[0].y !== undefined && vectors[0].z !== undefined) {
             comSort = comSort.length !== 3 ? 'xyz' : comSort;
-            for (var i = 0; i < vecs.length; i++) {
+            for (var i = 0; i < vectors.length; i++) {
                 for (let j = 0; j < comSort.length; j++) {
-                    numbers.push(vecs[i][comSort[j]]);
+                    numbers.push(vectors[i][comSort[j]]);
                 }
             }
-        } else if (vecs[0].x !== undefined && vecs[0].y !== undefined) {
+        } else if (vectors[0].x !== undefined && vectors[0].y !== undefined) {
             comSort = comSort.length !== 2 ? 'xy' : comSort;
-            for (var i = 0; i < vecs.length; i++) {
+            for (var i = 0; i < vectors.length; i++) {
                 for (let j = 0; j < comSort.length; j++) {
-                    numbers.push(vecs[i][comSort[j]]);
+                    numbers.push(vectors[i][comSort[j]]);
                 }
             }
         }
-        else if (vecs[0] instanceof Array) {
-            for (var i = 0; i < vecs.length; i++) {
-                numbers = numbers.concat(vector.verctorToNumbers(vecs[i]));
+        else if (vectors[0] instanceof Array) {
+            for (var i = 0; i < vectors.length; i++) {
+                numbers = numbers.concat(vecs.verctorToNumbers(vectors[i]));
             }
         } else {
             console.error("数组内部的元素不是向量");
@@ -368,7 +368,7 @@ export default class vector {
         const length = vss.length;
 
         for (let i = 0; i < length; i += component) {
-            const vec = vector.vec(component);
+            const vec = vecs.vec(component);
             vec.fromArray(vss.slice(i, i + component));
             result.push(vec);
         }
