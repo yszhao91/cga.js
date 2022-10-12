@@ -15,8 +15,14 @@ import { Vec3 } from './Vec3';
 import { ArrayList } from '../struct/data/ArrayList';
 import { Vec4 } from './Vec4';
 import { delta4 } from './Math';
+import { Mat4 } from "./Mat4"; 
+import { Quat } from "./Quat";
 
 
+
+const _vec21 = new Vec2();
+const _vec31 = new Vec3();
+const _vec41 = new Vec4();
 
 const ckeckVec = (vs: any, component: number) => {
     if (vs.length % component !== 0)
@@ -365,14 +371,66 @@ export class vecs {
      */
     static numbersToVecs(vss: number[], component: number = 3): Vec2[] | Vec3[] | Vec4[] {
         const result: any = []
-        const length = vss.length;
 
-        for (let i = 0; i < length; i += component) {
+        for (let i = 0, length = vss.length; i < length; i += component) {
             const vec = vecs.vec(component);
             vec.fromArray(vss.slice(i, i + component));
             result.push(vec);
         }
 
         return result;
+    }
+
+    static applyQuat(vss: number[], quat: Quat, component: number = 3) {
+        let vec;
+        if (component === 3)
+            vec = _vec31;
+        else if (component === 2)
+            vec = _vec21
+        else if (component === 4)
+            vec = _vec41;
+
+        for (let i = 0; i < vss.length; i += component) {
+            (vec as any).fromArray(vss, i)
+                .applyQuat(quat)
+                .toArray(vss, i);
+        }
+    }
+
+    static applyMat4(vss: number[], mat: Mat4, component: number = 3) {
+        let vec;
+        if (component === 3)
+            vec = _vec31;
+        else if (component === 2)
+            vec = _vec21
+        else if (component === 4)
+            vec = _vec41;
+
+        for (let i = 0; i < vss.length; i += component) {
+            (vec as Vec3).fromArray(vss, i)
+                .applyMat4(mat)
+                .toArray(vss, i);
+        }
+    }
+
+    static translate(vss: number[], distance: number[], component = 3) {
+        for (let i = 0; i < vss.length; i += component) {
+            for (let j = 0; j < component; j++) {
+                vss[i + j] += distance[j];
+            }
+        }
+    }
+
+    static rotate(vss: number[], axis: Vec3, angle: number) {
+        vecs.applyQuat(vss, new Quat().setFromAxisAngle(axis, angle))
+    }
+
+
+    static scale(vss: number[], _scale: number[], component = 3) {
+        for (let i = 0; i < vss.length; i += component) {
+            for (let j = 0; j < component; j++) {
+                vss[i + j] *= _scale[j];
+            }
+        }
     }
 }

@@ -79,18 +79,18 @@ export function boundingBox(points: Vec3[]) {
 /**
  * 
  * @param {*} points 
- * @param {*} Quat 
+ * @param {*} quat 
  * @param {Boolean} ref 是否是引用
  */
-export function applyQuat(points: any | Vec3[], Quat: Quat, ref = true): Vec3 | any {
+export function applyQuat(points: any | Vec3[], quat: Quat, ref = true): Vec3 | any {
     if (ref) {
         points.flat(Infinity).forEach((point: Vec3 | any) => {
-            point.applyQuat(Quat);
+            point.applyQuat(quat);
         });
         return points;
     }
 
-    return applyQuat(clone(points), Quat)
+    return applyQuat(clone(points), quat)
 }
 
 /**
