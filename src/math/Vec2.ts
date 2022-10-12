@@ -1,5 +1,6 @@
 import { Mat3 } from './Mat3';
 import { EventHandler } from '../render/eventhandler';
+import { TypedArrayLike } from '../render/types';
 export class Vec2 extends EventHandler {
   isVec2: boolean = true;
 
@@ -361,14 +362,14 @@ export class Vec2 extends EventHandler {
     return v.x === this._x && v.y === this._y;
   }
 
-  fromArray(array: number[], offset: number = 0) {
+  fromArray(array: TypedArrayLike, offset: number = 0) {
     this._x = array[offset];
     this._y = array[offset + 1];
 
     return this;
   }
 
-  toArray(array: number[] = [], offset: number = 0) {
+  toArray(array: TypedArrayLike = [], offset: number = 0) {
     array[offset] = this._x;
     array[offset + 1] = this._y;
 

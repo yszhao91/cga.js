@@ -15,8 +15,9 @@ import { Vec3 } from './Vec3';
 import { ArrayList } from '../struct/data/ArrayList';
 import { Vec4 } from './Vec4';
 import { delta4 } from './Math';
-import { Mat4 } from "./Mat4"; 
+import { Mat4 } from "./Mat4";
 import { Quat } from "./Quat";
+import { TypedArrayLike } from "../render/types";
 
 
 
@@ -369,19 +370,19 @@ export class vecs {
      * @param component 矢量维度，默认为3
      * @returns 
      */
-    static numbersToVecs(vss: number[], component: number = 3): Vec2[] | Vec3[] | Vec4[] {
+    static numbersToVecs(vss: TypedArrayLike, component: number = 3): Vec2[] | Vec3[] | Vec4[] {
         const result: any = []
 
         for (let i = 0, length = vss.length; i < length; i += component) {
             const vec = vecs.vec(component);
-            vec.fromArray(vss.slice(i, i + component));
+            vec.fromArray(vss, i);
             result.push(vec);
         }
 
         return result;
     }
 
-    static applyQuat(vss: number[], quat: Quat, component: number = 3) {
+    static applyQuat(vss: TypedArrayLike, quat: Quat, component: number = 3) {
         let vec;
         if (component === 3)
             vec = _vec31;
@@ -397,7 +398,7 @@ export class vecs {
         }
     }
 
-    static applyMat4(vss: number[], mat: Mat4, component: number = 3) {
+    static applyMat4(vss: TypedArrayLike, mat: Mat4, component: number = 3) {
         let vec;
         if (component === 3)
             vec = _vec31;
@@ -413,7 +414,7 @@ export class vecs {
         }
     }
 
-    static translate(vss: number[], distance: number[], component = 3) {
+    static translate(vss: TypedArrayLike, distance: number[], component = 3) {
         for (let i = 0; i < vss.length; i += component) {
             for (let j = 0; j < component; j++) {
                 vss[i + j] += distance[j];
@@ -421,12 +422,12 @@ export class vecs {
         }
     }
 
-    static rotate(vss: number[], axis: Vec3, angle: number) {
+    static rotate(vss: TypedArrayLike, axis: Vec3, angle: number) {
         vecs.applyQuat(vss, new Quat().setFromAxisAngle(axis, angle))
     }
 
 
-    static scale(vss: number[], _scale: number[], component = 3) {
+    static scale(vss: TypedArrayLike, _scale: number[], component = 3) {
         for (let i = 0; i < vss.length; i += component) {
             for (let j = 0; j < component; j++) {
                 vss[i + j] *= _scale[j];

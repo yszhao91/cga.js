@@ -1,3 +1,4 @@
+import { TypedArrayLike } from '../render/types';
 import { EventHandler } from '../render/eventhandler';
 
 export class Vec4 extends EventHandler {
@@ -546,7 +547,7 @@ export class Vec4 extends EventHandler {
     return v.x === this._x && v.y === this._y && v.z === this._z && v.w === this._w;
   }
 
-  fromArray(array: number[], offset: number = 0) {
+  fromArray(array: TypedArrayLike, offset: number = 0) {
     this._x = array[offset];
     this._y = array[offset + 1];
     this._z = array[offset + 2];
@@ -555,7 +556,7 @@ export class Vec4 extends EventHandler {
     return this;
   }
 
-  toArray(array: number[] = [], offset: number = 0) {
+  toArray(array: TypedArrayLike = [], offset: number = 0) {
 
     array[offset] = this._x;
     array[offset + 1] = this._y;

@@ -15,6 +15,7 @@ import { Rectangle } from '../struct/3d/Rectangle';
 import { Circle } from '../struct/3d/Circle';
 import { Disk } from '../struct/3d/Disk';
 import { Polyline } from '..';
+import { TypedArrayLike } from '../render/types';
 // import { wgs84RadiiSquared } from '../gis/gis';
 export interface IVec2 {
   x: number;
@@ -771,7 +772,7 @@ export class Vec3 extends EventHandler implements IVec3 {
     return this;
   }
 
-  toArray(array: number[] = [], offset: number = 0) {
+  toArray(array: TypedArrayLike = [], offset: number = 0) {
 
     array[offset] = this._x;
     array[offset + 1] = this._y;
