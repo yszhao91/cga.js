@@ -25,3 +25,15 @@ git push -f git@github.com:yszhao91/cga.js.git master:gh-pages
 rm -rf *
 cd -
 git checkout  master
+
+
+# git config --global http.proxy socks5://127.0.0.1:5006 
+# git config --global https.proxy socks5://127.0.0.1:5006
+
+
+# git config --global https.proxy http://127.0.0.1:5006 
+# git config --global https.proxy https://127.0.0.1:5006
+
+
+# git config --global --unset http.proxy 
+# git config --global --unset https.proxy
