@@ -55,7 +55,7 @@ if (MIN) {
 }
 
 export default {
-    input: path.join('dist', 'src/index.js'),
+    input: path.join('dist', 'index.js'),
     external: ['lodash'],
     plugins: plugins,
     output: {
