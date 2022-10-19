@@ -2,17 +2,16 @@ import { v3 } from "./Vec3";
 import { clamp } from "./Math";
 import { m4, Mat4 } from "./Mat4";
 import { quat, Quat } from './Quat';
-import { EventHandler } from "../render/eventhandler";
 
 var _matrix = m4();
 var _Quat = quat();
 
 const RotationOrders = ["XYZ", "YZX", "ZXY", "XZY", "YXZ", "ZYX"];
 const DefaultOrder = "XYZ";
-export class Euler extends EventHandler {
+export class Euler {
   isEuler: boolean = true;
   constructor(public _x: number = 0, public _y: number = 0, public _z: number = 0, public _order = DefaultOrder) {
-    super()
+
   }
   get x() {
     return this._x;
@@ -21,7 +20,7 @@ export class Euler extends EventHandler {
   set x(value) {
     if (this._x !== value) {
       this._x = value;
-      this.fire('change', 'x', this._x, value)
+      // this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -32,7 +31,7 @@ export class Euler extends EventHandler {
   set y(value) {
     if (this._y !== value) {
       this._y = value;
-      this.fire('change', 'y', this._y, value)
+      // this.fire('change', 'y', this._y, value)
     }
   }
 
@@ -43,7 +42,7 @@ export class Euler extends EventHandler {
   set z(value) {
     if (this._z !== value) {
       this._z = value;
-      this.fire('change', 'z', this._z, value)
+      // this.fire('change', 'z', this._z, value)
     }
   }
 
@@ -54,7 +53,7 @@ export class Euler extends EventHandler {
 
   set order(value) {
     if (this._order !== value) {
-      this.fire('change', 'order', this._order, value)
+      // this.fire('change', 'order', this._order, value)
       this._order = value;
     }
   }
@@ -65,7 +64,7 @@ export class Euler extends EventHandler {
     this._z = z;
     this._order = order || this._order;
 
-    this.fire('change')
+    // this.fire('change')
 
 
     return this;
@@ -81,7 +80,7 @@ export class Euler extends EventHandler {
     this._z = Euler._z;
     this._order = Euler._order;
 
-    this.fire('change')
+    // this.fire('change')
 
     return this;
   }
@@ -170,9 +169,9 @@ export class Euler extends EventHandler {
 
     this._order = order;
 
-    if (update !== false) this.fire('change')
+    if (update !== false)// this.fire('change')
 
-    return this;
+      return this;
   }
 
   setFromQuat(q: Quat, order?: any, update?: boolean) {
@@ -208,7 +207,7 @@ export class Euler extends EventHandler {
     this._z = array[2];
     if (array[3] !== undefined) this._order = array[3];
 
-    this.fire('change')
+    // this.fire('change')
 
     return this;
   }

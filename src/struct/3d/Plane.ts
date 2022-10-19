@@ -14,9 +14,7 @@ import { Triangle } from './Triangle';
 import { IGeometry } from '../../render/geometry';
 import { ISplitResult } from '../../alg/split';
 import { Line } from './Line';
-import { Polyline } from './Polyline';
-import { Path } from './Path';
-import { indexable } from '../../render/mesh';
+import { MeshTool } from '../../render/mesh';
 
 class Plane {
 
@@ -259,7 +257,7 @@ class Plane {
      */
     splitPolyVS(polyVS: Vec3[]) {
         polyVS = [...polyVS];
-        indexable(polyVS);
+        MeshTool.indexable(polyVS);
 
         let jd0 = -1;//找出第一个交点 
         let jdp0: any;//找出第一个交点 

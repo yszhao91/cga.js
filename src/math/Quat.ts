@@ -1,11 +1,10 @@
 import { clamp } from "./Math";
 import { Euler } from './Euler';
-import { EventHandler } from '../render/eventhandler';
 
-export class Quat extends EventHandler {
+export class Quat {
   isQuat: boolean = true;
   constructor(public _x: number = 0, public _y: number = 0, public _z: number = 0, public _w: number = 1) {
-    super();
+
   }
   get x() {
     return this._x;
@@ -14,7 +13,7 @@ export class Quat extends EventHandler {
   set x(value) {
     if (this._x !== value) {
       this._x = value;
-      this.fire('change', 'x', this._x, value)
+      // this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -25,7 +24,7 @@ export class Quat extends EventHandler {
   set y(value) {
     if (this._y !== value) {
       this._y = value;
-      this.fire('change', 'y', this._y, value)
+      // this.fire('change', 'y', this._y, value)
     }
   }
 
@@ -36,7 +35,7 @@ export class Quat extends EventHandler {
   set z(value) {
     if (this._z !== value) {
       this._z = value;
-      this.fire('change', 'z', this._z, value)
+      // this.fire('change', 'z', this._z, value)
     }
   }
 
@@ -47,7 +46,7 @@ export class Quat extends EventHandler {
   set w(value) {
     if (this._w !== value) {
       this._w = value;
-      this.fire('change', 'w', this._w, value)
+      // this.fire('change', 'w', this._w, value)
     }
   }
 
@@ -134,7 +133,7 @@ export class Quat extends EventHandler {
     this._z = z;
     this._w = w;
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -149,17 +148,12 @@ export class Quat extends EventHandler {
     this._z = quat.z;
     this._w = quat.w;
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
 
   setFromEuler(euler: Euler, update?: boolean) {
-    if (!(euler && euler.isEuler)) {
-      throw new Error(
-        "Quat: .setFromEuler() now expects an Euler rotation rather than a Vec3 and order."
-      );
-    }
 
     var x = euler._x,
       y = euler._y,
@@ -213,7 +207,8 @@ export class Quat extends EventHandler {
       this._w = c1 * c2 * c3 + s1 * s2 * s3;
     }
 
-    if (update !== false) this.fire("change", this);
+    // if (update !== false)
+    //   this.fire("change", this);
 
     return this;
   }
@@ -231,7 +226,7 @@ export class Quat extends EventHandler {
     this._z = axis.z * s;
     this._w = Math.cos(halfAngle);
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -284,7 +279,7 @@ export class Quat extends EventHandler {
       this._z = 0.25 * s;
     }
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -357,7 +352,7 @@ export class Quat extends EventHandler {
     this._y *= -1;
     this._z *= -1;
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -401,7 +396,7 @@ export class Quat extends EventHandler {
       this._w = this._w * l;
     }
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -435,7 +430,7 @@ export class Quat extends EventHandler {
     this._z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
     this._w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -483,7 +478,7 @@ export class Quat extends EventHandler {
       this._z = s * z + t * this._z;
 
       this.normalize();
-      this.fire("change", this);
+      // this.fire("change", this);
 
       return this;
     }
@@ -498,7 +493,7 @@ export class Quat extends EventHandler {
     this._y = y * ratioA + this._y * ratioB;
     this._z = z * ratioA + this._z * ratioB;
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }
@@ -519,7 +514,7 @@ export class Quat extends EventHandler {
     this._z = array[offset + 2];
     this._w = array[offset + 3];
 
-    this.fire("change", this);
+    // this.fire("change", this);
 
     return this;
   }

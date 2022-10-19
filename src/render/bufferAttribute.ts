@@ -1,4 +1,3 @@
-
 import { Mat3 } from "../math/Mat3";
 import { Mat4 } from "../math/Mat4";
 import { Vec2 } from "../math/Vec2";
@@ -9,15 +8,22 @@ import { TypedArray } from "./types";
 
 var _vector = new Vec3();
 
+/**
+ * 几何体buffer属性
+ * 记录每个几何数据属性的细节
+ */
 export class BufferAttribute {
     name: string;
-    array: TypedArray;
+
     itemSize: number;
-    // usage: Usage;
-    updateRange: { offset: number; count: number };
+    array: TypedArray;
+
     version: number;
     normalized: boolean;
+
     count: number;
+
+    updateRange: { offset: number; count: number };
 
     readonly isBufferAttribute: true = true;
     /**
@@ -52,6 +58,7 @@ export class BufferAttribute {
 
         return this;
     }
+
     setUsage(usage: any): this {
         return this
     }

@@ -1,5 +1,5 @@
 
-import { BufferAttribute } from "../../render/buffer-attribute";
+import { BufferAttribute } from "../../render/bufferAttribute";
 import { v3, Vec3 } from "../../math/Vec3";
 
 

@@ -36,13 +36,11 @@ export * from "./struct/3d/Frustum"
 export * from "./struct/3d/Sphere"
 
 export * from "./alg/delaunator"
-export * from "./alg/voronoi"
-
-export * from "./render/eventhandler"
+export * from "./alg/voronoi" 
 
 export * from "./extends/geometryaid"
 
 //Geometry 
-export * from "./render/buffer-attribute"
+export * from "./render/bufferAttribute"
 export * from "./render/geometry"
 export * from "./render/mesh"

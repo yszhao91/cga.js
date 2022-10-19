@@ -1,11 +1,10 @@
 import { Mat3 } from './Mat3';
-import { EventHandler } from '../render/eventhandler';
 import { TypedArrayLike } from '../render/types';
-export class Vec2 extends EventHandler {
+export class Vec2 {
   isVec2: boolean = true;
 
   constructor(private _x: number = 0, private _y: number = 0) {
-    super();
+    
   }
 
   get x() {
@@ -15,7 +14,7 @@ export class Vec2 extends EventHandler {
   set x(value) {
     if (this._x !== value) {
       this._x = value;
-      this.fire('change', 'x', this._x, value)
+     // this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -26,7 +25,7 @@ export class Vec2 extends EventHandler {
   set y(value) {
     if (this._y !== value) {
       this._y = value;
-      this.fire('change', 'y', this._y, value)
+     // this.fire('change', 'y', this._y, value)
     }
   }
 

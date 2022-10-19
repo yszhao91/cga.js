@@ -92,16 +92,9 @@
 import * as cga from "./index"
 import { Vec3, v3 } from './math/Vec3';
 import { GLView } from './glview';
-import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Vector3, LineSegments, LineBasicMaterial, MeshStandardMaterial, FrontSide, BufferGeometryUtils, WebGLRenderTarget, MeshNormalMaterial, MeshDepthMaterial, DepthTexture, MeshPhongMaterial, CanvasTexture, ShaderMaterial, } from 'three';
+import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, FrontSide, WebGLRenderTarget, MeshNormalMaterial, DepthTexture, MeshPhongMaterial, CanvasTexture, ShaderMaterial, } from 'three';
 
-import { Delaunator } from './alg/delaunator';
-import Delaunay from './alg/delaunay';
-import { extrude, linkSides } from './alg/extrude';
-import { Polyline } from './struct/3d/Polyline';
-import { PI, PI_OVER_TWO, PI_TWO } from "./math/Math";
-import { clone, scale, translate } from "./alg/common";
-import { BufferGeometry } from "./render/geometry";
-import { toGeoBuffer } from "./render/mesh";
+import { extrude } from './alg/extrude';
 
 
 // var a = Vec3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0);
@@ -211,7 +204,6 @@ var geometry = cga.toGeometryBuffer(geo);
 geometry.computeVertexNormals();
 
 import * as THREE from "three"
-import { diamondMaterial } from "./diamondMaterialShader";
 import { BreathLight } from "./effect/breath-light";
 import { Mat4 } from "./math/Mat4";
 import { Color } from "./index";

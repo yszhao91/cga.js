@@ -49,6 +49,47 @@ export class vecs {
 
         return vs;
     }
+
+    /**
+     * 找到最大值 
+     * @param array 
+     * @returns 
+     */
+    static max(array: ArrayLike<number>) {
+
+        if (array.length === 0) return - Infinity;
+
+        var max = array[0];
+
+        for (var i = 1, l = array.length; i < l; ++i) {
+
+            if (array[i] > max) max = array[i];
+
+        }
+
+        return max;
+    }
+
+    /**
+    * 找到最小值 
+    * @param array 
+    * @returns 
+    */
+    static min(array: ArrayLike<number>) {
+
+        if (array.length === 0) return - Infinity;
+
+        var min = array[0];
+
+        for (var i = 1, l = array.length; i < l; ++i) {
+
+            if (array[i] < min) min = array[i];
+
+        }
+
+        return min;
+    }
+
     /**
      * 去除相邻没有重复点
      */

@@ -5,8 +5,7 @@
  * @Date         : 2021-08-02 16:24:03
  * @LastEditTime : 2021-08-03 11:32:10
  * @FilePath     : \cga.js\src\math\HVec3.ts
- */
-import { EventHandler } from '../render/eventhandler';
+ */ 
 
 import Decimal from 'decimal.js';
 // import { wgs84RadiiSquared } from '../gis/gis';
@@ -21,12 +20,11 @@ export interface IHVec4 extends IHVec3 {
   w: Decimal;
 }
 
-export class HVec3 extends EventHandler implements IHVec3 {
+export class HVec3 implements IHVec3 {
   x: Decimal;
   y: Decimal;
   z: Decimal;
-  constructor(private _x: any = 0, private _y: any = 0, private _z: any = 0) {
-    super();
+  constructor(private _x: any = 0, private _y: any = 0, private _z: any = 0) { 
     this.x = new Decimal(_x);
     this.y = new Decimal(_x);
     this.z = new Decimal(_x);

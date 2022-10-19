@@ -1,11 +1,11 @@
 {
   "name": "@xort/cga",
-  "version": "0.0.83",
+  "version": "0.0.84",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "pxy":"hpts -s 127.0.0.1:5006 -p 8002",
+    "pxy": "hpts -s 127.0.0.1:5006 -p 8002",
     "release": "tsc && npm publish && git.sh",
     "dev": "webpack-dev-server",
     "build:dev": "webpack --mode development",
@@ -35,9 +35,9 @@
     "gis"
   ],
   "license": "MIT",
-  "dependencies": {
-    "earcut": "^2.2.3",
-    "decimal.js": "^10.3.1"
+  "dependencies": { 
+    "decimal.js": "^10.3.1",
+    "earcut": "^2.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",

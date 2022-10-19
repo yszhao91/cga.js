@@ -13,14 +13,14 @@ import { quat, Quat } from '../math/Quat';
 import { Path } from '../struct/3d/Path';
 import { clone, rotateByUnitVectors, angle } from './common';
 import { applyMat4, translate } from './pointset';
-import { indexable } from '../render/mesh';
+import { MeshTool } from '../render/mesh';
 import { AxisPlane, triangulation } from './trianglution';
 import { flat, unique } from '../utils/array';
 import { isDefined, isUndefined } from '../utils/types';
 import { m4 } from '../math/Mat4';
 import { IGeometry } from '../render/geometry';
 import { RADIANS_PER_DEGREE } from '../math/Math';
-import {vecs} from '../math/vecs';
+import { vecs } from '../math/vecs';
 import { ArrayList } from '../struct/data/ArrayList';
 import { Distance } from '../basic/distance';
 
@@ -193,7 +193,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
     var orgHoles = options.orgHoles || (holess && holess[0]);
 
     if (index)
-        indexable(allVertics, index);
+        MeshTool.indexable(allVertics, index);
 
     for (var i = 0; i < length; i++) {
         if (holess)
@@ -595,7 +595,7 @@ export function extrude_obsolete<T extends Vec3>(shape: ArrayList<T>, arg_path: 
 
     const gindex = { index: 0 };
     var vertices = flat(shapeArray);
-    indexable(vertices, gindex);
+    MeshTool.indexable(vertices, gindex);
     var { index } = linkSides({ shapes: shapeArray, shapeClosed: options.shapeClosed, pathClosed: options.isClosed2, orgShape: shape as any });
     shapepath = new Path(shape as any);
     var uvs = [];
@@ -635,9 +635,9 @@ export function extrude_obsolete<T extends Vec3>(shape: ArrayList<T>, arg_path: 
     sealStartTris.reverse();
 
     if (options.sealStart)
-        indexable(startSeal, gindex);
+        MeshTool.indexable(startSeal, gindex);
     if (options.sealEnd)
-        indexable(endSeal, gindex);
+        MeshTool.indexable(endSeal, gindex);
     var sealEndTris = []
     var hasVLen = vertices.length;
     if (options.sealStart)

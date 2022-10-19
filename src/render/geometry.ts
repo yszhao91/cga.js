@@ -1,10 +1,9 @@
-import { Vec } from "../math/Vec";
-import { Mat3 } from "../math/Mat3";
+ import { Mat3 } from "../math/Mat3";
 import { Mat4 } from "../math/Mat4";
 import { v3, Vec3 } from "../math/Vec3";
 import { Box } from "../struct/3d/Box";
 import { Sphere } from "../struct/3d/Sphere";
-import { BufferAttribute, Float32BufferAttribute, Uint16BufferAttribute, Uint32BufferAttribute } from "./buffer-attribute";
+import { BufferAttribute, Float32BufferAttribute, Uint16BufferAttribute, Uint32BufferAttribute } from "./bufferAttribute";
 import { isBufferArray, TypedArray } from "./types";
 import { Vec2 } from "../math/Vec2";
 import { Vec4 } from "../math/Vec4";
@@ -43,21 +42,25 @@ var _vector = new Vec3();
  */
 export class BufferGeometry {
     name: string;
-    index: BufferAttribute | undefined;
-    morphAttributes: any;
-    morphTargetsRelative: boolean;
-    groups: { start: number; count: number; materialIndex?: number }[];
+
     boundingBox: Box | undefined;
     boundingSphere: Sphere | undefined;
-    drawRange: { start: number; count: number; };
+    
+    morphAttributes: any;
+    morphTargetsRelative: boolean;
+    
+    index: BufferAttribute | undefined;
     attributes: { [key: string]: BufferAttribute };
-    parameters: any;
+    groups: { start: number; count: number; materialIndex?: number }[];
+    drawRange: { start: number; count: number; };
+
+    parameters: any; 
+    
     readonly isBufferGeometry: true = true;
-    uuid: string = "";
-    type: string = "BufferGeometry";
+
     constructor() {
 
-        Object.defineProperty(this, 'id', { value: _bufferGeometryId += 2 });
+        Object.defineProperty(this, 'id', { value: _bufferGeometryId += 1 });
 
         this.name = '';
 
@@ -94,11 +97,11 @@ export class BufferGeometry {
 
     setIndex(index: BufferAttribute | TypedArray | number[]) {
         if (Array.isArray(index)) {
-            this.index = new (Vec.max(index as any) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute)(index, 1);
+            this.index = new (vecs.max(index as any) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute)(index, 1);
         } else if (index instanceof BufferAttribute) {
             this.index = index;
         } else {
-            this.index = new (Vec.max(index as any) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute)(index, 1)
+            this.index = new (vecs.max(index as any) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute)(index, 1)
         }
 
     }
@@ -1083,8 +1086,8 @@ export class BufferGeometry {
 
         // standard BufferGeometry serialization
 
-        data.uuid = this.uuid;
-        data.type = this.type;
+        // data.uuid = this.uuid;
+        // data.type = this.type;
         if (this.name !== '') data.name = this.name;
         if (Object.keys(this.userData).length > 0) data.userData = this.userData;
 

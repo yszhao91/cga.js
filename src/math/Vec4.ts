@@ -1,11 +1,10 @@
-import { TypedArrayLike } from '../render/types';
-import { EventHandler } from '../render/eventhandler';
+import { TypedArrayLike } from '../render/types';  
 
-export class Vec4 extends EventHandler {
+export class Vec4 {
   isVec4: boolean = true;
 
   constructor(private _x: number = 0, private _y: number = 0, private _z: number = 0, private _w: number = 1) {
-    super();
+ 
   }
 
 
@@ -16,7 +15,7 @@ export class Vec4 extends EventHandler {
   set x(value) {
     if (this._x !== value) {
       this._x = value;
-      this.fire('change', 'x', this._x, value)
+      // this.fire('change', 'x', this._x, value)
     }
   }
 
@@ -27,7 +26,7 @@ export class Vec4 extends EventHandler {
   set y(value) {
     if (this._y !== value) {
       this._y = value;
-      this.fire('change', 'y', this._y, value)
+      // this.fire('change', 'y', this._y, value)
     }
   }
 
@@ -38,7 +37,7 @@ export class Vec4 extends EventHandler {
   set z(value) {
     if (this._z !== value) {
       this._z = value;
-      this.fire('change', 'z', this._z, value)
+      // this.fire('change', 'z', this._z, value)
     }
   }
 
@@ -49,7 +48,7 @@ export class Vec4 extends EventHandler {
   set w(value) {
     if (this._w !== value) {
       this._w = value;
-      this.fire('change', 'w', this._w, value)
+      // this.fire('change', 'w', this._w, value)
     }
   }
 

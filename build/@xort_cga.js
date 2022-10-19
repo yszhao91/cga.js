@@ -130,260 +130,16 @@
 	var array_3 = array.flat;
 	var array_4 = array.forall;
 
-	var eventhandler = createCommonjsModule(function (module, exports) {
-
-	var __spreadArrays = commonjsGlobal && commonjsGlobal.__spreadArrays || function () {
-	  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-
-	  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
-
-	  return r;
-	};
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.EventHandler = void 0;
-
-	var EventHandler =
-	/** @class */
-	function () {
-	  function EventHandler() {
-	    this._callbacks = {};
-	    this._callbackActive = {};
-	  }
-
-	  EventHandler.prototype._addCallback = function (name, callback, scope, once) {
-	    if (!name || typeof name !== 'string' || !callback) return;
-	    if (!this._callbacks[name]) this._callbacks[name] = [];
-	    if (this._callbackActive[name] && this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
-
-	    this._callbacks[name].push({
-	      callback: callback,
-	      scope: scope || this,
-	      once: once || false
-	    });
-	  };
-	  /**
-	   * @function
-	   * @name EventHandler#on
-	   * @description Attach an event handler to an event.
-	   * @param {string} name - Name of the event to bind the callback to.
-	   * @param {callbacks.HandleEvent} callback - Function that is called when event is fired. Note the callback is limited to 8 arguments.
-	   * @param {object} [scope] - Object to use as 'this' when the event is fired, defaults to current this.
-	   * @returns {EventHandler} Self for chaining.
-	   * @example
-	   * obj.on('test', function (a, b) {
-	   *     console.log(a + b);
-	   * });
-	   * obj.fire('test', 1, 2); // prints 3 to the console
-	   */
-
-
-	  EventHandler.prototype.on = function (name, callback, scope) {
-	    var _this = this;
-
-	    if (Array.isArray(name)) name.forEach(function (v) {
-	      return _this._addCallback(v, callback, scope, false);
-	    });else this._addCallback(name, callback, scope, false);
-	    return this;
-	  };
-	  /**
-	   * @function
-	   * @name EventHandler#off
-	   * @description Detach an event handler from an event. If callback is not provided then all callbacks are unbound from the event,
-	   * if scope is not provided then all events with the callback will be unbound.
-	   * @param {string} [name] - Name of the event to unbind.
-	   * @param {callbacks.HandleEvent} [callback] - Function to be unbound.
-	   * @param {object} [scope] - Scope that was used as the this when the event is fired.
-	   * @returns {EventHandler} Self for chaining.
-	   * @example
-	   * var handler = function () {
-	   * };
-	   * obj.on('test', handler);
-	   *
-	   * obj.off(); // Removes all events
-	   * obj.off('test'); // Removes all events called 'test'
-	   * obj.off('test', handler); // Removes all handler functions, called 'test'
-	   * obj.off('test', handler, this); // Removes all hander functions, called 'test' with scope this
-	   */
-
-
-	  EventHandler.prototype.off = function (name, callback, scope) {
-	    if (name) {
-	      if (this._callbackActive[name] && this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
-	    } else {
-	      for (var key in this._callbackActive) {
-	        if (!this._callbacks[key]) continue;
-	        if (this._callbacks[key] !== this._callbackActive[key]) continue;
-	        this._callbackActive[key] = this._callbackActive[key].slice();
-	      }
-	    }
-
-	    if (!name) {
-	      this._callbacks = {};
-	    } else if (!callback) {
-	      if (this._callbacks[name]) this._callbacks[name] = [];
-	    } else {
-	      var events = this._callbacks[name];
-	      if (!events) return this;
-	      var count = events.length;
-
-	      for (var i = 0; i < count; i++) {
-	        if (events[i].callback !== callback) continue;
-	        if (scope && events[i].scope !== scope) continue;
-	        events[i--] = events[--count];
-	      }
-
-	      events.length = count;
-	    }
-
-	    return this;
-	  }; // ESLint rule disabled here as documenting arg1, arg2...argN as [...] rest
-	  // arguments is preferable to documenting each one individually.
-
-	  /* eslint-disable valid-jsdoc */
-
-	  /**
-	   * @function
-	   * @name EventHandler#fire
-	   * @description Fire an event, all additional arguments are passed on to the event listener.
-	   * @param {object} name - Name of event to fire.
-	   * @param {*} [args] - arguments that is passed to the event handler.
-	   * obj.fire('test', 'This is the message');
-	   */
-
-	  /* eslint-enable valid-jsdoc */
-
-
-	  EventHandler.prototype.fire = function (name) {
-	    var _a;
-
-	    var args = [];
-
-	    for (var _i = 1; _i < arguments.length; _i++) {
-	      args[_i - 1] = arguments[_i];
-	    }
-
-	    if (!name || !this._callbacks[name]) return this;
-	    var callbacks;
-
-	    if (!this._callbackActive[name]) {
-	      this._callbackActive[name] = this._callbacks[name];
-	    } else {
-	      if (this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
-	      callbacks = this._callbacks[name].slice();
-	    } // TODO: What does callbacks do here?
-	    // In particular this condition check looks wrong: (i < (callbacks || this._callbackActive[name]).length)
-	    // Because callbacks is not an integer
-	    // eslint-disable-next-line no-unmodified-loop-condition
-
-
-	    for (var i = 0; (callbacks || this._callbackActive[name]) && i < (callbacks || this._callbackActive[name]).length; i++) {
-	      var evt = (callbacks || this._callbackActive[name])[i];
-
-	      (_a = evt.callback).call.apply(_a, __spreadArrays([evt.scope], args));
-
-	      if (evt.once) {
-	        var ind = this._callbacks[name].indexOf(evt);
-
-	        if (ind !== -1) {
-	          if (this._callbackActive[name] === this._callbacks[name]) this._callbackActive[name] = this._callbackActive[name].slice();
-
-	          this._callbacks[name].splice(ind, 1);
-	        }
-	      }
-	    }
-
-	    if (!callbacks) this._callbackActive[name] = null;
-	    return this;
-	  };
-	  /**
-	   * @function
-	   * @name EventHandler#once
-	   * @description Attach an event handler to an event. This handler will be removed after being fired once.
-	   * @param {string} name - Name of the event to bind the callback to.
-	   * @param {callbacks.HandleEvent} callback - Function that is called when event is fired. Note the callback is limited to 8 arguments.
-	   * @param {object} [scope] - Object to use as 'this' when the event is fired, defaults to current this.
-	   * @returns {EventHandler} Self for chaining.
-	   * @example
-	   * obj.once('test', function (a, b) {
-	   *     console.log(a + b);
-	   * });
-	   * obj.fire('test', 1, 2); // prints 3 to the console
-	   * obj.fire('test', 1, 2); // not going to get handled
-	   */
-
-
-	  EventHandler.prototype.once = function (name, callback, scope) {
-	    this._addCallback(name, callback, scope, true);
-
-	    return this;
-	  };
-	  /**
-	   * @function
-	   * @name EventHandler#hasEvent
-	   * @description Test if there are any handlers bound to an event name.
-	   * @param {string} name - The name of the event to test.
-	   * @returns {boolean} True if the object has handlers bound to the specified event name.
-	   * @example
-	   * obj.on('test', function () { }); // bind an event to 'test'
-	   * obj.hasEvent('test'); // returns true
-	   * obj.hasEvent('hello'); // returns false
-	   */
-
-
-	  EventHandler.prototype.hasEvent = function (name) {
-	    return this._callbacks[name] && this._callbacks[name].length !== 0 || false;
-	  };
-
-	  return EventHandler;
-	}();
-
-	exports.EventHandler = EventHandler;
-	});
-
-	unwrapExports(eventhandler);
-	var eventhandler_1 = eventhandler.EventHandler;
-
 	var Vec2_1 = createCommonjsModule(function (module, exports) {
-
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.v2 = exports.Vec2 = void 0;
 
-
-
 	var Vec2 =
 	/** @class */
-	function (_super) {
-	  __extends(Vec2, _super);
-
+	function () {
 	  function Vec2(_x, _y) {
 	    if (_x === void 0) {
 	      _x = 0;
@@ -393,12 +149,9 @@
 	      _y = 0;
 	    }
 
-	    var _this = _super.call(this) || this;
-
-	    _this._x = _x;
-	    _this._y = _y;
-	    _this.isVec2 = true;
-	    return _this;
+	    this._x = _x;
+	    this._y = _y;
+	    this.isVec2 = true;
 	  }
 
 	  Object.defineProperty(Vec2.prototype, "x", {
@@ -407,8 +160,7 @@
 	    },
 	    set: function (value) {
 	      if (this._x !== value) {
-	        this._x = value;
-	        this.fire('change', 'x', this._x, value);
+	        this._x = value; // this.fire('change', 'x', this._x, value)
 	      }
 	    },
 	    enumerable: false,
@@ -420,8 +172,7 @@
 	    },
 	    set: function (value) {
 	      if (this._y !== value) {
-	        this._y = value;
-	        this.fire('change', 'y', this._y, value);
+	        this._y = value; // this.fire('change', 'y', this._y, value)
 	      }
 	    },
 	    enumerable: false,
@@ -780,7 +531,7 @@
 	  };
 
 	  return Vec2;
-	}(eventhandler.EventHandler);
+	}();
 
 	exports.Vec2 = Vec2;
 
@@ -1070,30 +821,6 @@
 
 	var Quat_1 = createCommonjsModule(function (module, exports) {
 
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
@@ -1101,13 +828,9 @@
 
 
 
-
-
 	var Quat =
 	/** @class */
-	function (_super) {
-	  __extends(Quat, _super);
-
+	function () {
 	  function Quat(_x, _y, _z, _w) {
 	    if (_x === void 0) {
 	      _x = 0;
@@ -1125,14 +848,11 @@
 	      _w = 1;
 	    }
 
-	    var _this = _super.call(this) || this;
-
-	    _this._x = _x;
-	    _this._y = _y;
-	    _this._z = _z;
-	    _this._w = _w;
-	    _this.isQuat = true;
-	    return _this;
+	    this._x = _x;
+	    this._y = _y;
+	    this._z = _z;
+	    this._w = _w;
+	    this.isQuat = true;
 	  }
 
 	  Object.defineProperty(Quat.prototype, "x", {
@@ -1141,8 +861,7 @@
 	    },
 	    set: function (value) {
 	      if (this._x !== value) {
-	        this._x = value;
-	        this.fire('change', 'x', this._x, value);
+	        this._x = value; // this.fire('change', 'x', this._x, value)
 	      }
 	    },
 	    enumerable: false,
@@ -1154,8 +873,7 @@
 	    },
 	    set: function (value) {
 	      if (this._y !== value) {
-	        this._y = value;
-	        this.fire('change', 'y', this._y, value);
+	        this._y = value; // this.fire('change', 'y', this._y, value)
 	      }
 	    },
 	    enumerable: false,
@@ -1167,8 +885,7 @@
 	    },
 	    set: function (value) {
 	      if (this._z !== value) {
-	        this._z = value;
-	        this.fire('change', 'z', this._z, value);
+	        this._z = value; // this.fire('change', 'z', this._z, value)
 	      }
 	    },
 	    enumerable: false,
@@ -1180,8 +897,7 @@
 	    },
 	    set: function (value) {
 	      if (this._w !== value) {
-	        this._w = value;
-	        this.fire('change', 'w', this._w, value);
+	        this._w = value; // this.fire('change', 'w', this._w, value)
 	      }
 	    },
 	    enumerable: false,
@@ -1257,8 +973,8 @@
 	    this._x = x;
 	    this._y = y;
 	    this._z = z;
-	    this._w = w;
-	    this.fire("change", this);
+	    this._w = w; // this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1270,16 +986,12 @@
 	    this._x = quat.x;
 	    this._y = quat.y;
 	    this._z = quat.z;
-	    this._w = quat.w;
-	    this.fire("change", this);
+	    this._w = quat.w; // this.fire("change", this);
+
 	    return this;
 	  };
 
 	  Quat.prototype.setFromEuler = function (euler, update) {
-	    if (!(euler && euler.isEuler)) {
-	      throw new Error("Quat: .setFromEuler() now expects an Euler rotation rather than a Vec3 and order.");
-	    }
-
 	    var x = euler._x,
 	        y = euler._y,
 	        z = euler._z,
@@ -1326,9 +1038,10 @@
 	      this._y = c1 * s2 * c3 - s1 * c2 * s3;
 	      this._z = c1 * c2 * s3 + s1 * s2 * c3;
 	      this._w = c1 * c2 * c3 + s1 * s2 * s3;
-	    }
+	    } // if (update !== false)
+	    //   this.fire("change", this);
 
-	    if (update !== false) this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1340,8 +1053,8 @@
 	    this._x = axis.x * s;
 	    this._y = axis.y * s;
 	    this._z = axis.z * s;
-	    this._w = Math.cos(halfAngle);
-	    this.fire("change", this);
+	    this._w = Math.cos(halfAngle); // this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1385,9 +1098,9 @@
 	      this._x = (m13 + m31) / s;
 	      this._y = (m23 + m32) / s;
 	      this._z = 0.25 * s;
-	    }
+	    } // this.fire("change", this);
 
-	    this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1446,8 +1159,8 @@
 	  Quat.prototype.conjugate = function () {
 	    this._x *= -1;
 	    this._y *= -1;
-	    this._z *= -1;
-	    this.fire("change", this);
+	    this._z *= -1; // this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1477,9 +1190,9 @@
 	      this._y = this._y * l;
 	      this._z = this._z * l;
 	      this._w = this._w * l;
-	    }
+	    } // this.fire("change", this);
 
-	    this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1508,8 +1221,8 @@
 	    this._x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
 	    this._y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
 	    this._z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
-	    this._w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
-	    this.fire("change", this);
+	    this._w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz; // this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1549,8 +1262,8 @@
 	      this._x = s * x + t * this._x;
 	      this._y = s * y + t * this._y;
 	      this._z = s * z + t * this._z;
-	      this.normalize();
-	      this.fire("change", this);
+	      this.normalize(); // this.fire("change", this);
+
 	      return this;
 	    }
 
@@ -1561,8 +1274,8 @@
 	    this._w = w * ratioA + this._w * ratioB;
 	    this._x = x * ratioA + this._x * ratioB;
 	    this._y = y * ratioA + this._y * ratioB;
-	    this._z = z * ratioA + this._z * ratioB;
-	    this.fire("change", this);
+	    this._z = z * ratioA + this._z * ratioB; // this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1578,8 +1291,8 @@
 	    this._x = array[offset];
 	    this._y = array[offset + 1];
 	    this._z = array[offset + 2];
-	    this._w = array[offset + 3];
-	    this.fire("change", this);
+	    this._w = array[offset + 3]; // this.fire("change", this);
+
 	    return this;
 	  };
 
@@ -1600,7 +1313,7 @@
 	  };
 
 	  return Quat;
-	}(eventhandler.EventHandler);
+	}();
 
 	exports.Quat = Quat;
 
@@ -1993,30 +1706,6 @@
 
 	var Vec3_1 = createCommonjsModule(function (module, exports) {
 
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
@@ -2028,13 +1717,9 @@
 
 
 
-
-
 	var Vec3 =
 	/** @class */
-	function (_super) {
-	  __extends(Vec3, _super);
-
+	function () {
 	  function Vec3(_x, _y, _z) {
 	    if (_x === void 0) {
 	      _x = 0;
@@ -2048,12 +1733,9 @@
 	      _z = 0;
 	    }
 
-	    var _this = _super.call(this) || this;
-
-	    _this._x = _x;
-	    _this._y = _y;
-	    _this._z = _z;
-	    return _this;
+	    this._x = _x;
+	    this._y = _y;
+	    this._z = _z;
 	  }
 
 	  Object.defineProperty(Vec3.prototype, "x", {
@@ -2062,8 +1744,7 @@
 	    },
 	    set: function (value) {
 	      if (this._x !== value) {
-	        this._x = value;
-	        this.fire('change', 'x', this._x, value);
+	        this._x = value; // this.fire('change', 'x', this._x, value)
 	      }
 	    },
 	    enumerable: false,
@@ -2075,8 +1756,7 @@
 	    },
 	    set: function (value) {
 	      if (this._y !== value) {
-	        this._y = value;
-	        this.fire('change', 'y', this._y, value);
+	        this._y = value; // this.fire('change', 'y', this._y, value)
 	      }
 	    },
 	    enumerable: false,
@@ -2088,8 +1768,7 @@
 	    },
 	    set: function (value) {
 	      if (this._z !== value) {
-	        this._z = value;
-	        this.fire('change', 'z', this._z, value);
+	        this._z = value; // this.fire('change', 'z', this._z, value)
 	      }
 	    },
 	    enumerable: false,
@@ -2146,16 +1825,16 @@
 	  Vec3.prototype.set = function (x, y, z) {
 	    this._x = x;
 	    this._y = y;
-	    this._z = z;
-	    this.fire('change');
+	    this._z = z; //// this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.setScalar = function (scalar) {
 	    this._x = scalar;
 	    this._y = scalar;
-	    this._z = scalar;
-	    this.fire('change');
+	    this._z = scalar; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2203,8 +1882,8 @@
 	  Vec3.prototype.copy = function (v) {
 	    this._x = v.x;
 	    this._y = v.y;
-	    this._z = v.z;
-	    this.fire('change');
+	    this._z = v.z; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2216,32 +1895,32 @@
 
 	    this._x += v.x;
 	    this._y += v.y;
-	    this._z += v.z;
-	    this.fire('change');
+	    this._z += v.z; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.addScalar = function (s) {
 	    this._x += s;
 	    this._y += s;
-	    this._z += s;
-	    this.fire('change');
+	    this._z += s; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.addVecs = function (a, b) {
 	    this._x = a.x + b.x;
 	    this._y = a.y + b.y;
-	    this._z = a.z + b.z;
-	    this.fire('change');
+	    this._z = a.z + b.z; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.addScaledVec = function (v, s) {
 	    this._x += v.x * s;
 	    this._y += v.y * s;
-	    this._z += v.z * s;
-	    this.fire('change');
+	    this._z += v.z * s; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2253,24 +1932,24 @@
 
 	    this._x -= v.x;
 	    this._y -= v.y;
-	    this._z -= v.z;
-	    this.fire('change');
+	    this._z -= v.z; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.subScalar = function (s) {
 	    this._x -= s;
 	    this._y -= s;
-	    this._z -= s;
-	    this.fire('change');
+	    this._z -= s; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.subVecs = function (a, b) {
 	    this._x = a.x - b.x;
 	    this._y = a.y - b.y;
-	    this._z = a.z - b.z;
-	    this.fire('change');
+	    this._z = a.z - b.z; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2281,24 +1960,24 @@
 
 	    this._x *= v.x;
 	    this._y *= v.y;
-	    this._z *= v.z;
-	    this.fire('change');
+	    this._z *= v.z; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.multiplyScalar = function (scalar) {
 	    this._x *= scalar;
 	    this._y *= scalar;
-	    this._z *= scalar;
-	    this.fire('change');
+	    this._z *= scalar; // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.multiplyVecs = function (a, b) {
 	    this._x = a.x * b.x;
 	    this._y = a.y * b.y;
-	    this._z = a.z * b.z;
-	    this.fire('change');
+	    this._z = a.z * b.z; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2325,8 +2004,8 @@
 	    var e = m.elements;
 	    this._x = e[0] * x + e[3] * y + e[6] * z;
 	    this._y = e[1] * x + e[4] * y + e[7] * z;
-	    this._z = e[2] * x + e[5] * y + e[8] * z;
-	    this.fire('change');
+	    this._z = e[2] * x + e[5] * y + e[8] * z; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2338,8 +2017,8 @@
 	    var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
 	    this._x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
 	    this._y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-	    this._z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
-	    this.fire('change');
+	    this._z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2359,8 +2038,8 @@
 
 	    this._x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
 	    this._y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-	    this._z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-	    this.fire('change');
+	    this._z = iz * qw + iw * -qz + ix * -qy - iy * -qx; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2381,16 +2060,16 @@
 	    var e = m.elements;
 	    this._x = e[0] * x + e[4] * y + e[8] * z;
 	    this._y = e[1] * x + e[5] * y + e[9] * z;
-	    this._z = e[2] * x + e[6] * y + e[10] * z;
-	    this.fire('change');
+	    this._z = e[2] * x + e[6] * y + e[10] * z; // this.fire('change');
+
 	    return this.normalize();
 	  };
 
 	  Vec3.prototype.divide = function (v) {
 	    this._x /= v.x;
 	    this._y /= v.y;
-	    this._z /= v.z;
-	    this.fire('change');
+	    this._z /= v.z; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2401,16 +2080,16 @@
 	  Vec3.prototype.min = function (v) {
 	    this._x = Math.min(this._x, v.x);
 	    this._y = Math.min(this._y, v.y);
-	    this._z = Math.min(this._z, v.z);
-	    this.fire('change');
+	    this._z = Math.min(this._z, v.z); // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.max = function (v) {
 	    this._x = Math.max(this._x, v.x);
 	    this._y = Math.max(this._y, v.y);
-	    this._z = Math.max(this._z, v.z);
-	    this.fire('change');
+	    this._z = Math.max(this._z, v.z); // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2418,16 +2097,16 @@
 	    // assumes min < max, componentwise
 	    this._x = Math.max(min.x, Math.min(max.x, this._x));
 	    this._y = Math.max(min.y, Math.min(max.y, this._y));
-	    this._z = Math.max(min.z, Math.min(max.z, this._z));
-	    this.fire('change');
+	    this._z = Math.max(min.z, Math.min(max.z, this._z)); // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.clampScalar = function (minVal, maxVal) {
 	    this._x = Math.max(minVal, Math.min(maxVal, this._x));
 	    this._y = Math.max(minVal, Math.min(maxVal, this._y));
-	    this._z = Math.max(minVal, Math.min(maxVal, this._z));
-	    this.fire('change');
+	    this._z = Math.max(minVal, Math.min(maxVal, this._z)); // this.fire('change');
+
 	    return this;
 	  };
 
@@ -2439,40 +2118,40 @@
 	  Vec3.prototype.floor = function () {
 	    this._x = Math.floor(this._x);
 	    this._y = Math.floor(this._y);
-	    this._z = Math.floor(this._z);
-	    this.fire('change');
+	    this._z = Math.floor(this._z); // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.ceil = function () {
 	    this._x = Math.ceil(this._x);
 	    this._y = Math.ceil(this._y);
-	    this._z = Math.ceil(this._z);
-	    this.fire('change');
+	    this._z = Math.ceil(this._z); // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.round = function () {
 	    this._x = Math.round(this._x);
 	    this._y = Math.round(this._y);
-	    this._z = Math.round(this._z);
-	    this.fire('change');
+	    this._z = Math.round(this._z); // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.roundToZero = function () {
 	    this._x = this._x < 0 ? Math.ceil(this._x) : Math.floor(this._x);
 	    this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
-	    this._z = this._z < 0 ? Math.ceil(this._z) : Math.floor(this._z);
-	    this.fire('change');
+	    this._z = this._z < 0 ? Math.ceil(this._z) : Math.floor(this._z); // this.fire('change');
+
 	    return this;
 	  };
 
 	  Vec3.prototype.negate = function () {
 	    this._x = -this._x;
 	    this._y = -this._y;
-	    this._z = -this._z;
-	    this.fire('change');
+	    this._z = -this._z; // this.fire('change');
+
 	    return this;
 	  };
 
@@ -3254,7 +2933,7 @@
 	  };
 
 	  return Vec3;
-	}(eventhandler.EventHandler);
+	}();
 
 	exports.Vec3 = Vec3;
 
@@ -3275,42 +2954,14 @@
 
 	var Vec4_1 = createCommonjsModule(function (module, exports) {
 
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.v4 = exports.Vec4 = void 0;
 
-
-
 	var Vec4 =
 	/** @class */
-	function (_super) {
-	  __extends(Vec4, _super);
-
+	function () {
 	  function Vec4(_x, _y, _z, _w) {
 	    if (_x === void 0) {
 	      _x = 0;
@@ -3328,14 +2979,11 @@
 	      _w = 1;
 	    }
 
-	    var _this = _super.call(this) || this;
-
-	    _this._x = _x;
-	    _this._y = _y;
-	    _this._z = _z;
-	    _this._w = _w;
-	    _this.isVec4 = true;
-	    return _this;
+	    this._x = _x;
+	    this._y = _y;
+	    this._z = _z;
+	    this._w = _w;
+	    this.isVec4 = true;
 	  }
 
 	  Object.defineProperty(Vec4.prototype, "x", {
@@ -3344,8 +2992,7 @@
 	    },
 	    set: function (value) {
 	      if (this._x !== value) {
-	        this._x = value;
-	        this.fire('change', 'x', this._x, value);
+	        this._x = value; // this.fire('change', 'x', this._x, value)
 	      }
 	    },
 	    enumerable: false,
@@ -3357,8 +3004,7 @@
 	    },
 	    set: function (value) {
 	      if (this._y !== value) {
-	        this._y = value;
-	        this.fire('change', 'y', this._y, value);
+	        this._y = value; // this.fire('change', 'y', this._y, value)
 	      }
 	    },
 	    enumerable: false,
@@ -3370,8 +3016,7 @@
 	    },
 	    set: function (value) {
 	      if (this._z !== value) {
-	        this._z = value;
-	        this.fire('change', 'z', this._z, value);
+	        this._z = value; // this.fire('change', 'z', this._z, value)
 	      }
 	    },
 	    enumerable: false,
@@ -3383,8 +3028,7 @@
 	    },
 	    set: function (value) {
 	      if (this._w !== value) {
-	        this._w = value;
-	        this.fire('change', 'w', this._w, value);
+	        this._w = value; // this.fire('change', 'w', this._w, value)
 	      }
 	    },
 	    enumerable: false,
@@ -3870,7 +3514,7 @@
 	  };
 
 	  return Vec4;
-	}(eventhandler.EventHandler);
+	}();
 
 	exports.Vec4 = Vec4;
 
@@ -5113,36 +4757,10 @@
 
 	var Euler_1 = createCommonjsModule(function (module, exports) {
 
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.euler = exports.Euler = void 0;
-
-
 
 
 
@@ -5159,9 +4777,7 @@
 
 	var Euler =
 	/** @class */
-	function (_super) {
-	  __extends(Euler, _super);
-
+	function () {
 	  function Euler(_x, _y, _z, _order) {
 	    if (_x === void 0) {
 	      _x = 0;
@@ -5179,14 +4795,11 @@
 	      _order = DefaultOrder;
 	    }
 
-	    var _this = _super.call(this) || this;
-
-	    _this._x = _x;
-	    _this._y = _y;
-	    _this._z = _z;
-	    _this._order = _order;
-	    _this.isEuler = true;
-	    return _this;
+	    this._x = _x;
+	    this._y = _y;
+	    this._z = _z;
+	    this._order = _order;
+	    this.isEuler = true;
 	  }
 
 	  Object.defineProperty(Euler.prototype, "x", {
@@ -5195,8 +4808,7 @@
 	    },
 	    set: function (value) {
 	      if (this._x !== value) {
-	        this._x = value;
-	        this.fire('change', 'x', this._x, value);
+	        this._x = value; // this.fire('change', 'x', this._x, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5208,8 +4820,7 @@
 	    },
 	    set: function (value) {
 	      if (this._y !== value) {
-	        this._y = value;
-	        this.fire('change', 'y', this._y, value);
+	        this._y = value; // this.fire('change', 'y', this._y, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5221,8 +4832,7 @@
 	    },
 	    set: function (value) {
 	      if (this._z !== value) {
-	        this._z = value;
-	        this.fire('change', 'z', this._z, value);
+	        this._z = value; // this.fire('change', 'z', this._z, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5234,7 +4844,7 @@
 	    },
 	    set: function (value) {
 	      if (this._order !== value) {
-	        this.fire('change', 'order', this._order, value);
+	        // this.fire('change', 'order', this._order, value)
 	        this._order = value;
 	      }
 	    },
@@ -5246,8 +4856,8 @@
 	    this._x = x;
 	    this._y = y;
 	    this._z = z;
-	    this._order = order || this._order;
-	    this.fire('change');
+	    this._order = order || this._order; // this.fire('change')
+
 	    return this;
 	  };
 
@@ -5259,8 +4869,8 @@
 	    this._x = Euler._x;
 	    this._y = Euler._y;
 	    this._z = Euler._z;
-	    this._order = Euler._order;
-	    this.fire('change');
+	    this._order = Euler._order; // this.fire('change')
+
 	    return this;
 	  };
 
@@ -5343,8 +4953,8 @@
 	    }
 
 	    this._order = order;
-	    if (update !== false) this.fire('change');
-	    return this;
+	    if (update !== false) // this.fire('change')
+	      return this;
 	  };
 
 	  Euler.prototype.setFromQuat = function (q, order, update) {
@@ -5372,8 +4982,8 @@
 	    this._x = array[0];
 	    this._y = array[1];
 	    this._z = array[2];
-	    if (array[3] !== undefined) this._order = array[3];
-	    this.fire('change');
+	    if (array[3] !== undefined) this._order = array[3]; // this.fire('change')
+
 	    return this;
 	  };
 
@@ -5402,7 +5012,7 @@
 	  };
 
 	  return Euler;
-	}(eventhandler.EventHandler);
+	}();
 
 	exports.Euler = Euler;
 
@@ -5419,42 +5029,14 @@
 
 	var Color_1 = createCommonjsModule(function (module, exports) {
 
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.Color = void 0;
 
-
-
 	var Color =
 	/** @class */
-	function (_super) {
-	  __extends(Color, _super);
-
+	function () {
 	  function Color(r, g, b, a) {
 	    if (r === void 0) {
 	      r = 0;
@@ -5472,17 +5054,14 @@
 	      a = 1;
 	    }
 
-	    var _this = _super.call(this) || this;
-
-	    _this._r = 0.0;
-	    _this._g = 0.0;
-	    _this._b = 0.0;
-	    _this._a = 1.0;
-	    _this._r = r;
-	    _this._g = g;
-	    _this._b = b;
-	    _this._a = a;
-	    return _this;
+	    this._r = 0.0;
+	    this._g = 0.0;
+	    this._b = 0.0;
+	    this._a = 1.0;
+	    this._r = r;
+	    this._g = g;
+	    this._b = b;
+	    this._a = a;
 	  }
 
 	  Object.defineProperty(Color.prototype, "isColor", {
@@ -5498,8 +5077,7 @@
 	    },
 	    set: function (value) {
 	      if (this._r !== value) {
-	        this._r = value;
-	        this.fire('change', 'r', this._r, value);
+	        this._r = value; // this.fire('change', 'r', this._r, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5511,8 +5089,7 @@
 	    },
 	    set: function (value) {
 	      if (this._g !== value) {
-	        this._g = value;
-	        this.fire('change', 'g', this._g, value);
+	        this._g = value; // this.fire('change', 'g', this._g, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5524,8 +5101,7 @@
 	    },
 	    set: function (value) {
 	      if (this._b !== value) {
-	        this._b = value;
-	        this.fire('change', 'b', this._b, value);
+	        this._b = value; // this.fire('change', 'b', this._b, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5537,8 +5113,7 @@
 	    },
 	    set: function (value) {
 	      if (this._a !== value) {
-	        this._a = value;
-	        this.fire('change', 'a', this._a, value);
+	        this._a = value; // this.fire('change', 'a', this._a, value)
 	      }
 	    },
 	    enumerable: false,
@@ -5691,7 +5266,7 @@
 	  };
 
 	  return Color;
-	}(eventhandler.EventHandler);
+	}();
 
 	exports.Color = Color;
 	});
@@ -6271,75 +5846,6 @@
 	var type_1 = type.Orientation;
 	var type_2 = type.IntersectType;
 
-	var Vec_1 = createCommonjsModule(function (module, exports) {
-
-	var __extends = commonjsGlobal && commonjsGlobal.__extends || function () {
-	  var extendStatics = function (d, b) {
-	    extendStatics = Object.setPrototypeOf || {
-	      __proto__: []
-	    } instanceof Array && function (d, b) {
-	      d.__proto__ = b;
-	    } || function (d, b) {
-	      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    };
-
-	    return extendStatics(d, b);
-	  };
-
-	  return function (d, b) {
-	    extendStatics(d, b);
-
-	    function __() {
-	      this.constructor = d;
-	    }
-
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	  };
-	}();
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.Vec = void 0;
-	/**
-	 * 暂不使用
-	 */
-
-	var Vec =
-	/** @class */
-	function (_super) {
-	  __extends(Vec, _super);
-
-	  function Vec(n) {
-	    var _this = _super.call(this) || this;
-
-	    while (n-- > 0) {
-	      _this[_this.length] = 0;
-	    }
-
-	    return _this;
-	  }
-
-	  Vec.max = function (array) {
-	    if (array.length === 0) return -Infinity;
-	    var max = array[0];
-
-	    for (var i = 1, l = array.length; i < l; ++i) {
-	      if (array[i] > max) max = array[i];
-	    }
-
-	    return max;
-	  };
-
-	  return Vec;
-	}(Array);
-
-	exports.Vec = Vec;
-	});
-
-	unwrapExports(Vec_1);
-	var Vec_2 = Vec_1.Vec;
-
 	var Box_1 = createCommonjsModule(function (module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -6573,6 +6079,11 @@
 
 
 	var _vector = new Vec3_1.Vec3();
+	/**
+	 * 几何体buffer属性
+	 * 记录每个几何数据属性的细节
+	 */
+
 
 	var BufferAttribute =
 	/** @class */
@@ -7108,8 +6619,6 @@
 
 
 
-
-
 	var _bufferGeometryId = 1; // BufferGeometry uses odd numbers as Id
 
 	var _m1 = new Mat4_1.Mat4();
@@ -7131,10 +6640,8 @@
 	function () {
 	  function BufferGeometry() {
 	    this.isBufferGeometry = true;
-	    this.uuid = "";
-	    this.type = "BufferGeometry";
 	    Object.defineProperty(this, 'id', {
-	      value: _bufferGeometryId += 2
+	      value: _bufferGeometryId += 1
 	    });
 	    this.name = '';
 	    this.attributes = {};
@@ -7165,11 +6672,11 @@
 
 	  BufferGeometry.prototype.setIndex = function (index) {
 	    if (Array.isArray(index)) {
-	      this.index = new (Vec_1.Vec.max(index) > 65535 ? bufferAttribute.Uint32BufferAttribute : bufferAttribute.Uint16BufferAttribute)(index, 1);
+	      this.index = new (vecs_1.vecs.max(index) > 65535 ? bufferAttribute.Uint32BufferAttribute : bufferAttribute.Uint16BufferAttribute)(index, 1);
 	    } else if (index instanceof bufferAttribute.BufferAttribute) {
 	      this.index = index;
 	    } else {
-	      this.index = new (Vec_1.Vec.max(index) > 65535 ? bufferAttribute.Uint32BufferAttribute : bufferAttribute.Uint16BufferAttribute)(index, 1);
+	      this.index = new (vecs_1.vecs.max(index) > 65535 ? bufferAttribute.Uint32BufferAttribute : bufferAttribute.Uint16BufferAttribute)(index, 1);
 	    }
 	  };
 
@@ -7854,9 +7361,9 @@
 	        generator: 'BufferGeometry.toJSON'
 	      }
 	    }; // standard BufferGeometry serialization
+	    // data.uuid = this.uuid;
+	    // data.type = this.type;
 
-	    data.uuid = this.uuid;
-	    data.type = this.type;
 	    if (this.name !== '') data.name = this.name;
 	    if (Object.keys(this.userData).length > 0) data.userData = this.userData;
 
@@ -8843,7 +8350,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.trianglutionToGeometryBuffer = exports.toGeoBuffer = exports.triangListToBuffer = exports.indexable = void 0;
+	exports.MeshTool = void 0;
 	/*
 	 * @Description  :
 	 * @Author       : 赵耀圣
@@ -8860,92 +8367,97 @@
 
 
 
-
-	function indexable(obj, refIndexInfo, force) {
-	  if (refIndexInfo === void 0) {
-	    refIndexInfo = {
-	      index: 0
-	    };
-	  }
-
-	  if (force === void 0) {
-	    force = false;
-	  }
-
-	  if (obj instanceof Array) {
-	    for (var i = 0; i < obj.length; i++) indexable(obj[i], refIndexInfo);
-	  } else if (obj instanceof Object) {
-	    if (obj.index === undefined) obj.index = refIndexInfo.index++;else if (force) obj.index = refIndexInfo.index++;
-	  }
-	}
-
-	exports.indexable = indexable;
-
-	function triangListToBuffer(vertices, triangleList) {
-	  indexable(triangleList);
-	  var indices = [];
-	  array.forall(triangleList, function (v) {
-	    indices.push(v.index);
-	  });
-	  return toGeoBuffer(vertices, indices);
-	}
-
-	exports.triangListToBuffer = triangListToBuffer;
 	/**
-	 * 顶点纹理坐标所以转化为buffer数据
-	 * @param {Array<Verctor3|Number>} vertices
-	 * @param {Array<Number>} indices
-	 * @param {Array<Verctor2|Number>} uvs
+	 * 网格工具
 	 */
 
-	function toGeoBuffer(vertices, indices, uvs) {
-	  var geometry$1 = new geometry.BufferGeometry();
-	  geometry$1.addAttribute('position', vertices, 3);
-	  geometry$1.addAttribute('uv', uvs || new Float32Array(geometry$1.getAttribute('position').array.length / 3 * 2), 2);
-	  geometry$1.setIndex(indices);
-	  return geometry$1;
-	}
 
-	exports.toGeoBuffer = toGeoBuffer;
-	/**
-	 * 三角剖分后转成几何体
-	 * 只考虑XY平面
-	 * @param {*} boundary
-	 * @param {*} hole
-	 * @param {*} options
-	 */
+	var MeshTool =
+	/** @class */
+	function () {
+	  function MeshTool() {}
 
-	function trianglutionToGeometryBuffer(boundary, holes, options) {
-	  if (holes === void 0) {
-	    holes = [];
-	  }
+	  MeshTool.indexable = function (obj, refIndexInfo, force) {
+	    if (refIndexInfo === void 0) {
+	      refIndexInfo = {
+	        index: 0
+	      };
+	    }
 
-	  if (options === void 0) {
-	    options = {
-	      normal: Vec3_1.Vec3.UnitZ
-	    };
-	  }
+	    if (force === void 0) {
+	      force = false;
+	    }
 
-	  var triangles = trianglution.triangulation(boundary, holes, options);
+	    if (obj instanceof Array) {
+	      for (var i = 0; i < obj.length; i++) MeshTool.indexable(obj[i], refIndexInfo);
+	    } else if (obj instanceof Object) {
+	      if (obj.index === undefined) obj.index = refIndexInfo.index++;else if (force) obj.index = refIndexInfo.index++;
+	    }
+	  };
 
-	  var vertices = __spreadArrays(boundary, array.flat(holes));
+	  MeshTool.triangListToBuffer = function (vertices, triangleList) {
+	    MeshTool.indexable(triangleList);
+	    var indices = [];
+	    array.forall(triangleList, function (v) {
+	      indices.push(v.index);
+	    });
+	    return MeshTool.toGeoBuffer(vertices, indices);
+	  };
+	  /**
+	   * 顶点纹理坐标所以转化为buffer数据
+	   * @param {Array<Verctor3|Number>} vertices
+	   * @param {Array<Number>} indices
+	   * @param {Array<Verctor2|Number>} uvs
+	   */
 
-	  var uvs = [];
-	  vertices.forEach(function (v) {
-	    uvs.push(v.x, v.z);
-	  });
-	  var geometry = toGeoBuffer(vertices, triangles, uvs);
-	  return geometry;
-	}
 
-	exports.trianglutionToGeometryBuffer = trianglutionToGeometryBuffer;
+	  MeshTool.toGeoBuffer = function (vertices, indices, uvs) {
+	    var geometry$1 = new geometry.BufferGeometry();
+	    geometry$1.addAttribute('position', vertices, 3);
+	    geometry$1.addAttribute('uv', uvs || new Float32Array(geometry$1.getAttribute('position').array.length / 3 * 2), 2);
+	    geometry$1.setIndex(indices);
+	    return geometry$1;
+	  };
+	  /**
+	   * 三角剖分后转成几何体
+	   * 只考虑XY平面
+	   * @param {*} boundary
+	   * @param {*} hole
+	   * @param {*} options
+	   */
+
+
+	  MeshTool.trianglutionToGeometryBuffer = function (boundary, holes, options) {
+	    if (holes === void 0) {
+	      holes = [];
+	    }
+
+	    if (options === void 0) {
+	      options = {
+	        normal: Vec3_1.Vec3.UnitZ
+	      };
+	    }
+
+	    var triangles = trianglution.triangulation(boundary, holes, options);
+
+	    var vertices = __spreadArrays(boundary, array.flat(holes));
+
+	    var uvs = [];
+	    vertices.forEach(function (v) {
+	      uvs.push(v.x, v.z);
+	    });
+	    var geometry = MeshTool.toGeoBuffer(vertices, triangles, uvs);
+	    return geometry;
+	  };
+
+	  return MeshTool;
+	}();
+
+	exports.MeshTool = MeshTool;
 	});
 
 	unwrapExports(mesh);
-	var mesh_1 = mesh.trianglutionToGeometryBuffer;
-	var mesh_2 = mesh.toGeoBuffer;
-	var mesh_3 = mesh.triangListToBuffer;
-	var mesh_4 = mesh.indexable;
+	var mesh_1 = mesh.MeshTool;
 
 	var Plane_1 = createCommonjsModule(function (module, exports) {
 
@@ -9201,7 +8713,7 @@
 
 	  Plane.prototype.splitPolyVS = function (polyVS) {
 	    polyVS = __spreadArrays(polyVS);
-	    mesh.indexable(polyVS);
+	    mesh.MeshTool.indexable(polyVS);
 
 	    var jdp0; //找出第一个交点 
 
@@ -10868,7 +10380,7 @@
 	  if (hasHole) allVertics.push(holess);
 	  var orgShape = options.orgShape || shapes[0];
 	  var orgHoles = options.orgHoles || holess && holess[0];
-	  if (index) mesh.indexable(allVertics, index);
+	  if (index) mesh.MeshTool.indexable(allVertics, index);
 
 	  for (var i = 0; i < length; i++) {
 	    if (holess) triangles.push.apply(triangles, linkSide({
@@ -11254,7 +10766,7 @@
 	    index: 0
 	  };
 	  var vertices = array.flat(shapeArray);
-	  mesh.indexable(vertices, gindex);
+	  mesh.MeshTool.indexable(vertices, gindex);
 	  var index = linkSides({
 	    shapes: shapeArray,
 	    shapeClosed: options.shapeClosed,
@@ -11299,8 +10811,8 @@
 	    normal: normal
 	  });
 	  sealStartTris.reverse();
-	  if (options.sealStart) mesh.indexable(startSeal, gindex);
-	  if (options.sealEnd) mesh.indexable(endSeal, gindex);
+	  if (options.sealStart) mesh.MeshTool.indexable(startSeal, gindex);
+	  if (options.sealEnd) mesh.MeshTool.indexable(endSeal, gindex);
 	  var sealEndTris = [];
 	  var hasVLen = vertices.length;
 	  if (options.sealStart) for (var i = 0; i < sealStartTris.length; i++) {
@@ -11933,6 +11445,40 @@
 	    }
 
 	    return vs;
+	  };
+	  /**
+	   * 找到最大值
+	   * @param array
+	   * @returns
+	   */
+
+
+	  vecs.max = function (array) {
+	    if (array.length === 0) return -Infinity;
+	    var max = array[0];
+
+	    for (var i = 1, l = array.length; i < l; ++i) {
+	      if (array[i] > max) max = array[i];
+	    }
+
+	    return max;
+	  };
+	  /**
+	  * 找到最小值
+	  * @param array
+	  * @returns
+	  */
+
+
+	  vecs.min = function (array) {
+	    if (array.length === 0) return -Infinity;
+	    var min = array[0];
+
+	    for (var i = 1, l = array.length; i < l; ++i) {
+	      if (array[i] < min) min = array[i];
+	    }
+
+	    return min;
 	  };
 	  /**
 	   * 去除相邻没有重复点
@@ -14673,14 +14219,6 @@
 	  value: true
 	});
 	exports.linksToGeometry = exports.linkToGeometry = exports.extrudeToGeometryBuffer = exports.toGeometryBuffer = void 0;
-	/*
-	 * @Description  :
-	 * @Author       : 赵耀圣
-	 * @Q群           : 632839661
-	 * @Date         : 2020-12-10 15:01:42
-	 * @LastEditTime : 2021-03-11 10:54:11
-	 * @FilePath     : \cga.js\src\extends\geometryaid.ts
-	 */
 
 
 
@@ -14691,7 +14229,7 @@
 
 
 	function toGeometryBuffer(geo) {
-	  var buffer = mesh.toGeoBuffer(geo.position, geo.index, geo.uv);
+	  var buffer = mesh.MeshTool.toGeoBuffer(geo.position, geo.index, geo.uv);
 	  return buffer;
 	}
 
@@ -14705,7 +14243,7 @@
 
 	function extrudeToGeometryBuffer(shape, arg_path, options) {
 	  var extrudeRes = extrude_1.extrude_obsolete(shape, arg_path, options);
-	  return mesh.toGeoBuffer(extrudeRes.vertices, extrudeRes.index, extrudeRes.uvs);
+	  return mesh.MeshTool.toGeoBuffer(extrudeRes.vertices, extrudeRes.index, extrudeRes.uvs);
 	}
 
 	exports.extrudeToGeometryBuffer = extrudeToGeometryBuffer;
@@ -14750,7 +14288,7 @@
 	  }
 
 	  var vertices = array.flat(shapes);
-	  mesh.indexable(vertices);
+	  mesh.MeshTool.indexable(vertices);
 	  var geo = extrude_1.linkSides({
 	    shapes: shapes,
 	    shapeClosed: pathClosed,
@@ -14763,9 +14301,9 @@
 	exports.linksToGeometry = linksToGeometry; // /**
 	//  * 三角剖分后转成几何体
 	//  * 只考虑XY平面
-	//  * @param {*} boundary 
-	//  * @param {*} hole 
-	//  * @param {*} options 
+	//  * @param {*} boundary
+	//  * @param {*} hole
+	//  * @param {*} options
 	//  */
 	// export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
 	//     var triangles = triangulation(boundary, holes, options)
@@ -14875,8 +14413,6 @@
 	__exportStar(delaunator, exports);
 
 	__exportStar(voronoi, exports);
-
-	__exportStar(eventhandler, exports);
 
 	__exportStar(geometryaid, exports); //Geometry 
 

@@ -6,20 +6,17 @@
  * @LastEditTime : 2021-03-11 10:54:11
  * @FilePath     : \cga.js\src\extends\geometryaid.ts
  */
-import { toGeoBuffer, indexable } from '../render/mesh';
 import { Vec3 } from '../math/Vec3';
-import { Vec2 } from '../math/Vec2';
-import { extrude_obsolete, IExtrudeOptions, linkSide, linkSides } from '../alg/extrude';
-import { Polyline } from '../struct/3d/Polyline';
-import { Polygon } from '../struct/3d/Polygon';
-import { AxisPlane, triangulation } from '../alg/trianglution';
+import { extrude_obsolete, IExtrudeOptions, linkSides } from '../alg/extrude';
+import { AxisPlane } from '../alg/trianglution';
 import { flat } from '../utils/array';
-import { BufferGeometry, IBufferGeometry, IGeometry } from '../render/geometry';
+import { BufferGeometry, IGeometry } from '../render/geometry';
 import { ArrayList } from '../struct/data/ArrayList';
+import { MeshTool } from '../render/mesh';
 
 export function toGeometryBuffer(geo: IGeometry) {
 
-    var buffer: BufferGeometry = toGeoBuffer(geo.position, geo.index!, geo.uv)
+    var buffer: BufferGeometry = MeshTool.toGeoBuffer(geo.position, geo.index!, geo.uv)
 
     return buffer
 }
@@ -32,7 +29,7 @@ export function toGeometryBuffer(geo: IGeometry) {
  */
 export function extrudeToGeometryBuffer(shape: ArrayList<Vec3>, arg_path: Array<Vec3>, options: IExtrudeOptions) {
     var extrudeRes = extrude_obsolete(shape, arg_path, options);
-    return toGeoBuffer(extrudeRes.vertices, extrudeRes.index!, extrudeRes.uvs);
+    return MeshTool.toGeoBuffer(extrudeRes.vertices, extrudeRes.index!, extrudeRes.uvs);
 }
 
 
@@ -59,7 +56,7 @@ export function linkToGeometry(shape: Array<Vec3>, shape1: | Array<Vec3>, axisPl
  */
 export function linksToGeometry(shapes: Array<Vec3>[], pathClosed: boolean = true, shapeClosed: boolean = true) {
     const vertices = flat(shapes);
-    indexable(vertices)
+    MeshTool.indexable(vertices)
     const geo = linkSides({ shapes, shapeClosed: pathClosed, orgShape: shapes[0] });
 
     const geometry = toGeometryBuffer(geo)
@@ -70,9 +67,9 @@ export function linksToGeometry(shapes: Array<Vec3>[], pathClosed: boolean = tru
 // /**
 //  * 三角剖分后转成几何体
 //  * 只考虑XY平面
-//  * @param {*} boundary 
-//  * @param {*} hole 
-//  * @param {*} options 
+//  * @param {*} boundary
+//  * @param {*} hole
+//  * @param {*} options
 //  */
 // export function trianglutionToGeometryBuffer(boundary: any, holes: any[] = [], options: any = { normal: Vec3.UnitZ }) {
 //     var triangles = triangulation(boundary, holes, options)

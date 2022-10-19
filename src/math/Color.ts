@@ -1,13 +1,11 @@
-import { EventHandler } from "../render/eventhandler";
 
-export class Color extends EventHandler {
+export class Color {
     _r: number = 0.0;
     _g: number = 0.0;
     _b: number = 0.0;
     _a: number = 1.0;
 
-    constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1) {
-        super();
+    constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1) { 
         this._r = r;
         this._g = g;
         this._b = b;
@@ -25,7 +23,7 @@ export class Color extends EventHandler {
     set r(value) {
         if (this._r !== value) {
             this._r = value;
-            this.fire('change', 'r', this._r, value)
+            // this.fire('change', 'r', this._r, value)
         }
     }
 
@@ -36,7 +34,7 @@ export class Color extends EventHandler {
     set g(value) {
         if (this._g !== value) {
             this._g = value;
-            this.fire('change', 'g', this._g, value)
+            // this.fire('change', 'g', this._g, value)
         }
     }
 
@@ -47,7 +45,7 @@ export class Color extends EventHandler {
     set b(value) {
         if (this._b !== value) {
             this._b = value;
-            this.fire('change', 'b', this._b, value)
+            // this.fire('change', 'b', this._b, value)
         }
     }
 
@@ -58,7 +56,7 @@ export class Color extends EventHandler {
     set a(value) {
         if (this._a !== value) {
             this._a = value;
-            this.fire('change', 'a', this._a, value)
+            // this.fire('change', 'a', this._a, value)
         }
     }
 
