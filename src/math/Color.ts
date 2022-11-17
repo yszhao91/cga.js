@@ -5,7 +5,7 @@ export class Color {
     _b: number = 0.0;
     _a: number = 1.0;
 
-    constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1) { 
+    constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1) {
         this._r = r;
         this._g = g;
         this._b = b;
@@ -168,6 +168,19 @@ export class Color {
 
         return array;
     }
+
+    fromArray(array: number[] = [], offset = 0) {
+
+        this.r = array[offset];
+        this.g = array[offset + 1];
+        this.b = array[offset + 2];
+
+        if (array.length >= 4 + offset)
+            this.a = array[offset + 3];
+
+        return array;
+    }
+
     private byteToFloat(val: number) {
         return val / 255.0;
     };
