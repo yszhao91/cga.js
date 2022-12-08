@@ -1,10 +1,10 @@
 import { Vec3, v3 } from '../../math/Vec3';
-import { angle, pointsCollinear } from '../../alg/common';
+import { angle, pointsCollinear, rotate } from '../../alg/common';
 import { Line } from './Line';
 
 export class Circle {
     startAngle: number = 0;
-    endAngle: number = Math.PI * 2;
+    lengthAngle: number = Math.PI * 2;
     radiusSqr: number = 0;
     /**
      * 圆圈
@@ -12,7 +12,9 @@ export class Circle {
      * @param  {Vec3} normal 法线
      * @param  {Number} radius 半径
      */
-    constructor(public center: Vec3 = new Vec3(), public radius: number = 0, public normal: Vec3 = Vec3.UnitY) {
+    constructor(public center: Vec3 = new Vec3(), public radius: number = 0, startAngle = 0, lengthAngle = Math.PI * 2, public normal: Vec3 = Vec3.UnitY) {
+        this.startAngle = startAngle;
+        this.lengthAngle = lengthAngle;
 
     }
 
@@ -30,7 +32,7 @@ export class Circle {
     arc1(fixp0: Vec3, fixp1: Vec3, movep: Vec3, normal?: Vec3) {
         this.setFrom3Points(fixp0, fixp1, movep);
         this.startAngle = 0
-        this.endAngle = angle(fixp0.clone().sub(this.center).normalize(), fixp1.clone().sub(this.center).normalize(), this.normal || normal)
+        this.lengthAngle = angle(fixp0.clone().sub(this.center).normalize(), fixp1.clone().sub(this.center).normalize(), this.normal || normal)
     }
     /**
      * 全两个点确定半径，后面点确定 弧度 ,只需要检测鼠标移动时鼠标是否跨过第一条半径即可确定顺逆时针
@@ -45,8 +47,6 @@ export class Circle {
         const v1 = fixp1.clone().sub(center);
         const jd = angle(v1, v2)
     }
-
-
 
 
     setFrom3Points(p0: Vec3, p1: Vec3, p2: Vec3, normal?: Vec3) {
@@ -71,8 +71,37 @@ export class Circle {
         this.normal = normal;
         return this;
     }
+
+
+    /**
+     * 将圆环或者圆弧转化为路径点，生成XY平面上得三维点
+     * @param center 中心点
+     * @param radius 半径
+     * @param startAngle 起始角 右手坐标系 以X正坐标轴为起点 单位弧度
+     * @param lengthAngle 弧度长度   单位弧度
+     * @param segment 分段
+     */
+    static toVertices(center: Vec3, radius: number, startAngle: number = 0, lengthAngle: number = Math.PI * 2, segment: number = 16) {
+        const Xvec: Vec3 = Vec3.UnitX;
+        Xvec.multiplyScalar(radius);
+       
+        const result:Vec3[]=[]
+
+        const up: Vec3 = Vec3.UnitY;
+        const perAngle = lengthAngle / segment;
+        for (let i = 0; i <= segment; i++) {
+            const langlei = perAngle * i + startAngle;
+
+            const vi = Xvec.clone().applyAxisAngle(up, langlei).add(center);
+
+            result.push(vi);
+        }
+
+        return result;
+    }
+
 }
 
-export function circle(center?: Vec3, radius?: number, normal?: Vec3) {
-    return new Circle(center, radius, normal);
+export function circle(center?: Vec3, radius?: number) {
+    return new Circle(center, radius);
 }
