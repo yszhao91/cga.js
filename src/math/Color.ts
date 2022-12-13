@@ -216,4 +216,10 @@ export class Color {
         return this.getHexCssString();
     }
 
+
+    static get White() { return Object.freeze( new Color(1, 1, 1)) };
+    static get Red() { return new Color(1, 0, 0) };
+    static get Green() { return new Color(0, 1, 0) };
+    static get Blue() { return new Color(0, 0, 1) };
+
 }

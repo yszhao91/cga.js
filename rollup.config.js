@@ -13,6 +13,7 @@ import gzip from 'rollup-plugin-gzip';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import path from 'path';
 import { uglify } from 'rollup-plugin-uglify';
+import dts from "rollup-plugin-dts";
 
 // Read package config
 const pkgConfig = require('./package.json');
@@ -55,17 +56,21 @@ if (MIN) {
 }
 
 export default {
-    input: path.join('dist', 'index.js'),
-    external: ['lodash'],
-    plugins: plugins,
-    output: {
-        file: path.join(DIST ? 'dist' : 'build', '@xort_cga' + (MIN ? '.min' : '') + '.js'),
-        format: 'umd',
-        // format: 'umd',
-        name: 'cga',
-        banner: banner,
-        globals: {
-            lodash: '_'
-        }
-    }
-};
+    // input: path.join('dist', 'index.js'),
+    // external: ['lodash'],
+    // plugins: plugins,
+    // output: {
+    //     file: path.join(DIST ? 'dist' : 'build', '@xort_cga' + (MIN ? '.min' : '') + '.js'),
+    //     format: 'umd',
+    //     // format: 'umd',
+    //     name: 'cga',
+    //     banner: banner,
+    //     globals: {
+    //         lodash: '_'
+    //     }
+    // }
+
+    input: "dist/types/index.d.ts",
+    output: [{ file: "build/cga.d.ts", format: "es" }],
+    plugins: [dts()],
+}
