@@ -5,12 +5,7 @@ import { clone, rotateByUnitVectors } from './common';
 import { delta4 } from '../math/Math';
 import { vecs } from '../math/vecs';
 
-export enum AxisPlane {
-    XY = 'xy',
-    XZ = 'xz',
-    YZ = 'yz',
-    XYZ = 'xyz',
-}
+export type AxisPlane = 'xy' | 'xz' | 'yz' | 'xyz';
 
 export interface ITriangulationOption {
     feature?: AxisPlane;
@@ -26,8 +21,8 @@ export interface ITriangulationOption {
  * @returns {Array<Number>} 三角形索引数组
  */
 export function triangulation(inboundary: any, holes: any[] = [], options: ITriangulationOption = { normal: Vec3.UnitZ }) {
-    options = { feature: AxisPlane.XYZ, dim: 3, ...options }
-    if (options.feature !== AxisPlane.XYZ)
+    options = { feature: 'xyz', dim: 3, ...options }
+    if (options.feature !== 'xyz')
         options.dim = 2;
     let boundary = null;
     let feature = options.feature;

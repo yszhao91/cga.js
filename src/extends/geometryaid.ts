@@ -40,7 +40,7 @@ export function extrudeToGeometryBuffer(shape: ArrayList<Vec3>, arg_path: Array<
  * @param {*} options 
  * @param {*} material 
  */
-export function linkToGeometry(shape: Array<Vec3>, shape1: | Array<Vec3>, axisPlane: AxisPlane = AxisPlane.XY, shapeClose: boolean = false) {
+export function linkToGeometry(shape: Array<Vec3>, shape1: | Array<Vec3>, axisPlane: AxisPlane = 'xy', shapeClose: boolean = false) {
     const geo: IGeometry = linkSides({ shapes: [shape, shape1], shapeClosed: shapeClose, orgShape: shape, axisPlane: axisPlane })
 
     const geometry = toGeometryBuffer(geo);

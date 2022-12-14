@@ -166,10 +166,10 @@ export interface ILinkSideOptions {
  */
 export function linkSides(options: ILinkSideOptions): IGeometry {
     options = {
-        sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
+        sealEnd: false, sealStart: false, shapeClosed: true, pathClosed: false,
         generateUV: true,
         autoIndex: true,
-        axisPlane: AxisPlane.XY,
+        axisPlane: 'xyz',
         ...options
     }
 
@@ -211,7 +211,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             allVertics.push(startHoles)
         }
 
-        var startTris = triangulation(orgShape, orgHoles, { feature: AxisPlane.XYZ });
+        var startTris = triangulation(orgShape, orgHoles, { feature: 'xy' });
         if (index) {
             startTris.forEach((v: number, i: number) => {
                 startTris[i] = v + index?.index;
@@ -234,7 +234,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             var endHoles = clone(clone(holess[holess.length - 1]));
             allVertics.push(endHoles)
         }
-        var endTris = triangulation(orgShape, orgHoles, { feature: AxisPlane.XYZ });
+        var endTris = triangulation(orgShape, orgHoles, { feature: 'xy' });
         if (index) {
             endTris.forEach((v: number, i: number) => {
                 endTris[i] = v + index?.index;
@@ -307,7 +307,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
         //前后纹理
         var sealUvs: any = []
         switch (options.axisPlane) {
-            case AxisPlane.XY:
+            case 'xy':
                 orgShape.map(e => {
                     sealUvs.push(e.x, e.y)
                 })
@@ -318,7 +318,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                         })
                     })
                 break;
-            case AxisPlane.XZ:
+            case 'xz':
                 orgShape.map(e => {
                     sealUvs.push(e.x, e.z)
                 })
@@ -329,7 +329,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
                         })
                     })
                 break;
-            case AxisPlane.YZ:
+            case 'yz':
                 orgShape.map(e => {
                     sealUvs.push(e.y, e.z)
                 })
@@ -444,7 +444,7 @@ export function extrude(options: IExtrudeOptionsEx): IGeometry {
         sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
         generateUV: true,
         autoIndex: true,
-        axisPlane: AxisPlane.XY,
+        axisPlane: 'xy',
         up: Vec3.Up,
         smoothAngle: 30 * RADIANS_PER_DEGREE,
         enableSmooth: false,
@@ -733,7 +733,7 @@ export function extrudeNext(options: IExtrudeOptionsNext) {
         sealEnd: true, sealStart: true, shapeClosed: true, pathClosed: false,
         generateUV: true,
         autoIndex: true,
-        axisPlane: AxisPlane.XY,
+        axisPlane: 'xy',
         smoothAngle: 30 * RADIANS_PER_DEGREE,
         enableSmooth: false,
         ...options
