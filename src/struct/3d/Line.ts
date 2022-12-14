@@ -22,7 +22,7 @@ export class Line {
   set(origin: Vec3, end: Vec3) {
     this.origin.copy(origin)
     this.end.copy(end);
-
+    this.direction.subVecs(end, origin).normalize();
     return this;
   }
 
