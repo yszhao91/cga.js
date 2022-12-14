@@ -9,6 +9,8 @@ export class Polygon<T> extends Polyline<T> {
         super(vs);
     }
 
+    
+
     offset(distance: number, normal: Vec3 = Vec3.UnitY): Polygon<T> {
 
         const segments = [];

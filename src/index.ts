@@ -16,6 +16,7 @@ export * from "./alg/common"
 export * from "./alg/result"
 export * from "./alg/extrude"
 export * from "./alg/delaunay"
+export * from "./alg/trianglution"
 
 export * from "./render/mesh"
 

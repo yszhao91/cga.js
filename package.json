@@ -1,9 +1,9 @@
 {
   "name": "@xort/cga",
-  "version": "0.0.86",
+  "version": "0.0.87",
   "description": "Xtor Compute Geometry Algorithm Libary 计算几何算法库",
   "main": "dist/index.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "pxy": "hpts -s 127.0.0.1:5006 -p 8002",
     "release": "tsc && npm publish && git.sh",

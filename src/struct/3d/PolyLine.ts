@@ -6,7 +6,12 @@ import { Segment } from "./Segment";
 import { ArrayList } from '../data/ArrayList';
 import { Polygon } from "./Polygon";
 
-
+export enum ClipType {
+    Intersection = 0,
+    Union = 1,
+    Difference = 2,
+    Xor = 3
+};
 /**
  *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
  */
@@ -18,6 +23,18 @@ export class Polyline<T> extends ArrayList<T> {
         super(vs);
         this.normal = normal;
         this.isCoPlanar = true;
+    }
+
+    static CleanPolygon(polys: any, delta: number, jointype: JoinType = JoinType.Square, endtype: EndType = EndType.etClosedPolygon, limit: number) {
+
+    }
+    static OffsetPaths(polys: any, delta: number, jointype: JoinType = JoinType.Square, endtype: EndType = EndType.etClosedPolygon, limit: number) {
+
+    }
+
+    //转化为简单多边形  (无重复点，无相交的边 )不自交多边形
+    static SimplifyPolygon(polys: any, delta: number, jointype: JoinType = JoinType.Square, endtype: EndType = EndType.etClosedPolygon, limit: number) {
+
     }
 
     /**

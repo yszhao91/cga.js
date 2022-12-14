@@ -15,6 +15,7 @@ import { IGeometry } from '../../render/geometry';
 import { ISplitResult } from '../../alg/split';
 import { Line } from './Line';
 import { MeshTool } from '../../render/mesh';
+import { Polygon } from './Polygon';
 
 class Plane {
 
@@ -253,23 +254,26 @@ class Plane {
 
     /**
      * 平面切割线段
-     * @param polyVS 
+     * @param polygon 
      */
-    splitPolyVS(polyVS: Vec3[]) {
-        polyVS = [...polyVS];
-        MeshTool.indexable(polyVS);
+    splitConvexPolygon(polygon: Vec3[]) {
+        polygon = [...polygon];
+        MeshTool.indexable(polygon);
 
         let jd0 = -1;//找出第一个交点 
         let jdp0: any;//找出第一个交点 
-        let lastOriention = this.orientationPoint(polyVS[0]);
-        for (let i = 0; i < polyVS.length - 1; i++) {
-            const v = polyVS[i];
+        let lastOriention = this.orientationPoint(polygon[0]);
+        const plen = polygon.length;
+        //分割点   
+        const splitPoints = [];
+        const pVs = [];
+        const nVs = [];
+        for (let i = 1; i <= plen; i++) {
+            const v = polygon[i % plen];
             const oriention = this.orientationPoint(v);
-            if (oriention === Orientation.Common || lastOriention !== Orientation.None && lastOriention !== oriention) {
+            if (oriention === Orientation.Common ) {
                 jd0 = i;
-                jdp0 = v.clone();
-                lastOriention = oriention;
-                break;
+                jdp0 = v.clone(); 
             }
             lastOriention = oriention;
             //TODO

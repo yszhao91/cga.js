@@ -70,7 +70,10 @@ export default {
     //     }
     // }
 
-    input: "dist/types/index.d.ts",
-    output: [{ file: "build/cga.d.ts", format: "es" }],
+    input: "dist/index.d.ts",
+    output: [{
+        file: "build/cga.d.ts", format: "es",
+        name: 'cga'
+    }],
     plugins: [dts()],
 }
