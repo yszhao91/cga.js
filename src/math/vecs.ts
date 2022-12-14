@@ -353,42 +353,50 @@ export class vecs {
      * @param {String} comSort  'x','y','z','w' 按顺序选取后自由组合
      * @returns {Array<Number>} 数字数组 
      */
-    static verctorToNumbers(vectors: Array<Vec4 | Vec3 | Vec2 | any> | any, comSort = "xyz"): number[] {
+    static verctorToNumbers(vectors: Array<Vec4 | Vec3 | Vec2 | any> | any, comSort?: string): number[] {
         if (!(vectors instanceof Array)) {
             console.error("传入参数必须是数组");
             return [];
         }
 
         var numbers: number[] = [];
-        if (vectors[0].x !== undefined && vectors[0].y !== undefined && vectors[0].z !== undefined && vectors[0].w !== undefined) {
-            comSort = comSort.length !== 4 ? 'xyzw' : comSort;
-            for (var i = 0; i < vectors.length; i++) {
-                for (let j = 0; j < comSort.length; j++) {
-                    numbers.push(vectors[i][comSort[j]]);
+        if (!comSort) {
+            if (vectors[0].x !== undefined && vectors[0].y !== undefined && vectors[0].z !== undefined && vectors[0].w !== undefined) {
+                comSort = !comSort ? 'xyzw' : comSort;
+                for (var i = 0; i < vectors.length; i++) {
+                    for (let j = 0; j < comSort.length; j++) {
+                        numbers.push(vectors[i][comSort[j]]);
+                    }
                 }
             }
-        }
-        if (vectors[0].x !== undefined && vectors[0].y !== undefined && vectors[0].z !== undefined) {
-            comSort = comSort.length !== 3 ? 'xyz' : comSort;
-            for (var i = 0; i < vectors.length; i++) {
-                for (let j = 0; j < comSort.length; j++) {
-                    numbers.push(vectors[i][comSort[j]]);
+            if (vectors[0].x !== undefined && vectors[0].y !== undefined && vectors[0].z !== undefined) {
+                comSort = !comSort ? 'xyz' : comSort;
+                for (var i = 0; i < vectors.length; i++) {
+                    for (let j = 0; j < comSort.length; j++) {
+                        numbers.push(vectors[i][comSort[j]]);
+                    }
+                }
+            } else if (vectors[0].x !== undefined && vectors[0].y !== undefined) {
+                comSort = !comSort ? 'xy' : comSort;
+                for (var i = 0; i < vectors.length; i++) {
+                    for (let j = 0; j < comSort.length; j++) {
+                        numbers.push(vectors[i][comSort[j]]);
+                    }
                 }
             }
-        } else if (vectors[0].x !== undefined && vectors[0].y !== undefined) {
-            comSort = comSort.length !== 2 ? 'xy' : comSort;
-            for (var i = 0; i < vectors.length; i++) {
-                for (let j = 0; j < comSort.length; j++) {
-                    numbers.push(vectors[i][comSort[j]]);
+            else if (vectors[0] instanceof Array) {
+                for (var i = 0; i < vectors.length; i++) {
+                    numbers = numbers.concat(vecs.verctorToNumbers(vectors[i]));
                 }
-            }
-        }
-        else if (vectors[0] instanceof Array) {
-            for (var i = 0; i < vectors.length; i++) {
-                numbers = numbers.concat(vecs.verctorToNumbers(vectors[i]));
+            } else {
+                console.error("数组内部的元素不是向量");
             }
         } else {
-            console.error("数组内部的元素不是向量");
+            for (var i = 0; i < vectors.length; i++) {
+                for (let j = 0; j < comSort.length; j++) {
+                    numbers.push(vectors[i][comSort[j]]);
+                }
+            }
         }
 
         return numbers;
