@@ -211,7 +211,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             allVertics.push(startHoles)
         }
 
-        var startTris = triangulation(orgShape, orgHoles, { feature: 'xy' });
+        var startTris = triangulation(orgShape, orgHoles, { feature: options.axisPlane });
         if (index) {
             startTris.forEach((v: number, i: number) => {
                 startTris[i] = v + index?.index;
@@ -234,7 +234,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             var endHoles = clone(clone(holess[holess.length - 1]));
             allVertics.push(endHoles)
         }
-        var endTris = triangulation(orgShape, orgHoles, { feature: 'xy' });
+        var endTris = triangulation(orgShape, orgHoles, { feature: options.axisPlane });
         if (index) {
             endTris.forEach((v: number, i: number) => {
                 endTris[i] = v + index?.index;
