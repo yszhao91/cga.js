@@ -97,7 +97,7 @@ export class Circle {
             result.push(vi);
         }
 
-        return result;
+        return result; 
     }
 
 
