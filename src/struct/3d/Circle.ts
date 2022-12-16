@@ -81,11 +81,11 @@ export class Circle {
      * @param lengthAngle 弧度长度   单位弧度
      * @param segment 分段
      */
-    static toVertices(center: Vec3, radius: number, startAngle: number = 0, lengthAngle: number = Math.PI * 2, segment: number = 16) {
+    static toVecs(center: Vec3, radius: number, startAngle: number = 0, lengthAngle: number = Math.PI * 2, segment: number = 16) {
         const Xvec: Vec3 = Vec3.UnitX;
         Xvec.multiplyScalar(radius);
-       
-        const result:Vec3[]=[]
+
+        const result: Vec3[] = []
 
         const up: Vec3 = Vec3.UnitY;
         const perAngle = lengthAngle / segment;
@@ -98,6 +98,31 @@ export class Circle {
         }
 
         return result;
+    }
+
+
+    /**
+     * 在p点延伸a，b两个方向，生成半径为r的圆弧，圆弧所在位置在a,b向量的内夹角
+     * @param p 位置
+     * @param a a方向
+     * @param b b方向
+     * @param r 圆弧半径
+     */
+    static PAdBdtoVecs(p: Vec3, a: Vec3, b: Vec3, r: number, segment: number = 3) {
+        let bd = v3().addVecs(a, b).normalize();
+
+        let normal = v3().crossVecs(a, b).normalize();
+        a.applyAxisAngle(normal, Math.PI / 2);
+
+
+
+        a.normalize();
+
+    }
+
+    static PApBptoVecs(p: Vec3, a: Vec3, b: Vec3, r: number, segment: number = 3) {
+        let bd = v3().addVecs(a, b).normalize();
+
     }
 
 }

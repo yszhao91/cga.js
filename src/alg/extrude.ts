@@ -243,7 +243,7 @@ export function linkSides(options: ILinkSideOptions): IGeometry {
             index.index += endShape.length
             if (holess && holess[0])
                 endHoles.forEach((h: any) => {
-                    index.index += h.length
+                    index.index += h.length;
                 })
         }
         triangles.push(...endTris);
