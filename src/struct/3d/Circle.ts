@@ -117,7 +117,7 @@ export class Circle {
         const c = a.clone().add(b).normalize().multiplyScalar(cr).add(p)
 
         const cd1 = a.clone().multiplyScalar(d).add(p).sub(c).normalize();
-        const cd2 = a.clone().multiplyScalar(d).add(p).sub(c).normalize();
+        const cd2 = b.clone().multiplyScalar(d).add(p).sub(c).normalize();
 
         const up = cd1.clone().cross(cd2).normalize();
 
