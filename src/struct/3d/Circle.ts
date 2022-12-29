@@ -1,6 +1,7 @@
 import { Vec3, v3 } from '../../math/Vec3';
 import { angle, pointsCollinear, rotate } from '../../alg/common';
 import { Line } from './Line';
+import { quat } from 'src/math/Quat';
 
 export class Circle {
     startAngle: number = 0;
@@ -81,13 +82,12 @@ export class Circle {
      * @param lengthAngle 弧度长度   单位弧度
      * @param segment 分段
      */
-    static toVecs(center: Vec3, radius: number, startAngle: number = 0, lengthAngle: number = Math.PI * 2, segment: number = 16) {
+    static toVecs(center: Vec3, radius: number, startAngle: number = 0, lengthAngle: number = Math.PI * 2, up: Vec3 = Vec3.UnitY, segment: number = 16) {
         const Xvec: Vec3 = Vec3.UnitX;
         Xvec.multiplyScalar(radius);
 
         const result: Vec3[] = []
 
-        const up: Vec3 = Vec3.UnitY;
         const perAngle = lengthAngle / segment;
         for (let i = 0; i <= segment; i++) {
             const langlei = perAngle * i + startAngle;
@@ -97,7 +97,7 @@ export class Circle {
             result.push(vi);
         }
 
-        return result; 
+        return result;
     }
 
 
@@ -109,19 +109,36 @@ export class Circle {
      * @param r 圆弧半径
      */
     static PAdBdtoVecs(p: Vec3, a: Vec3, b: Vec3, r: number, segment: number = 3) {
-        let bd = v3().addVecs(a, b).normalize();
 
-        let normal = v3().crossVecs(a, b).normalize();
-        a.applyAxisAngle(normal, Math.PI / 2);
+        const angle = a.angleTo(b)
+        const d = r / Math.tan(angle / 2);
 
+        const cr = r / Math.sin(angle / 2);
+        const c = a.clone().add(b).normalize().multiplyScalar(cr).add(p)
 
+        const cd1 = a.clone().multiplyScalar(d).add(p).sub(c).normalize();
+        const cd2 = a.clone().multiplyScalar(d).add(p).sub(c).normalize();
 
-        a.normalize();
+        const up = cd1.clone().cross(cd2).normalize();
+
+        const q = quat().setFromUnitVecs(up, Vec3.UnitY); //两个向量形成一个旋转4元数
+
+        cd1.applyQuat(q);
+        cd2.applyQuat(q);
+
+        const startAngle = Vec3.UnitX.angleToEx(cd1, Vec3.UnitY);
+        const lengthAngle = Vec3.UnitX.angleToEx(cd2, Vec3.UnitY) - startAngle;
+
+        return this.toVecs(c, r, startAngle, lengthAngle, up, segment);
 
     }
 
     static PApBptoVecs(p: Vec3, a: Vec3, b: Vec3, r: number, segment: number = 3) {
-        let bd = v3().addVecs(a, b).normalize();
+
+        const pa = a.clone().sub(p).normalize();
+        const pb = b.clone().sub(p).normalize();
+
+        return Circle.PAdBdtoVecs(p, pa, pb, r, segment);
 
     }
 

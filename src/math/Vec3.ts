@@ -7,7 +7,7 @@ import { DistanceResult } from '../alg/result';
 import { Line, line } from '../struct/3d/Line';
 import { Ray } from '../struct/3d/Ray';
 import { Segment } from '../struct/3d/Segment';
-import { Plane } from '../struct/3d/Plane'; 
+import { Plane } from '../struct/3d/Plane';
 import { Triangle } from '../struct/3d/Triangle';
 import { Capsule } from '../struct/3d/Capsule';
 import { Rectangle } from '../struct/3d/Rectangle';
@@ -27,10 +27,10 @@ export interface IVec4 extends IVec3 {
   w: number;
 }
 
-export class Vec3  implements IVec3 {
+export class Vec3 implements IVec3 {
 
   constructor(private _x: number = 0, private _y: number = 0, private _z: number = 0) {
- 
+
   }
 
   get x() {
@@ -98,7 +98,7 @@ export class Vec3  implements IVec3 {
     this._x = x;
     this._y = y;
     this._z = z;
-   //// this.fire('change');
+    //// this.fire('change');
     return this;
   }
 
@@ -107,7 +107,7 @@ export class Vec3  implements IVec3 {
     this._y = scalar;
     this._z = scalar;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -151,7 +151,7 @@ export class Vec3  implements IVec3 {
     this._y = v.y;
     this._z = v.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -167,7 +167,7 @@ export class Vec3  implements IVec3 {
     this._y += v.y;
     this._z += v.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -176,7 +176,7 @@ export class Vec3  implements IVec3 {
     this._y += s;
     this._z += s;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -185,7 +185,7 @@ export class Vec3  implements IVec3 {
     this._y = a.y + b.y;
     this._z = a.z + b.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -194,7 +194,7 @@ export class Vec3  implements IVec3 {
     this._y += v.y * s;
     this._z += v.z * s;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -210,7 +210,7 @@ export class Vec3  implements IVec3 {
     this._y -= v.y;
     this._z -= v.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -219,7 +219,7 @@ export class Vec3  implements IVec3 {
     this._y -= s;
     this._z -= s;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -228,7 +228,7 @@ export class Vec3  implements IVec3 {
     this._y = a.y - b.y;
     this._z = a.z - b.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -241,7 +241,7 @@ export class Vec3  implements IVec3 {
     this._y *= v.y;
     this._z *= v.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -250,7 +250,7 @@ export class Vec3  implements IVec3 {
     this._y *= scalar;
     this._z *= scalar;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -259,7 +259,7 @@ export class Vec3  implements IVec3 {
     this._y = a.y * b.y;
     this._z = a.z * b.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -291,7 +291,7 @@ export class Vec3  implements IVec3 {
     this._y = e[1] * x + e[4] * y + e[7] * z;
     this._z = e[2] * x + e[5] * y + e[8] * z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -307,7 +307,7 @@ export class Vec3  implements IVec3 {
     this._y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
     this._z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -333,7 +333,7 @@ export class Vec3  implements IVec3 {
     this._y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
     this._z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -362,7 +362,7 @@ export class Vec3  implements IVec3 {
     this._y = e[1] * x + e[5] * y + e[9] * z;
     this._z = e[2] * x + e[6] * y + e[10] * z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this.normalize();
   }
 
@@ -371,7 +371,7 @@ export class Vec3  implements IVec3 {
     this._y /= v.y;
     this._z /= v.z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -384,7 +384,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.min(this._y, v.y);
     this._z = Math.min(this._z, v.z);
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -393,7 +393,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.max(this._y, v.y);
     this._z = Math.max(this._z, v.z);
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -404,7 +404,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.max(min.y, Math.min(max.y, this._y));
     this._z = Math.max(min.z, Math.min(max.z, this._z));
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -413,7 +413,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.max(minVal, Math.min(maxVal, this._y));
     this._z = Math.max(minVal, Math.min(maxVal, this._z));
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -430,7 +430,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.floor(this._y);
     this._z = Math.floor(this._z);
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -439,7 +439,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.ceil(this._y);
     this._z = Math.ceil(this._z);
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -448,7 +448,7 @@ export class Vec3  implements IVec3 {
     this._y = Math.round(this._y);
     this._z = Math.round(this._z);
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -457,7 +457,7 @@ export class Vec3  implements IVec3 {
     this._y = this._y < 0 ? Math.ceil(this._y) : Math.floor(this._y);
     this._z = this._z < 0 ? Math.ceil(this._z) : Math.floor(this._z);
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -466,7 +466,7 @@ export class Vec3  implements IVec3 {
     this._y = -this._y;
     this._z = -this._z;
 
-   // this.fire('change');
+    // this.fire('change');
     return this;
   }
 
@@ -671,14 +671,26 @@ export class Vec3  implements IVec3 {
     return this.sub(_vec.copy(normal).multiplyScalar(2 * this.dot(normal)));
   }
 
+  /**
+   * 两个向量的夹角
+   * @param v 
+   * @param normal 
+   * @returns 
+   */
   angleTo(v: Vec3, normal?: Vec3 | any) {
     if (normal)
-      return this.angleToEx(v, normal)
+      return this.angleToEx(v, normal);
 
     var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq());
     return Math.acos(clamp(theta, -1, 1));
   }
 
+  /**
+   * 一个向量到另一个向量的角度
+   * @param v 
+   * @param normal 
+   * @returns 
+   */
   angleToEx(v: Vec3, normal: Vec3) {
     var theta = this.dot(v) / Math.sqrt(this.lengthSq() * v.lengthSq());
 
