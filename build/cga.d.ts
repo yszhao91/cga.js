@@ -608,12 +608,7 @@ declare class Ray {
     distancePloyline(): DistanceResult;
 }
 
-declare enum AxisPlane {
-    XY = "xy",
-    XZ = "xz",
-    YZ = "yz",
-    XYZ = "xyz"
-}
+type AxisPlane = 'xy' | 'xz' | 'yz' | 'xyz';
 interface ITriangulationOption {
     feature?: AxisPlane;
     dim?: number;
@@ -873,6 +868,12 @@ declare class Polygon<T> extends Polyline<T> {
     containPoint(point: Vec3): void;
 }
 
+declare enum ClipType {
+    Intersection = 0,
+    Union = 1,
+    Difference = 2,
+    Xor = 3
+}
 /**
  *  线段正反原则：右手坐标系中，所在平面为XZ平面，把指向方向看着负Z轴，x正为正方向，x负为负方向
  */
@@ -881,6 +882,9 @@ declare class Polyline<T> extends ArrayList<T> {
     isPolyline: boolean;
     normal: Vec3;
     constructor(vs?: Array<T> | Polyline<T> | Polygon<T>, normal?: Vec3);
+    static CleanPolygon(polys: any, delta: number, jointype: JoinType | undefined, endtype: EndType | undefined, limit: number): void;
+    static OffsetPaths(polys: any, delta: number, jointype: JoinType | undefined, endtype: EndType | undefined, limit: number): void;
+    static SimplifyPolygon(polys: any, delta: number, jointype: JoinType | undefined, endtype: EndType | undefined, limit: number): void;
     /**
      * 偏移
      * @param {Number} distance  偏移距离
@@ -986,7 +990,16 @@ declare class Circle {
      * @param lengthAngle 弧度长度   单位弧度
      * @param segment 分段
      */
-    static toVertices(center: Vec3, radius: number, startAngle?: number, lengthAngle?: number, segment?: number): Vec3[];
+    static toVecs(center: Vec3, radius: number, startAngle?: number, lengthAngle?: number, up?: Vec3, segment?: number): Vec3[];
+    /**
+     * 在p点延伸a，b两个方向，生成半径为r的圆弧，圆弧所在位置在a,b向量的内夹角
+     * @param p 位置
+     * @param a a方向
+     * @param b b方向
+     * @param r 圆弧半径
+     */
+    static PAdBdtoVecs(p: Vec3, a: Vec3, b: Vec3, r: number, segment?: number): Vec3[];
+    static PApBptoVecs(p: Vec3, a: Vec3, b: Vec3, r: number, segment?: number): Vec3[];
 }
 declare function circle(center?: Vec3, radius?: number): Circle;
 
@@ -1117,7 +1130,19 @@ declare class Vec3 implements IVec3 {
      */
     projectDirectionOnPlane(plane: Plane, dir: Vec3): this;
     reflect(normal: any): this;
+    /**
+     * 两个向量的夹角
+     * @param v
+     * @param normal
+     * @returns
+     */
     angleTo(v: Vec3, normal?: Vec3 | any): number;
+    /**
+     * 一个向量到另一个向量的角度
+     * @param v
+     * @param normal
+     * @returns
+     */
     angleToEx(v: Vec3, normal: Vec3): number;
     distanceTo(v: any): number;
     distanceToSquared(v: Vec3): number;
@@ -2029,4 +2054,4 @@ declare function linkToGeometry(shape: Array<Vec3>, shape1: Array<Vec3>, axisPla
  */
 declare function linksToGeometry(shapes: Array<Vec3>[], pathClosed?: boolean, shapeClosed?: boolean): BufferGeometry;
 
-export { AxisPlane, Box, BufferAttribute, BufferGeometry, Capsule, Circle, Color, DEGREES_PER_RADIAN, Delaunator, Disk, DistanceResult, EndType, Euler, Float32BufferAttribute, Float64BufferAttribute, Frustum, IBufferGeometry, IDistanceResut, IExtrudeOptions, IExtrudeOptionsEx, IExtrudeOptionsNext, IGeometry, ILinkSideOption, ILinkSideOptions, ITriangulationOption, IVec2, IVec3, IVec4, Int16BufferAttribute, Int32BufferAttribute, Int8BufferAttribute, IntersectResult, JoinType, Line, Mat3, Mat4, MeshTool, ONE_OVER_PI, ONE_OVER_TWO_PI, PI, PI_OVER_FOUR, PI_OVER_SIX, PI_OVER_THREE, PI_OVER_TWO, PI_TWO, Path, Plane, Point, Polygon, Polyline, Quat, RADIANS_PER_ARCSECOND, RADIANS_PER_DEGREE, Ray, Segment, Sphere, THREE_PI_OVER_TWO, ToDegrees, Triangle, Uint16BufferAttribute, Uint32BufferAttribute, Uint8BufferAttribute, Uint8ClampedBufferAttribute, Vec2, Vec3, Vec4, Voronoi, angle, applyMatrix4, applyQuat, approximateEqual, boundingBox, calcCircleFromThreePoint, ceilPowerOfTwo, circle, clamp, classify, clone, delta4, delta5, delta6, delta7, delta8, delta9, disk, euler, extrude, extrudeNext, extrudeToGeometryBuffer, extrude_obsolete, flat, floorPowerOfTwo, forall, isInOnePlane, isPowerOfTwo, lerp, line, linkSide, linkSides, linkToGeometry, linksToGeometry, m3, m4, pointsCollinear, projectOnPlane, quat, randFloat, randInt, recognitionPlane, reverseOnPlane, rotate, rotateByUnitVectors, scale, segment, sign, simplifyPointList, smootherstep, smoothstep, toFixed, toFixedAry, toGeometryBuffer, toRadians, translate, triangulation, unique, v2, v3, v4, vecs, vectorCompare };
+export { AxisPlane, Box, BufferAttribute, BufferGeometry, Capsule, Circle, ClipType, Color, DEGREES_PER_RADIAN, Delaunator, Disk, DistanceResult, EndType, Euler, Float32BufferAttribute, Float64BufferAttribute, Frustum, IBufferGeometry, IDistanceResut, IExtrudeOptions, IExtrudeOptionsEx, IExtrudeOptionsNext, IGeometry, ILinkSideOption, ILinkSideOptions, ITriangulationOption, IVec2, IVec3, IVec4, Int16BufferAttribute, Int32BufferAttribute, Int8BufferAttribute, IntersectResult, JoinType, Line, Mat3, Mat4, MeshTool, ONE_OVER_PI, ONE_OVER_TWO_PI, PI, PI_OVER_FOUR, PI_OVER_SIX, PI_OVER_THREE, PI_OVER_TWO, PI_TWO, Path, Plane, Point, Polygon, Polyline, Quat, RADIANS_PER_ARCSECOND, RADIANS_PER_DEGREE, Ray, Segment, Sphere, THREE_PI_OVER_TWO, ToDegrees, Triangle, Uint16BufferAttribute, Uint32BufferAttribute, Uint8BufferAttribute, Uint8ClampedBufferAttribute, Vec2, Vec3, Vec4, Voronoi, angle, applyMatrix4, applyQuat, approximateEqual, boundingBox, calcCircleFromThreePoint, ceilPowerOfTwo, circle, clamp, classify, clone, delta4, delta5, delta6, delta7, delta8, delta9, disk, euler, extrude, extrudeNext, extrudeToGeometryBuffer, extrude_obsolete, flat, floorPowerOfTwo, forall, isInOnePlane, isPowerOfTwo, lerp, line, linkSide, linkSides, linkToGeometry, linksToGeometry, m3, m4, pointsCollinear, projectOnPlane, quat, randFloat, randInt, recognitionPlane, reverseOnPlane, rotate, rotateByUnitVectors, scale, segment, sign, simplifyPointList, smootherstep, smoothstep, toFixed, toFixedAry, toGeometryBuffer, toRadians, translate, triangulation, unique, v2, v3, v4, vecs, vectorCompare };

@@ -55,25 +55,28 @@ if (MIN) {
     plugins.push(gzip());
 }
 
-export default {
-    // input: path.join('dist', 'index.js'),
-    // external: ['lodash'],
-    // plugins: plugins,
-    // output: {
-    //     file: path.join(DIST ? 'dist' : 'build', '@xort_cga' + (MIN ? '.min' : '') + '.js'),
-    //     format: 'umd',
-    //     // format: 'umd',
-    //     name: 'cga',
-    //     banner: banner,
-    //     globals: {
-    //         lodash: '_'
-    //     }
-    // }
+export default [
+    {
+        input: path.join('dist', 'index.js'),
+        external: ['lodash'],
+        plugins: plugins,
+        output: {
+            file: path.join(DIST ? 'dist' : 'build', '@xort_cga' + (MIN ? '.min' : '') + '.js'),
+            format: 'umd',
+            // format: 'umd',
+            name: 'cga',
+            banner: banner,
+            globals: {
+                lodash: '_'
+            }
+        }
+    },
+    {
 
-    input: "dist/index.d.ts",
-    output: [{
-        file: "build/cga.d.ts", format: "es",
-        name: 'cga'
-    }],
-    plugins: [dts()],
-}
+        input: "dist/index.d.ts",
+        output: [{
+            file: "build/cga.d.ts", format: "es",
+            name: 'cga'
+        }],
+        plugins: [dts()],
+    }]
