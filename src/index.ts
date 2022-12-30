@@ -37,7 +37,7 @@ export * from "./struct/3d/Frustum"
 export * from "./struct/3d/Sphere"
 
 export * from "./alg/delaunator"
-export * from "./alg/voronoi" 
+export * from "./alg/voronoi"
 
 export * from "./extends/geometryaid"
 
@@ -45,3 +45,10 @@ export * from "./extends/geometryaid"
 export * from "./render/bufferAttribute"
 export * from "./render/geometry"
 export * from "./render/mesh"
+
+//Tree结构
+export * from "./struct/tree"
+export * from "./struct/bsp"
+export * from "./struct/btree"
+export * from "./struct/quatTree"
+export * from "./struct/polyTree"

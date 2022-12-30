@@ -1,30 +1,35 @@
-export class Tree {
-    N: number = 2;//数量决定是N叉树；
+export abstract class Tree {
+    /**
+     * N个子节点
+     */
+    N: number = 2048;
+
+    /**
+     * 最大深度
+     */
+    maxDepth: number = 8;
+
+    /**
+     * 子节点
+     */
     children!: this[];
-    findFn!: Function;
+
+    /**
+     * 容器，用来放满足该层级条件的数据
+     */
     objects: any[] = [];
 
-    constructor(N: number = -1) {
-        this.N = N;
-        if (N !== -1)
+    constructor(N?: number) {
+        if (N !== void 0) {
             this.children = new Array(N)
-    }
-
-    setObject(obj: any, generateFn: Function, findFn: Function) {
-        generateFn(this, obj);
-        this.findFn = findFn;
-    }
-
-    add(obj: any) {
+            this.N = N;
+        }
 
     }
 
-    remove(obj: any) {
+    abstract add(obj: any): any;
 
-    }
+    abstract remove(obj: any): any;
 
-    find(condition: any) {
-
-        this.findFn(this, condition);
-    }
+    abstract find(condition: any): any;
 }

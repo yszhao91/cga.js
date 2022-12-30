@@ -4,6 +4,7 @@ import { Tree } from "./tree";
  * 
  */
 export class BSP extends Tree {
+
     constructor() {
         super(2);
     }
@@ -14,5 +15,14 @@ export class BSP extends Tree {
 
     get neg() {
         return this.children[1];
+    }
+    add(obj: any) {
+        throw new Error("Method not implemented.");
+    }
+    remove(obj: any) {
+        throw new Error("Method not implemented.");
+    }
+    find(condition: any) {
+        throw new Error("Method not implemented.");
     }
 }
